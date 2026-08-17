@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 import { pipeline } from "@huggingface/transformers";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import { LANGUES } from "../src/lib/langue.ts";
 import { DIMENSIONS_EMBEDDING, MODELE_EMBEDDING } from "../src/lib/rag-types.ts";
 
 const MODELE = MODELE_EMBEDDING;
@@ -35,44 +36,89 @@ const DIMENSIONS = DIMENSIONS_EMBEDDING;
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dossier = join(racine, "public", "data");
 
-const corpus = construireCorpus();
-console.log(`Corpus : ${corpus.length} passages`);
-
 const vectoriser = await pipeline("feature-extraction", MODELE);
-
-const vecteurs = new Float32Array(corpus.length * DIMENSIONS);
-
-for (const [i, passage] of corpus.entries()) {
-  const sortie = await vectoriser(passage.texte, { pooling: "mean", normalize: true });
-  const v = sortie.data as Float32Array;
-
-  if (v.length !== DIMENSIONS) {
-    throw new Error(`Dimension inattendue pour « ${passage.id} » : ${v.length} au lieu de ${DIMENSIONS}`);
-  }
-  vecteurs.set(v, i * DIMENSIONS);
-
-  if ((i + 1) % 10 === 0 || i === corpus.length - 1) {
-    process.stdout.write(`\r  vectorisé ${i + 1}/${corpus.length}`);
-  }
-}
-process.stdout.write("\n");
+await mkdir(dossier, { recursive: true });
 
 /*
- * Contrôle de cohérence : un vecteur normalisé a une norme de 1. Si le
- * `normalize: true` cessait d'être appliqué par une version future de la
- * bibliothèque, la recherche se dégraderait en silence — mieux vaut échouer
- * ici, au build, que servir des résultats subtilement faux.
+ * Un jeu de vecteurs par langue, écrit dans son propre fichier.
+ *
+ * Un corpus commun aurait suffi à la recherche — le modèle est multilingue —
+ * mais il aurait rendu des extraits français à une question anglaise. Or un
+ * extrait est cité tel quel à l'écran : ce n'est pas une réponse.
+ *
+ * L'ACP est donc calculée séparément pour chaque langue. Les deux figures
+ * n'ont pas exactement la même forme, et c'est correct : ce sont deux nuages
+ * différents.
  */
-for (let i = 0; i < corpus.length; i++) {
-  let somme = 0;
-  for (let d = 0; d < DIMENSIONS; d++) {
-    const x = vecteurs[i * DIMENSIONS + d];
-    somme += x * x;
+for (const langue of LANGUES) {
+  const corpus = construireCorpus(langue);
+  console.log(`\n[${langue}] corpus : ${corpus.length} passages`);
+
+  const vecteurs = new Float32Array(corpus.length * DIMENSIONS);
+
+  for (const [i, passage] of corpus.entries()) {
+    const sortie = await vectoriser(passage.texte, { pooling: "mean", normalize: true });
+    const v = sortie.data as Float32Array;
+
+    if (v.length !== DIMENSIONS) {
+      throw new Error(
+        `Dimension inattendue pour « ${passage.id} » : ${v.length} au lieu de ${DIMENSIONS}`,
+      );
+    }
+    vecteurs.set(v, i * DIMENSIONS);
+
+    if ((i + 1) % 10 === 0 || i === corpus.length - 1) {
+      process.stdout.write(`\r  vectorisé ${i + 1}/${corpus.length}`);
+    }
   }
-  const norme = Math.sqrt(somme);
-  if (Math.abs(norme - 1) > 1e-3) {
-    throw new Error(`Vecteur non normalisé pour « ${corpus[i].id} » : norme ${norme.toFixed(4)}`);
+  process.stdout.write("\n");
+
+  /*
+   * Contrôle de cohérence : un vecteur normalisé a une norme de 1. Si le
+   * `normalize: true` cessait d'être appliqué par une version future de la
+   * bibliothèque, la recherche se dégraderait en silence — mieux vaut échouer
+   * ici, au build, que servir des résultats subtilement faux.
+   */
+  for (let i = 0; i < corpus.length; i++) {
+    let somme = 0;
+    for (let d = 0; d < DIMENSIONS; d++) {
+      const x = vecteurs[i * DIMENSIONS + d];
+      somme += x * x;
+    }
+    const norme = Math.sqrt(somme);
+    if (Math.abs(norme - 1) > 1e-3) {
+      throw new Error(`Vecteur non normalisé pour « ${corpus[i].id} » : norme ${norme.toFixed(4)}`);
+    }
   }
+
+  const projection = projeterACP(vecteurs, corpus.length, DIMENSIONS);
+  console.log(`  ACP : ${projection.variance} % en 2D, ${projection.variance3d} % en 3D`);
+
+  await writeFile(join(dossier, `embeddings-${langue}.bin`), Buffer.from(vecteurs.buffer));
+  await writeFile(
+    join(dossier, `embeddings-${langue}.json`),
+    JSON.stringify({
+      langue,
+      modele: MODELE,
+      dimensions: DIMENSIONS,
+      projection,
+      passages: corpus.map(({ id, texte, source, href, poids }, i) => ({
+        id,
+        texte,
+        source,
+        href,
+        poids,
+        xy: projection.points[i],
+        xyz: projection.points3d[i],
+      })),
+    }),
+  );
+
+  const kio = (n: number) => `${Math.round(n / 1024)} Kio`;
+  console.log(
+    `  ✓ embeddings-${langue}.bin  ${kio(vecteurs.byteLength)} ` +
+      `(${corpus.length} × ${DIMENSIONS} flottants)`,
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -188,33 +234,4 @@ function projeterACP(v: Float32Array, n: number, d: number) {
   };
 }
 
-const projection = projeterACP(vecteurs, corpus.length, DIMENSIONS);
-console.log(
-  `Projection ACP : ${projection.variance} % en 2D, ${projection.variance3d} % en 3D`,
-);
-
-await mkdir(dossier, { recursive: true });
-await writeFile(join(dossier, "embeddings.bin"), Buffer.from(vecteurs.buffer));
-await writeFile(
-  join(dossier, "embeddings.json"),
-  JSON.stringify({
-    modele: MODELE,
-    dimensions: DIMENSIONS,
-    projection,
-    passages: corpus.map(({ id, texte, source, href, poids }, i) => ({
-      id,
-      texte,
-      source,
-      href,
-      poids,
-      xy: projection.points[i],
-      xyz: projection.points3d[i],
-    })),
-  }),
-);
-
-const kio = (n: number) => `${Math.round(n / 1024)} Kio`;
-console.log(
-  `✓ embeddings.bin  ${kio(vecteurs.byteLength)} (${corpus.length} × ${DIMENSIONS} flottants)\n` +
-    `✓ embeddings.json ${kio(Buffer.byteLength(JSON.stringify(corpus)))}`,
-);
+console.log(`\n${LANGUES.length} corpus vectorisés.`);

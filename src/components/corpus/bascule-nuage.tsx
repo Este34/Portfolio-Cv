@@ -3,8 +3,15 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
+import { locale, type Langue } from "@/lib/langue";
+
 import { NuageCorpus, type PointCorpus } from "./nuage";
 import type { Point3D } from "./nuage-3d";
+
+const MOTS = {
+  fr: { chargement: "Chargement du rendu 3D…", groupe: "Dimensions de la projection", plan: "Plan", volume: "Volume" },
+  en: { chargement: "Loading the 3D view…", groupe: "Projection dimensions", plan: "Plane", volume: "Volume" },
+} as const;
 
 /**
  * Trois dimensions chargées à la demande.
@@ -20,7 +27,7 @@ const Nuage3D = dynamic(() => import("./nuage-3d"), {
   ssr: false,
   loading: () => (
     <div className="border-trait-fort bg-fond-eleve grid aspect-[4/3] w-full place-items-center border-2">
-      <span className="annotation text-corail animate-pulse">Chargement du rendu 3D…</span>
+      <span className="annotation text-corail animate-pulse">…</span>
     </div>
   ),
 });
@@ -30,22 +37,25 @@ export function BasculeNuage({
   points3d,
   variance,
   variance3d,
+  langue,
 }: {
   points: PointCorpus[];
   points3d: Point3D[];
   variance: number;
   variance3d: number;
+  langue: Langue;
 }) {
   const [en3d, setEn3d] = useState(false);
   const sources = [...new Set(points.map((p) => p.source))];
+  const mots = MOTS[langue];
 
   return (
     <div className="flex flex-col gap-3">
-      <div role="group" aria-label="Dimensions de la projection" className="flex">
+      <div role="group" aria-label={mots.groupe} className="flex">
         {(
           [
-            [false, "Plan", variance],
-            [true, "Volume", variance3d],
+            [false, mots.plan, variance],
+            [true, mots.volume, variance3d],
           ] as const
         ).map(([valeur, libelle, part]) => (
           <button
@@ -61,16 +71,17 @@ export function BasculeNuage({
           >
             {libelle}
             <span className="ml-2 font-normal opacity-80">
-              {String(part).replace(".", ",")} %
+              {part.toLocaleString(locale(langue), { minimumFractionDigits: 1 })}
+              {langue === "fr" ? " %" : "%"}
             </span>
           </button>
         ))}
       </div>
 
       {en3d ? (
-        <Nuage3D points={points3d} variance={variance3d} sources={sources} />
+        <Nuage3D points={points3d} variance={variance3d} sources={sources} langue={langue} />
       ) : (
-        <NuageCorpus points={points} variance={variance} />
+        <NuageCorpus points={points} variance={variance} langue={langue} />
       )}
     </div>
   );

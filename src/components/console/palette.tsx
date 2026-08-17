@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { TRAVAUX_TRIES } from "@/content/travaux";
+import { lien, t, type Langue } from "@/lib/langue";
 import { NAV_DISCRETE, NAV_ITEMS } from "@/lib/site";
 /*
  * Types et libellés seulement. `lib/duckdb.ts` et `lib/rag.ts` ne sont JAMAIS
@@ -27,25 +28,101 @@ import {
 
 type Mode = "navigation" | "sql" | "demander";
 
-const CIBLES = [
-  ...NAV_ITEMS.map((n) => ({ href: n.href, label: n.label, detail: n.description })),
-  ...NAV_DISCRETE.map((n) => ({ href: n.href, label: n.label, detail: "" })),
-  ...TRAVAUX_TRIES.map((t) => ({ href: `/travaux/${t.slug}`, label: t.titre, detail: t.sousTitre })),
-];
+function cibles(langue: Langue) {
+  return [
+    ...NAV_ITEMS.map((n) => ({
+      href: lien(n.href, langue),
+      label: t(n.label, langue),
+      detail: t(n.description, langue),
+    })),
+    ...NAV_DISCRETE.map((n) => ({ href: lien(n.href, langue), label: t(n.label, langue), detail: "" })),
+    ...TRAVAUX_TRIES.map((tr) => ({
+      href: lien(`/travaux/${tr.slug}`, langue),
+      label: t(tr.titre, langue),
+      detail: t(tr.sousTitre, langue),
+    })),
+  ];
+}
 
-const PLACEHOLDER: Record<Mode, string> = {
-  navigation: "Chercher une page…   « > » pour du SQL, « ? » pour une question",
-  sql: "SELECT titre, annee FROM travaux ORDER BY rang",
-  demander: "A-t-il déjà travaillé sur de l'IA ?",
-};
+const MOTS = {
+  fr: {
+    console: "Console",
+    echap: "Échap",
+    aucunResultat: "Aucun résultat",
+    executer: "Exécuter",
+    demander: "Demander",
+    exemples: "Exemples",
+    recherche: "Recherche…",
+    moteurIndisponible: "Moteur indisponible",
+    requeteInvalide: "Requête invalide",
+    rechercheImpossible: "Recherche impossible",
+    noteSql:
+      "DuckDB s'installe dans l'onglet. Une dizaine de méga-octets, une seule fois, et ensuite tout s'exécute sur votre machine, sans qu'aucune donnée ne circule.",
+    noteRag:
+      "Le modèle qui vectorise votre question se télécharge une fois, puis s'exécute dans l'onglet. Votre question ne quitte pas votre machine.",
+    reponseRedigee: "Réponse rédigée",
+    redaction: "Rédaction…",
+    demanderRedaction: "Demander une réponse rédigée",
+    rienDansCorpus:
+      "Rien dans le corpus ne répond à cette question. Plutôt que de vous présenter le passage le moins hors sujet, je préfère le dire.",
+    tables: "Sept tables décrivent ce portfolio :",
+    ecrivezRequete: ". Écrivez votre requête, ou partez d'une de celles-ci.",
+    ligne: (n: number) => `${n} ligne${n > 1 ? "s" : ""}`,
+    passages: (n: number) => `${n} passage${n > 1 ? "s" : ""} pertinent${n > 1 ? "s" : ""}`,
+    ragIntro: (n: number) =>
+      `La recherche s'exécute dans votre navigateur, sur ${n} passages vectorisés du site. Chaque réponse cite ses sources. C'est le portage web de `,
+    ragFin: ", avec le même modèle.",
+    placeholder: {
+      navigation: "Chercher une page…   « > » pour du SQL, « ? » pour une question",
+      sql: "SELECT titre, annee FROM travaux ORDER BY rang",
+      demander: "A-t-il déjà travaillé sur de l'IA ?",
+    },
+    etiquette: { navigation: "ALLER À", sql: "SQL", demander: "QUESTION" },
+  },
+  en: {
+    console: "Console",
+    echap: "Esc",
+    aucunResultat: "No result",
+    executer: "Run",
+    demander: "Ask",
+    exemples: "Examples",
+    recherche: "Searching…",
+    moteurIndisponible: "Engine unavailable",
+    requeteInvalide: "Invalid query",
+    rechercheImpossible: "Search failed",
+    noteSql:
+      "DuckDB installs itself in this tab. About ten megabytes, once, and from then on everything runs on your machine, with no data going anywhere.",
+    noteRag:
+      "The model that embeds your question downloads once, then runs inside this tab. Your question never leaves your machine.",
+    reponseRedigee: "Written answer",
+    redaction: "Writing…",
+    demanderRedaction: "Ask for a written answer",
+    rienDansCorpus:
+      "Nothing in the corpus answers this question. Rather than show you the least off-topic passage, I would rather say so.",
+    tables: "Seven tables describe this portfolio:",
+    ecrivezRequete: ". Write your own query, or start from one of these.",
+    ligne: (n: number) => `${n} row${n > 1 ? "s" : ""}`,
+    passages: (n: number) => `${n} relevant passage${n > 1 ? "s" : ""}`,
+    ragIntro: (n: number) =>
+      `The search runs in your browser, over ${n} embedded passages from this site. Every answer cites its sources. It is the web port of `,
+    ragFin: ", using the same model.",
+    placeholder: {
+      navigation: "Search for a page…   « > » for SQL, « ? » for a question",
+      sql: "SELECT titre, annee FROM travaux ORDER BY rang",
+      demander: "Has he worked on AI?",
+    },
+    etiquette: { navigation: "GO TO", sql: "SQL", demander: "QUESTION" },
+  },
+} as const;
 
-const ETIQUETTE: Record<Mode, string> = {
-  navigation: "ALLER À",
-  sql: "SQL",
-  demander: "QUESTION",
-};
-
-export function Palette() {
+/**
+ * @param nbPassages Taille du corpus vectorisé, calculée côté serveur.
+ *   Le compte vient de `construireCorpus`, qui importe toute la prose du site :
+ *   l'appeler ici tirerait ce contenu dans le lot client pour afficher un
+ *   nombre. Seul le nombre franchit la frontière.
+ */
+export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: number }) {
+  const mots = MOTS[langue];
   const router = useRouter();
   const dialogue = useRef<HTMLDialogElement>(null);
   const champ = useRef<HTMLInputElement>(null);
@@ -110,14 +187,14 @@ export function Palette() {
     void (async () => {
       try {
         const { connexionDuckDB } = await import("@/lib/duckdb");
-        await connexionDuckDB(setEtapeSql);
+        await connexionDuckDB(langue, setEtapeSql);
       } catch (e: unknown) {
         sqlLance.current = false;
         setEtapeSql("echec");
-        setErreurSql(e instanceof Error ? e.message : "Moteur indisponible");
+        setErreurSql(e instanceof Error ? e.message : mots.moteurIndisponible);
       }
     })();
-  }, []);
+  }, [langue, mots]);
 
   const passerEnRag = useCallback(() => {
     setMode("demander");
@@ -128,14 +205,14 @@ export function Palette() {
     void (async () => {
       try {
         const { moteurRag } = await import("@/lib/rag");
-        await moteurRag(setEtapeRag);
+        await moteurRag(langue, setEtapeRag);
       } catch (e: unknown) {
         ragLance.current = false;
         setEtapeRag("echec");
-        setErreurRag(e instanceof Error ? e.message : "Moteur indisponible");
+        setErreurRag(e instanceof Error ? e.message : mots.moteurIndisponible);
       }
     })();
-  }, []);
+  }, [langue, mots]);
 
   function onChangeSaisie(valeur: string) {
     if (mode === "navigation") {
@@ -146,7 +223,7 @@ export function Palette() {
     setSelection(0);
   }
 
-  const resultatsNav = CIBLES.filter((c) =>
+  const resultatsNav = cibles(langue).filter((c) =>
     `${c.label} ${c.detail}`.toLowerCase().includes(saisie.toLowerCase()),
   );
 
@@ -157,10 +234,10 @@ export function Palette() {
     setErreurSql(null);
     try {
       const { executer } = await import("@/lib/duckdb");
-      setResultat(await executer(requete));
+      setResultat(await executer(requete, langue));
     } catch (e: unknown) {
       setResultat(null);
-      setErreurSql(e instanceof Error ? e.message : "Requête invalide");
+      setErreurSql(e instanceof Error ? e.message : mots.requeteInvalide);
     } finally {
       setEnCours(false);
     }
@@ -174,9 +251,9 @@ export function Palette() {
     setReponse(null);
     try {
       const { chercher } = await import("@/lib/rag");
-      setReponse(await chercher(q));
+      setReponse(await chercher(q, langue));
     } catch (e: unknown) {
-      setErreurRag(e instanceof Error ? e.message : "Recherche impossible");
+      setErreurRag(e instanceof Error ? e.message : mots.rechercheImpossible);
     } finally {
       setCherche(false);
     }
@@ -229,7 +306,7 @@ export function Palette() {
         onClick={ouvrir}
         className="border-trait text-texte-faible hover:border-signal hover:text-signal rounded-instrument flex items-center gap-2 border px-2.5 py-1 transition-colors"
       >
-        <span className="annotation">Console</span>
+        <span className="annotation">{mots.console}</span>
         <kbd className="annotation border-trait rounded-instrument hidden border px-1 py-px sm:block">
           Ctrl K
         </kbd>
@@ -241,13 +318,13 @@ export function Palette() {
         onClick={(e) => {
           if (e.target === dialogue.current) fermer();
         }}
-        aria-label="Console"
+        aria-label={mots.console}
         className="bg-fond-eleve border-trait-fort rounded-panneau m-0 w-full max-w-3xl border p-0 text-inherit backdrop:bg-black/70 backdrop:backdrop-blur-sm sm:mx-auto sm:mt-[10vh]"
       >
         <div className="border-trait flex items-center gap-2 border-b px-3 py-2">
           {mode === "navigation" ? (
             <div className="flex shrink-0 items-center gap-1.5">
-              <span className="annotation text-texte-faible">{ETIQUETTE.navigation}</span>
+              <span className="annotation text-texte-faible">{mots.etiquette.navigation}</span>
               <button
                 type="button"
                 onClick={() => {
@@ -270,7 +347,7 @@ export function Palette() {
               </button>
             </div>
           ) : (
-            <span className="annotation text-signal shrink-0">{ETIQUETTE[mode]}</span>
+            <span className="annotation text-signal shrink-0">{mots.etiquette[mode]}</span>
           )}
 
           <input
@@ -278,8 +355,8 @@ export function Palette() {
             value={saisie}
             onChange={(e) => onChangeSaisie(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={PLACEHOLDER[mode]}
-            aria-label={ETIQUETTE[mode]}
+            placeholder={mots.placeholder[mode]}
+            aria-label={mots.etiquette[mode]}
             className="text-texte placeholder:text-texte-faible min-w-0 flex-1 bg-transparent py-1.5 font-mono text-sm outline-none"
           />
 
@@ -292,12 +369,12 @@ export function Palette() {
               }
               className="bg-signal text-fond rounded-instrument shrink-0 px-3 py-1 text-xs font-medium disabled:opacity-40"
             >
-              {enCours || cherche ? "…" : mode === "sql" ? "Exécuter" : "Demander"}
+              {enCours || cherche ? "…" : mode === "sql" ? mots.executer : mots.demander}
             </button>
           )}
 
           <kbd className="annotation border-trait rounded-instrument hidden shrink-0 border px-1.5 py-0.5 sm:block">
-            Échap
+            {mots.echap}
           </kbd>
         </div>
 
@@ -305,7 +382,7 @@ export function Palette() {
           {mode === "navigation" && (
             <ul className="p-1.5">
               {resultatsNav.length === 0 && (
-                <li className="text-texte-faible px-3 py-6 text-center text-sm">Aucun résultat</li>
+                <li className="text-texte-faible px-3 py-6 text-center text-sm">{mots.aucunResultat}</li>
               )}
               {resultatsNav.map((c, i) => (
                 <li key={c.href}>
@@ -330,6 +407,7 @@ export function Palette() {
 
           {mode === "sql" && (
             <PanneauSql
+              langue={langue}
               etape={etapeSql}
               erreur={erreurSql}
               resultat={resultat}
@@ -342,6 +420,7 @@ export function Palette() {
 
           {mode === "demander" && (
             <PanneauRag
+              langue={langue}
               etape={etapeRag}
               erreur={erreurRag}
               reponse={reponse}
@@ -352,6 +431,7 @@ export function Palette() {
                 setSaisie(q);
                 void lancerQuestion(q);
               }}
+              nbPassages={nbPassages}
               onNaviguer={(href) => {
                 fermer();
                 router.push(href);
@@ -376,23 +456,21 @@ function Amorçage({ libelle, note }: { libelle: string; note: string }) {
 }
 
 function PanneauSql({
+  langue,
   etape,
   erreur,
   resultat,
   onChoisir,
 }: {
+  langue: Langue;
   etape: EtapeChargement;
   erreur: string | null;
   resultat: ResultatRequete | null;
   onChoisir: (sql: string) => void;
 }) {
+  const mots = MOTS[langue];
   if (etape !== "pret" && etape !== "echec") {
-    return (
-      <Amorçage
-        libelle={LIBELLE_ETAPE[etape]}
-        note="DuckDB s'installe dans l'onglet. Une dizaine de méga-octets, une seule fois — ensuite tout s'exécute sur votre machine, sans qu'aucune donnée ne circule."
-      />
-    );
+    return <Amorçage libelle={LIBELLE_ETAPE[langue][etape]} note={mots.noteSql} />;
   }
 
   return (
@@ -407,7 +485,7 @@ function PanneauSql({
         <>
           <div className="mb-2 flex items-baseline justify-between">
             <span className="annotation">
-              {resultat.lignes.length} ligne{resultat.lignes.length > 1 ? "s" : ""}
+              {mots.ligne(resultat.lignes.length)}
             </span>
             <span className="annotation">{resultat.duree.toFixed(1)} ms</span>
           </div>
@@ -440,18 +518,18 @@ function PanneauSql({
 
       {!resultat && !erreur && (
         <p className="text-texte-faible mb-3 px-1 text-xs leading-relaxed">
-          Sept tables décrivent ce portfolio :{" "}
+          {mots.tables}{" "}
           <span className="text-texte-attenue font-mono">
             travaux, stack, domaines, chiffres, decisions, competences, parcours
           </span>
-          . Écrivez votre requête, ou partez d&apos;une de celles-ci.
+          {mots.ecrivezRequete}
         </p>
       )}
 
       <div className="mt-3">
-        <p className="annotation mb-2">Exemples</p>
+        <p className="annotation mb-2">{mots.exemples}</p>
         <ul className="flex flex-wrap gap-1.5">
-          {REQUETES_TYPES.map((r) => (
+          {REQUETES_TYPES[langue].map((r) => (
             <li key={r.libelle}>
               <button
                 type="button"
@@ -469,6 +547,8 @@ function PanneauSql({
 }
 
 function PanneauRag({
+  langue,
+  nbPassages,
   etape,
   erreur,
   reponse,
@@ -478,6 +558,8 @@ function PanneauRag({
   onNaviguer,
   onDemanderRedaction,
 }: {
+  langue: Langue;
+  nbPassages: number;
   etape: EtapeRag;
   erreur: string | null;
   reponse: Reponse | null;
@@ -487,13 +569,9 @@ function PanneauRag({
   onNaviguer: (href: string) => void;
   onDemanderRedaction: () => void;
 }) {
+  const mots = MOTS[langue];
   if (etape !== "pret" && etape !== "echec") {
-    return (
-      <Amorçage
-        libelle={LIBELLE_ETAPE_RAG[etape]}
-        note="Le modèle qui vectorise votre question se télécharge une fois, puis s'exécute dans l'onglet. Votre question ne quitte pas votre machine."
-      />
-    );
+    return <Amorçage libelle={LIBELLE_ETAPE_RAG[langue][etape]} note={mots.noteRag} />;
   }
 
   return (
@@ -504,28 +582,26 @@ function PanneauRag({
         </p>
       )}
 
-      {cherche && <p className="annotation text-signal animate-pulse px-1 py-4">Recherche…</p>}
+      {cherche && <p className="annotation text-signal animate-pulse px-1 py-4">{mots.recherche}</p>}
 
       {reponse && !cherche && (
         <>
           <div className="mb-2 flex items-baseline justify-between px-1">
             <span className="annotation">
-              {reponse.extraits.length} passage{reponse.extraits.length > 1 ? "s" : ""} pertinent
-              {reponse.extraits.length > 1 ? "s" : ""}
+              {mots.passages(reponse.extraits.length)}
             </span>
             <span className="annotation">{reponse.duree.toFixed(0)} ms</span>
           </div>
 
           {reponse.extraits.length === 0 && (
             <p className="text-texte-attenue px-1 py-4 text-sm leading-relaxed">
-              Rien dans le corpus ne répond à cette question. Plutôt que de vous présenter le
-              passage le moins hors sujet, je préfère le dire.
+              {mots.rienDansCorpus}
             </p>
           )}
 
           {reponse.redaction && (
             <div className="border-signal bg-signal-voile rounded-instrument mb-3 border p-3">
-              <p className="annotation text-signal mb-1.5">Réponse rédigée</p>
+              <p className="annotation text-signal mb-1.5">{mots.reponseRedigee}</p>
               <p className="text-texte text-sm leading-relaxed">{reponse.redaction}</p>
             </div>
           )}
@@ -555,7 +631,7 @@ function PanneauRag({
               disabled={redigeEnCours}
               className="border-trait text-texte-attenue hover:border-signal hover:text-signal rounded-instrument mt-3 border px-3 py-1.5 text-xs transition-colors disabled:opacity-40"
             >
-              {redigeEnCours ? "Rédaction…" : "Demander une réponse rédigée"}
+              {redigeEnCours ? mots.redaction : mots.demanderRedaction}
             </button>
           )}
         </>
@@ -564,16 +640,15 @@ function PanneauRag({
       {!reponse && !cherche && (
         <>
           <p className="text-texte-faible mb-3 px-1 text-xs leading-relaxed">
-            La recherche s&apos;exécute dans votre navigateur, sur 49 passages vectorisés du site.
-            Chaque réponse cite ses sources — c&apos;est le portage web de{" "}
-            <Link href="/travaux/mon-rag" className="text-signal hover:underline">
+            {mots.ragIntro(nbPassages)}
+            <Link href={lien("/travaux/mon-rag", langue)} className="text-signal hover:underline">
               mon-rag
             </Link>
-            , avec le même modèle.
+            {mots.ragFin}
           </p>
-          <p className="annotation mb-2">Exemples</p>
+          <p className="annotation mb-2">{mots.exemples}</p>
           <ul className="flex flex-wrap gap-1.5">
-            {QUESTIONS_TYPES.map((q) => (
+            {QUESTIONS_TYPES[langue].map((q) => (
               <li key={q}>
                 <button
                   type="button"

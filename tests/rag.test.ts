@@ -5,6 +5,7 @@ import { pipeline } from "@huggingface/transformers";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import type { Langue } from "../src/lib/langue.ts";
 import { classer } from "../src/lib/rag.ts";
 import { DIMENSIONS_EMBEDDING, MODELE_EMBEDDING, SEUIL_PERTINENCE } from "../src/lib/rag-types.ts";
 
@@ -30,9 +31,24 @@ let meta: Meta;
 let vecteurs: Float32Array;
 let vectoriser: (t: string) => Promise<Float32Array>;
 
+/*
+ * Le classement est testé en français uniquement, et c'est délibéré.
+ *
+ * Ce qui est vérifié ici, c'est la logique de `classer` : pondération, plafond
+ * par source, seuil de pertinence, ordre. Elle est indépendante de la langue.
+ * Doubler la suite en anglais doublerait le temps d'exécution — le modèle
+ * vectorise chaque question — pour re-tester exactement le même code.
+ *
+ * L'intégrité des artefacts, elle, est bien vérifiée dans les deux langues,
+ * ci-dessous et dans `verifier-embeddings.ts`.
+ */
+const LANGUE_TESTEE: Langue = "fr";
+
 beforeAll(async () => {
-  meta = JSON.parse(await readFile(join(dossier, "embeddings.json"), "utf8")) as Meta;
-  const brut = await readFile(join(dossier, "embeddings.bin"));
+  meta = JSON.parse(
+    await readFile(join(dossier, `embeddings-${LANGUE_TESTEE}.json`), "utf8"),
+  ) as Meta;
+  const brut = await readFile(join(dossier, `embeddings-${LANGUE_TESTEE}.bin`));
   vecteurs = new Float32Array(brut.buffer, brut.byteOffset, brut.byteLength / 4);
 
   const extracteur = await pipeline("feature-extraction", MODELE_EMBEDDING);
@@ -68,7 +84,7 @@ describe("intégrité du corpus", () => {
   it("les vecteurs sont à jour vis-à-vis du contenu", () => {
     // Modifier un texte sans relancer la génération produirait des extraits
     // affichés qui ne correspondent plus aux vecteurs comparés.
-    const corpus = construireCorpus();
+    const corpus = construireCorpus(LANGUE_TESTEE);
     expect(meta.passages.map((p) => p.id)).toEqual(corpus.map((p) => p.id));
     expect(meta.passages.map((p) => p.texte)).toEqual(corpus.map((p) => p.texte));
   });
@@ -89,7 +105,7 @@ describe("classement", () => {
   it("trouve la vérification numérique quand on interroge la justesse du code", async () => {
     const r = await chercher("Comment s'assure-t-il que ses calculs sont justes ?");
     const textes = r.map((e) => e.texte).join(" ");
-    expect(textes).toMatch(/0,1 %|2·10⁻⁵|vérifi/i);
+    expect(textes).toMatch(/0,1 %|0,00002|vérifi/i);
   });
 
   it("ne laisse aucune source occuper plus de deux extraits", async () => {

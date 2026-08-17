@@ -5,6 +5,8 @@
  * méga-octets dans le lot initial.
  */
 
+import type { Langue } from "./langue";
+
 /**
  * Modèle de vectorisation, partagé par le script de build et le navigateur.
  *
@@ -43,12 +45,21 @@ export type Reponse = {
   redaction?: string;
 };
 
-export const LIBELLE_ETAPE_RAG: Record<EtapeRag, string> = {
-  inactif: "",
-  modele: "Téléchargement du modèle…",
-  vecteurs: "Chargement du corpus…",
-  pret: "Prêt",
-  echec: "Échec",
+export const LIBELLE_ETAPE_RAG: Record<Langue, Record<EtapeRag, string>> = {
+  fr: {
+    inactif: "",
+    modele: "Téléchargement du modèle…",
+    vecteurs: "Chargement du corpus…",
+    pret: "Prêt",
+    echec: "Échec",
+  },
+  en: {
+    inactif: "",
+    modele: "Downloading the model…",
+    vecteurs: "Loading the corpus…",
+    pret: "Ready",
+    echec: "Failed",
+  },
 };
 
 /**
@@ -61,11 +72,21 @@ export const LIBELLE_ETAPE_RAG: Record<EtapeRag, string> = {
  */
 export const SEUIL_PERTINENCE = 0.22;
 
-export const QUESTIONS_TYPES = [
-  "Qu'est-ce qu'il sait faire en données ?",
-  "A-t-il déjà travaillé sur de l'IA ?",
-  "Comment vérifie-t-il que son code est juste ?",
-  "Quel est son projet le plus abouti ?",
-  "Travaille-t-il avec des agents de code ?",
-  "Quelle est sa formation ?",
-];
+export const QUESTIONS_TYPES: Record<Langue, string[]> = {
+  fr: [
+    "Qu'est-ce qu'il sait faire en données ?",
+    "A-t-il déjà travaillé sur de l'IA ?",
+    "Comment vérifie-t-il que son code est juste ?",
+    "Quel est son projet le plus abouti ?",
+    "Travaille-t-il avec des agents de code ?",
+    "Quelle est sa formation ?",
+  ],
+  en: [
+    "What can he actually do with data?",
+    "Has he worked on AI?",
+    "How does he check that his code is correct?",
+    "What is his most accomplished project?",
+    "Does he work with coding agents?",
+    "What did he study?",
+  ],
+};

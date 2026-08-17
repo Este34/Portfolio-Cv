@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { LABO } from "@/content/interface";
+import { locale, t, type Langue } from "@/lib/langue";
 import {
   LOT,
   apprendre,
@@ -45,7 +47,7 @@ type Ordre = "spirales" | "effacer" | null;
  * Les mathématiques vivent dans `lib/mlp.ts`, sans dépendance à React, ce qui
  * permet de vérifier en Node que le réseau apprend réellement.
  */
-export function Reseau() {
+export function Reseau({ langue }: { langue: Langue }) {
   const [etat, setEtat] = useState({ lots: 0, perte: 0.7, justesse: 50, points: 0 });
   const [classe, setClasse] = useState<0 | 1>(1);
   const [libre, setLibre] = useState(false);
@@ -210,7 +212,7 @@ export function Reseau() {
           ctx.fillStyle = faible;
           ctx.font = "600 14px ui-sans-serif, system-ui, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("Cliquez pour poser des points des deux couleurs", largeur / 2, hChamp / 2);
+          ctx.fillText(t(LABO.poserDesPoints, langue), largeur / 2, hChamp / 2);
           ctx.textAlign = "left";
         }
 
@@ -247,15 +249,12 @@ export function Reseau() {
         }
       },
     };
-  }, []);
+    // Voir la note dans `agar.tsx` : constante par instance, citée par honnêteté.
+  }, [langue]);
 
   return (
     <div>
-      <Toile
-        pilote={pilote}
-        ratio={16 / 11}
-        label="Réseau de neurones apprenant à séparer deux classes, avec sa courbe de perte"
-      />
+      <Toile pilote={pilote} ratio={16 / 11} langue={langue} label={t(LABO.labelReseau, langue)} />
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
@@ -267,7 +266,7 @@ export function Reseau() {
               : "bloc-citron border-citron"
           }`}
         >
-          Spirales
+          {t(LABO.spirales, langue)}
         </button>
         <button
           type="button"
@@ -278,20 +277,20 @@ export function Reseau() {
               : "border-trait text-texte-attenue hover:border-trait-fort"
           }`}
         >
-          Dessiner
+          {t(LABO.dessiner, langue)}
         </button>
 
         {libre && (
           <>
-            <span className="annotation ml-2">Couleur posée au clic</span>
+            <span className="annotation ml-2">{t(LABO.couleurPosee, langue)}</span>
             {(
               [
-                [0, "Bleu", "bg-bleu text-sur-bleu border-bleu"],
-                [1, "Corail", "bg-corail text-sur-corail border-corail"],
+                [0, LABO.bleu, "bg-bleu text-sur-bleu border-bleu"],
+                [1, LABO.corail, "bg-corail text-sur-corail border-corail"],
               ] as const
             ).map(([v, nom, actif]) => (
               <button
-                key={nom}
+                key={nom.fr}
                 type="button"
                 onClick={() => choisirClasse(v)}
                 aria-pressed={classe === v}
@@ -299,7 +298,7 @@ export function Reseau() {
                   classe === v ? actif : "border-trait text-texte-attenue hover:border-trait-fort"
                 }`}
               >
-                {nom}
+                {t(nom, langue)}
               </button>
             ))}
           </>
@@ -308,23 +307,27 @@ export function Reseau() {
 
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
         <div className="flex gap-2">
-          <dt className="annotation">Points</dt>
+          <dt className="annotation">{t(LABO.points, langue)}</dt>
           <dd className="annotation text-texte tabulaire">{etat.points}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">Lots vus</dt>
-          <dd className="annotation text-texte tabulaire">{etat.lots.toLocaleString("fr-FR")}</dd>
+          <dt className="annotation">{t(LABO.lotsVus, langue)}</dt>
+          <dd className="annotation text-texte tabulaire">
+            {etat.lots.toLocaleString(locale(langue))}
+          </dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">Perte</dt>
+          <dt className="annotation">{t(LABO.perte, langue)}</dt>
           <dd className="annotation text-texte tabulaire">{etat.perte.toFixed(3)}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">Justesse</dt>
+          <dt className="annotation">{t(LABO.justesse, langue)}</dt>
           <dd
             className={`annotation tabulaire ${etat.justesse >= 95 ? "text-citron" : "text-texte"}`}
           >
-            {etat.justesse} %
+            {/* L'anglais ne met pas d'espace avant le signe pour cent. */}
+            {etat.justesse}
+            {langue === "fr" ? " %" : "%"}
           </dd>
         </div>
       </dl>

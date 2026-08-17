@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { t, type Langue } from "@/lib/langue";
 import { PORTRAIT } from "@/lib/site";
 
 /**
@@ -17,7 +18,7 @@ import { PORTRAIT } from "@/lib/site";
  * portrait, et le bloc photographique dialogue avec les aplats de couleur du
  * reste de la page au lieu de leur faire concurrence.
  */
-export function Portrait({ className = "" }: { className?: string }) {
+export function Portrait({ langue, className = "" }: { langue: Langue; className?: string }) {
   if (!PORTRAIT) return null;
 
   return (
@@ -25,7 +26,7 @@ export function Portrait({ className = "" }: { className?: string }) {
       <div className="border-trait-fort relative border-2">
         <Image
           src={PORTRAIT.src}
-          alt={PORTRAIT.alt}
+          alt={t(PORTRAIT.alt, langue)}
           width={1024}
           height={1247}
           priority

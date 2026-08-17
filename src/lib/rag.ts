@@ -18,10 +18,12 @@
  * réponse rédigée.
  */
 
+import type { Langue } from "./langue";
 import type { Extrait, EtapeRag, Reponse } from "./rag-types";
 import { MODELE_EMBEDDING, SEUIL_PERTINENCE } from "./rag-types";
 
 type Meta = {
+  langue: Langue;
   modele: string;
   dimensions: number;
   passages: { id: string; texte: string; source: string; href: string; poids: number }[];
@@ -33,17 +35,28 @@ type Moteur = {
   meta: Meta;
 };
 
-let promesse: Promise<Moteur> | null = null;
+/**
+ * Un moteur par langue, mis en cache séparément.
+ *
+ * Le modèle, lui, n'est téléchargé qu'une fois : `pipeline()` tient son propre
+ * cache. Seuls les vecteurs et les métadonnées diffèrent, soit quelques
+ * dizaines de kilo-octets.
+ */
+const promesses = new Map<Langue, Promise<Moteur>>();
 
-export function moteurRag(surEtape?: (e: EtapeRag) => void): Promise<Moteur> {
-  promesse ??= amorcer(surEtape).catch((erreur) => {
-    promesse = null;
+export function moteurRag(langue: Langue, surEtape?: (e: EtapeRag) => void): Promise<Moteur> {
+  const existante = promesses.get(langue);
+  if (existante) return existante;
+
+  const promesse = amorcer(langue, surEtape).catch((erreur) => {
+    promesses.delete(langue);
     throw erreur;
   });
+  promesses.set(langue, promesse);
   return promesse;
 }
 
-async function amorcer(surEtape?: (e: EtapeRag) => void): Promise<Moteur> {
+async function amorcer(langue: Langue, surEtape?: (e: EtapeRag) => void): Promise<Moteur> {
   surEtape?.("modele");
 
   const { pipeline } = await import("@huggingface/transformers");
@@ -61,8 +74,8 @@ async function amorcer(surEtape?: (e: EtapeRag) => void): Promise<Moteur> {
   surEtape?.("vecteurs");
 
   const [reponseMeta, reponseBin] = await Promise.all([
-    fetch("/data/embeddings.json"),
-    fetch("/data/embeddings.bin"),
+    fetch(`/data/embeddings-${langue}.json`),
+    fetch(`/data/embeddings-${langue}.bin`),
   ]);
   if (!reponseMeta.ok || !reponseBin.ok) throw new Error("Corpus indisponible");
 
@@ -165,8 +178,8 @@ export function classer(
  * Cherche les passages répondant à une question. Enveloppe `classer` avec le
  * chargement paresseux du modèle et la vectorisation de la question.
  */
-export async function chercher(question: string, k = 4): Promise<Reponse> {
-  const moteur = await moteurRag();
+export async function chercher(question: string, langue: Langue, k = 4): Promise<Reponse> {
+  const moteur = await moteurRag(langue);
   const debut = performance.now();
 
   const q = await moteur.vectoriser(question);

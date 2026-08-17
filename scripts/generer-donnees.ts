@@ -20,59 +20,91 @@ import { fileURLToPath } from "node:url";
 
 import { TRAVAUX } from "../src/content/travaux.ts";
 import { COMPETENCES, EXPERIENCES, FORMATION } from "../src/content/parcours.ts";
+import { LANGUES, t, type Langue } from "../src/lib/langue.ts";
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
-const sortie = join(racine, "public", "data", "portfolio.json");
+const dossier = join(racine, "public", "data");
 
 /**
- * Tables mises à plat.
+ * Tables mises à plat, dans une langue.
  *
  * DuckDB gère les structures imbriquées, mais des tables plates reliées par
  * `slug` donnent des requêtes qu'un visiteur peut écrire de tête — ce qui est
  * tout l'intérêt d'exposer une console.
+ *
+ * **Les noms de tables et de colonnes restent en français dans les deux
+ * fichiers.** Les traduire supposerait deux schémas pour des données
+ * identiques, donc deux jeux de requêtes d'exemple et deux façons de se
+ * tromper. Seul le contenu des cellules change de langue.
  */
-const donnees = {
-  travaux: TRAVAUX.map((t) => ({
-    slug: t.slug,
-    titre: t.titre,
-    sous_titre: t.sousTitre,
-    resume: t.resume,
-    annee: Number(t.annee),
-    role: t.role,
-    diffusion: t.confidentialite,
-    rang: t.rang,
-    nb_technos: t.stack.length,
-    nb_decisions: t.decisions.length,
-  })),
+function tables(langue: Langue) {
+  return {
+    travaux: TRAVAUX.map((tr) => ({
+      slug: tr.slug,
+      titre: t(tr.titre, langue),
+      sous_titre: t(tr.sousTitre, langue),
+      resume: t(tr.resume, langue),
+      annee: Number(tr.annee),
+      role: t(tr.role, langue),
+      diffusion: tr.confidentialite,
+      rang: tr.rang,
+      nb_technos: tr.stack.length,
+      nb_decisions: tr.decisions.length,
+    })),
 
-  stack: TRAVAUX.flatMap((t) =>
-    t.stack.map((techno) => ({ slug: t.slug, techno, annee: Number(t.annee) })),
-  ),
+    stack: TRAVAUX.flatMap((tr) =>
+      tr.stack.map((techno) => ({ slug: tr.slug, techno, annee: Number(tr.annee) })),
+    ),
 
-  domaines: TRAVAUX.flatMap((t) => t.domaines.map((domaine) => ({ slug: t.slug, domaine }))),
+    domaines: TRAVAUX.flatMap((tr) =>
+      tr.domaines.map((domaine) => ({ slug: tr.slug, domaine: t(domaine, langue) })),
+    ),
 
-  chiffres: TRAVAUX.flatMap((t) =>
-    t.chiffres.map((c) => ({ slug: t.slug, valeur: c.valeur, libelle: c.libelle, note: c.note ?? null })),
-  ),
+    chiffres: TRAVAUX.flatMap((tr) =>
+      tr.chiffres.map((c) => ({
+        slug: tr.slug,
+        valeur: t(c.valeur, langue),
+        libelle: t(c.libelle, langue),
+        note: c.note ? t(c.note, langue) : null,
+      })),
+    ),
 
-  decisions: TRAVAUX.flatMap((t) =>
-    t.decisions.map((d, i) => ({ slug: t.slug, rang: i + 1, choix: d.choix, raison: d.raison })),
-  ),
+    decisions: TRAVAUX.flatMap((tr) =>
+      tr.decisions.map((d, i) => ({
+        slug: tr.slug,
+        rang: i + 1,
+        choix: t(d.choix, langue),
+        raison: t(d.raison, langue),
+      })),
+    ),
 
-  competences: COMPETENCES.flatMap((g) =>
-    g.items.map((competence) => ({ famille: g.famille, competence })),
-  ),
+    competences: COMPETENCES.flatMap((g) =>
+      g.items.map((competence) => ({
+        famille: t(g.famille, langue),
+        competence: t(competence, langue),
+      })),
+    ),
 
-  parcours: [...EXPERIENCES, ...FORMATION]
-    .filter((e) => !e.aCompleter)
-    .map((e) => ({ periode: e.periode, titre: e.titre, lieu: e.lieu, description: e.description })),
-};
+    parcours: [...EXPERIENCES, ...FORMATION].map((e) => ({
+      periode: t(e.periode, langue),
+      titre: t(e.titre, langue),
+      lieu: t(e.lieu, langue),
+      description: t(e.description, langue),
+    })),
+  };
+}
 
-await mkdir(dirname(sortie), { recursive: true });
-await writeFile(sortie, JSON.stringify(donnees), "utf8");
+await mkdir(dossier, { recursive: true });
 
-const lignes = Object.entries(donnees)
-  .map(([table, rows]) => `  ${table.padEnd(12)} ${String(rows.length).padStart(3)} lignes`)
-  .join("\n");
+for (const langue of LANGUES) {
+  const donnees = tables(langue);
+  await writeFile(join(dossier, `portfolio-${langue}.json`), JSON.stringify(donnees), "utf8");
 
-console.log(`portfolio.json écrit — ${Object.keys(donnees).length} tables\n${lignes}`);
+  const lignes = Object.entries(donnees)
+    .map(([table, rows]) => `  ${table.padEnd(12)} ${String(rows.length).padStart(3)} lignes`)
+    .join("\n");
+
+  console.log(
+    `portfolio-${langue}.json écrit — ${Object.keys(donnees).length} tables\n${lignes}`,
+  );
+}

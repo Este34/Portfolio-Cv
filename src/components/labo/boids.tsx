@@ -2,6 +2,9 @@
 
 import { useMemo } from "react";
 
+import { LABO } from "@/content/interface";
+import { t, type Langue } from "@/lib/langue";
+
 import { Toile, type Pilote } from "./toile";
 
 /** `voisins` est conservé d'une frame à l'autre : il sert au rendu. */
@@ -28,7 +31,7 @@ function jeton(nom: string, repli: string) {
  *
  * Le curseur agit en prédateur : les boids s'en écartent.
  */
-export function Boids() {
+export function Boids({ langue }: { langue: Langue }) {
   const pilote = useMemo<Pilote>(() => {
     const sim = { troupe: [] as Boid[] };
 
@@ -165,5 +168,5 @@ export function Boids() {
     };
   }, []);
 
-  return <Toile pilote={pilote} label="Simulation de nuée : chaque individu suit trois règles locales" />;
+  return <Toile pilote={pilote} langue={langue} label={t(LABO.labelNuee, langue)} />;
 }

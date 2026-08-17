@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { UI } from "@/content/interface";
+import { t, type Langue } from "@/lib/langue";
+
 export type ContexteToile = {
   ctx: CanvasRenderingContext2D;
   largeur: number;
@@ -42,11 +45,13 @@ export function Toile({
   ratio = 16 / 10,
   className = "",
   label,
+  langue,
 }: {
   pilote: Pilote;
   ratio?: number;
   className?: string;
   label: string;
+  langue: Langue;
 }) {
   const conteneur = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -79,6 +84,20 @@ export function Toile({
       toile.style.height = `${hauteur}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       pilote.initialiser?.({ ctx, largeur, hauteur, souris: souris.current });
+
+      /*
+       * En mouvement réduit, il faut redessiner ici même.
+       *
+       * Écrire dans `toile.width` efface la toile, et le `ResizeObserver` se
+       * déclenche **après** l'unique image calculée au montage. Résultat :
+       * quiconque a demandé à son système de réduire les animations voyait
+       * quatre cadres blancs à la place des quatre simulations. Le défaut ne
+       * s'est vu qu'en produisant les images de référence des tests visuels,
+       * qui tournent précisément dans ce mode.
+       */
+      if (reduit) {
+        pilote.dessiner({ ctx, largeur, hauteur, dt: 0, souris: souris.current });
+      }
     }
 
     function frame(maintenant: number) {
@@ -147,7 +166,9 @@ export function Toile({
       className={`border-trait bg-fond-eleve rounded-panneau relative overflow-hidden border ${className}`}
     >
       <canvas ref={canvas} aria-label={label} role="img" className="block w-full" />
-      <span className="annotation absolute top-2 right-3">{visible ? "actif" : "en pause"}</span>
+      <span className="annotation absolute top-2 right-3">
+        {t(visible ? UI.actif : UI.enPause, langue)}
+      </span>
     </div>
   );
 }

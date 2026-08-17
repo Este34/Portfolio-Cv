@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 
+import { LABO } from "@/content/interface";
+import { t, type Langue } from "@/lib/langue";
+
 import { Toile, type Pilote } from "./toile";
 
 type Cellule = { x: number; y: number; masse: number; vx: number; vy: number; teinte: number };
@@ -30,7 +33,7 @@ const rayon = (masse: number) => Math.sqrt(masse) * 1.9;
  * la masse. Grossir, c'est gagner en portée et perdre en fuite — et c'est ce
  * seul compromis qui rend la partie intéressante.
  */
-export function Agar() {
+export function Agar({ langue }: { langue: Langue }) {
   const [score, setScore] = useState(MASSE_DEPART);
   const [fini, setFini] = useState(false);
 
@@ -215,29 +218,38 @@ export function Agar() {
           ctx.fillStyle = signal;
           ctx.font = "600 15px ui-monospace, monospace";
           ctx.textAlign = "center";
-          ctx.fillText("absorbé — cliquer pour rejouer", largeur / 2, hauteur / 2);
+          ctx.fillText(t(LABO.absorbeRejouer, langue), largeur / 2, hauteur / 2);
         }
       },
     };
-  }, []);
+    /*
+     * `langue` est dans les dépendances pour la forme : elle est constante pour
+     * une instance donnée, puisque changer de langue change de page. La citer
+     * évite d'avoir à expliquer à chaque relecture pourquoi une valeur lue dans
+     * la fermeture n'y figure pas.
+     */
+  }, [langue]);
 
   return (
     <div>
-      <Toile pilote={pilote} ratio={16 / 10} label="Agar jouable : la cellule suit le curseur" />
+      <Toile
+        pilote={pilote}
+        ratio={16 / 10}
+        langue={langue}
+        label={t(LABO.labelAgar, langue)}
+      />
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
         <div className="flex gap-2">
-          <dt className="annotation">Masse</dt>
+          <dt className="annotation">{t(LABO.masse, langue)}</dt>
           <dd className="annotation text-texte">{score}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">État</dt>
+          <dt className="annotation">{t(LABO.etat, langue)}</dt>
           <dd className={`annotation ${fini ? "text-signal" : "text-texte"}`}>
-            {fini ? "absorbé" : "en vie"}
+            {t(fini ? LABO.absorbe : LABO.enVie, langue)}
           </dd>
         </div>
-        <p className="annotation text-texte-faible normal-case">
-          Déplacez le curseur sur la zone pour jouer.
-        </p>
+        <p className="annotation text-texte-faible normal-case">{t(LABO.jouer, langue)}</p>
       </dl>
     </div>
   );

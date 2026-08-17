@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 
+import { LABO } from "@/content/interface";
+import { t, type Langue } from "@/lib/langue";
+
 import { Toile, type Pilote } from "./toile";
 
 type Point = { x: number; y: number; groupe: number };
@@ -32,7 +35,7 @@ function gauss() {
  * Cliquer ajoute un point : c'est là qu'on constate qu'un seul point mal placé
  * peut déplacer une frontière — et pourquoi l'initialisation compte autant.
  */
-export function KMeans() {
+export function KMeans({ langue }: { langue: Langue }) {
   const [etat, setEtat] = useState({ iteration: 0, inertie: 0, stable: false });
 
   const pilote = useMemo<Pilote>(() => {
@@ -183,20 +186,20 @@ export function KMeans() {
 
   return (
     <div>
-      <Toile pilote={pilote} label="k-moyennes : convergence itérative de quatre centres" />
+      <Toile pilote={pilote} langue={langue} label={t(LABO.labelKMoyennes, langue)} />
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
         <div className="flex gap-2">
-          <dt className="annotation">Itération</dt>
+          <dt className="annotation">{t(LABO.iteration, langue)}</dt>
           <dd className="annotation text-texte">{etat.iteration}</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">Inertie</dt>
+          <dt className="annotation">{t(LABO.inertie, langue)}</dt>
           <dd className="annotation text-texte">{etat.inertie}k</dd>
         </div>
         <div className="flex gap-2">
-          <dt className="annotation">État</dt>
+          <dt className="annotation">{t(LABO.etat, langue)}</dt>
           <dd className={`annotation ${etat.stable ? "text-signal" : "text-texte"}`}>
-            {etat.stable ? "convergé" : "en cours"}
+            {t(etat.stable ? LABO.converge : LABO.enCours, langue)}
           </dd>
         </div>
       </dl>

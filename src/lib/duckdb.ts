@@ -19,6 +19,7 @@
 import type { AsyncDuckDB, AsyncDuckDBConnection } from "@duckdb/duckdb-wasm";
 
 import type { EtapeChargement, ResultatRequete } from "./duckdb-types";
+import type { Langue } from "./langue";
 
 let promesse: Promise<AsyncDuckDBConnection> | null = null;
 
@@ -29,9 +30,10 @@ let promesse: Promise<AsyncDuckDBConnection> | null = null;
  * instancier deux moteurs si le visiteur ouvre et referme la console vite.
  */
 export function connexionDuckDB(
+  langue: Langue,
   surEtape?: (etape: EtapeChargement) => void,
 ): Promise<AsyncDuckDBConnection> {
-  promesse ??= amorcer(surEtape).catch((erreur) => {
+  promesse ??= amorcer(langue, surEtape).catch((erreur) => {
     // Ne pas mettre en cache un échec : un réseau qui revient doit pouvoir
     // réussir au deuxième essai.
     promesse = null;
@@ -50,6 +52,7 @@ export function connexionDuckDB(
 let base: AsyncDuckDB | null = null;
 
 async function amorcer(
+  langue: Langue,
   surEtape?: (etape: EtapeChargement) => void,
 ): Promise<AsyncDuckDBConnection> {
   surEtape?.("telechargement");
@@ -75,21 +78,29 @@ async function amorcer(
   base = db;
 
   const connexion = await db.connect();
-  await chargerTables(db, connexion);
+  await chargerTables(db, connexion, langue);
 
   surEtape?.("pret");
   return connexion;
 }
 
 /**
- * Enregistre `portfolio.json` puis en dérive une table par clé.
+ * Enregistre `portfolio-{langue}.json` puis en dérive une table par clé.
  *
  * `read_json_auto` infère les types ; à cette échelle l'inférence est fiable et
  * évite d'entretenir un schéma en double.
+ *
+ * Les noms de tables et de colonnes sont identiques dans les deux langues :
+ * seul le contenu des cellules change. Voir la note dans le générateur.
  */
-async function chargerTables(db: AsyncDuckDB, connexion: AsyncDuckDBConnection) {
-  const reponse = await fetch("/data/portfolio.json");
-  if (!reponse.ok) throw new Error(`portfolio.json indisponible (${reponse.status})`);
+async function chargerTables(
+  db: AsyncDuckDB,
+  connexion: AsyncDuckDBConnection,
+  langue: Langue,
+) {
+  const fichier = `portfolio-${langue}.json`;
+  const reponse = await fetch(`/data/${fichier}`);
+  if (!reponse.ok) throw new Error(`${fichier} indisponible (${reponse.status})`);
 
   const donnees = (await reponse.json()) as Record<string, unknown[]>;
 
@@ -102,8 +113,8 @@ async function chargerTables(db: AsyncDuckDB, connexion: AsyncDuckDBConnection) 
   }
 }
 
-export async function executer(sql: string): Promise<ResultatRequete> {
-  const connexion = await connexionDuckDB();
+export async function executer(sql: string, langue: Langue): Promise<ResultatRequete> {
+  const connexion = await connexionDuckDB(langue);
   const debut = performance.now();
   const table = await connexion.query(sql);
   const duree = performance.now() - debut;
@@ -168,8 +179,8 @@ export function nomTable(fichier: string): string {
  * n'est envoyé nulle part — c'est la propriété qui rend cet outil utilisable sur
  * des données qu'on n'a pas le droit de téléverser ailleurs.
  */
-export async function chargerFichier(fichier: File): Promise<TableChargee> {
-  const connexion = await connexionDuckDB();
+export async function chargerFichier(fichier: File, langue: Langue): Promise<TableChargee> {
+  const connexion = await connexionDuckDB(langue);
   if (!base) throw new Error("Moteur non initialisé");
 
   const extension = fichier.name.split(".").pop()?.toLowerCase() ?? "";

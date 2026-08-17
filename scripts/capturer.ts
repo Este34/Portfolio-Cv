@@ -31,28 +31,30 @@ type Vue = {
 };
 
 const VUES: Vue[] = [
-  { nom: "01-accueil-sombre", chemin: "/", largeur: 1440, hauteur: 900, theme: "dark" },
-  { nom: "02-accueil-clair", chemin: "/", largeur: 1440, hauteur: 900, theme: "light" },
-  { nom: "03-accueil-mobile", chemin: "/", largeur: 390, hauteur: 844, theme: "dark" },
+  { nom: "01-accueil-sombre", chemin: "/fr", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "02-accueil-clair", chemin: "/fr", largeur: 1440, hauteur: 900, theme: "light" },
+  { nom: "03-accueil-mobile", chemin: "/fr", largeur: 390, hauteur: 844, theme: "dark" },
   {
     nom: "04-accueil-corpus",
-    chemin: "/",
+    chemin: "/fr",
     largeur: 1440,
     hauteur: 900,
     theme: "dark",
     attendre: "canvas",
   },
-  { nom: "05-travaux", chemin: "/travaux", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "05-travaux", chemin: "/fr/travaux", largeur: 1440, hauteur: 900, theme: "dark" },
   {
     nom: "06-etude-de-cas",
-    chemin: "/travaux/pipeline-comtrade",
+    chemin: "/fr/travaux/pipeline-comtrade",
     largeur: 1440,
     hauteur: 900,
     theme: "dark",
   },
-  { nom: "07-labo", chemin: "/labo", largeur: 1440, hauteur: 1000, theme: "dark", attendre: "canvas" },
-  { nom: "08-making-of", chemin: "/making-of", largeur: 1440, hauteur: 900, theme: "dark" },
-  { nom: "09-parcours", chemin: "/parcours", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "07-labo", chemin: "/fr/labo", largeur: 1440, hauteur: 1000, theme: "dark", attendre: "canvas" },
+  { nom: "08-making-of", chemin: "/fr/making-of", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "09-parcours", chemin: "/fr/parcours", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "10-accueil-anglais", chemin: "/en", largeur: 1440, hauteur: 900, theme: "dark" },
+  { nom: "11-travaux-anglais", chemin: "/en/travaux", largeur: 1440, hauteur: 900, theme: "dark" },
 ];
 
 await mkdir(SORTIE, { recursive: true });

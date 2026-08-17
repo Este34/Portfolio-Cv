@@ -6,6 +6,8 @@
  * finira désynchronisée.
  */
 
+import type { Bilingue, Langue } from "./langue.ts";
+
 /**
  * Origine du site, pour les URL canoniques, Open Graph et le sitemap.
  *
@@ -45,35 +47,72 @@ export const SITE_URL = resoudreOrigine().replace(/\/$/, "");
  * réapparaît dans le contenu.
  */
 export const EMPLOYEUR = {
-  libelle: "un institut de recherche public",
-  libelleCourt: "institut de recherche public",
+  libelle: { fr: "un institut de recherche public", en: "a public research institute" },
+  libelleCourt: { fr: "institut de recherche public", en: "public research institute" },
   /** Utilisé quand la phrase exige une majuscule initiale. */
-  libelleCapitalise: "Un institut de recherche public",
-} as const;
+  libelleCapitalise: {
+    fr: "Un institut de recherche public",
+    en: "A public research institute",
+  },
+} as const satisfies Record<string, Bilingue>;
 
 export const SITE = {
   nom: "Esteban Beretti-Prenant",
   /** Nom court, pour les contextes où le composé casse la mise en page. */
   nomCourt: "Esteban B.-P.",
-  fonction: "Data scientist · AI engineer",
-  langue: "fr-FR",
+  fonction: { fr: "Data scientist · AI engineer", en: "Data scientist · AI engineer" },
 
   /**
-   * La proposition en une phrase. Elle porte tout le site : si elle change,
-   * la hiérarchie du contenu change avec elle.
+   * Ligne d'orientation, au-dessus du titre.
+   *
+   * Un recruteur doit savoir en une seconde qui parle et à quel stade il en
+   * est. Le titre, lui, a le droit d'être une phrase d'auteur.
    */
-  accroche: "Je porte des modèles de prospective dans le navigateur.",
+  surTitre: {
+    fr: "Data scientist · En alternance dans un institut de recherche public",
+    en: "Data scientist · Apprentice at a public research institute",
+  },
 
   /**
-   * Le chiffre fait le travail que l'adjectif ne fera jamais. 2·10⁻⁵ % est
+   * La proposition en une phrase. Elle porte tout le site : si elle change, la
+   * hiérarchie du contenu change avec elle.
+   *
+   * La version précédente, « Je porte des modèles de prospective dans le
+   * navigateur », décrivait une mission plutôt qu'une personne : elle enfermait
+   * le site dans les six mois d'alternance qui l'ont produit, et n'aurait plus
+   * rien annoncé le jour où le sujet change. Celle-ci est reprise de la
+   * dernière phrase du récit — c'est le fil qui relie les sciences cognitives
+   * aux données, et il tient quel que soit le domaine suivant.
+   */
+  accroche: {
+    fr: "Je rends manipulable ce qui sert à décider.",
+    /*
+     * « Manipulable » n'a pas d'équivalent court en anglais. Le détour par les
+     * mains garde l'idée exacte — quelque chose qu'on peut prendre et tourner —
+     * et tient en quatre lignes de titre au lieu de cinq, ce que la première
+     * version (« usable by anyone ») ne faisait pas.
+     */
+    en: "I put decision models in anyone's hands.",
+  },
+
+  /**
+   * Le chiffre fait le travail que l'adjectif ne fera jamais. 0,00002 % est
    * l'écart constaté entre le portage JavaScript et le classeur d'origine,
    * mesuré automatiquement à chaque génération des données.
+   *
+   * La forme décimale change de séparateur selon la langue : « 0,00002 % » se
+   * lit comme un séparateur de milliers pour un anglophone, ce qui abîmerait
+   * précisément le chiffre le plus important du site.
    */
-  sousTitre:
-    "Énergie, mobilité, agriculture, numérique. Des classeurs Excel et des tableaux de bord Power BI devenus des applications web autonomes, sans serveur. Vérifiées contre le modèle d'origine à 0,00002 % près.",
+  sousTitre: {
+    fr: "Data scientist. Je porte des modèles de prospective d'Excel vers le navigateur, je construis les pipelines qui les alimentent, et je vérifie chaque portage contre l'original. Écart constaté : 0,00002 %.",
+    en: "Data scientist. I port foresight models out of Excel and into the browser, build the pipelines that feed them, and check every port against the original. Measured drift: 0.00002%.",
+  },
 
-  description:
-    "Portfolio d'Esteban Beretti-Prenant : ingénierie de la donnée, portage de modèles de prospective vers le web, applications d'analyse sans serveur (DuckDB-WASM, Parquet) et systèmes de recherche augmentée.",
+  description: {
+    fr: "Portfolio d'Esteban Beretti-Prenant : ingénierie de la donnée, portage de modèles de prospective vers le web, applications d'analyse sans serveur (DuckDB-WASM, Parquet) et systèmes de recherche augmentée.",
+    en: "Esteban Beretti-Prenant's portfolio: data engineering, foresight models ported to the web, serverless analytics applications (DuckDB-WASM, Parquet) and retrieval-augmented search systems.",
+  },
 } as const;
 
 /**
@@ -92,51 +131,69 @@ export const CONTACT = {
 } as const;
 
 export type NavItem = {
+  /** Chemin sans préfixe de langue : `lien()` s'en charge à l'affichage. */
   href: string;
-  label: string;
-  description: string;
+  label: Bilingue;
+  description: Bilingue;
 };
 
 export const NAV_ITEMS: readonly NavItem[] = [
   {
     href: "/travaux",
-    label: "Travaux",
-    description: "Simulateurs de prospective, pipelines de données, systèmes de recherche",
+    label: { fr: "Travaux", en: "Work" },
+    description: {
+      fr: "Simulateurs de prospective, pipelines de données, systèmes de recherche",
+      en: "Foresight simulators, data pipelines, retrieval systems",
+    },
   },
   {
     href: "/demonstration",
-    label: "Démonstration",
-    description: "Un de mes simulateurs de prospective, jouable, en données fabriquées",
+    label: { fr: "Démonstration", en: "Demo" },
+    description: {
+      fr: "Un de mes simulateurs de prospective, jouable, en données fabriquées",
+      en: "One of my foresight simulators, playable, on fabricated data",
+    },
   },
   {
     href: "/bac-a-sable",
-    label: "Bac à sable",
-    description: "Déposez vos données, interrogez-les en SQL dans votre navigateur",
+    label: { fr: "Bac à sable", en: "Sandbox" },
+    description: {
+      fr: "Déposez vos données, interrogez-les en SQL dans votre navigateur",
+      en: "Drop in your own data and query it in SQL, inside your browser",
+    },
   },
   {
     href: "/labo",
-    label: "Labo",
-    description: "Simulations interactives : comportements émergents, clustering, systèmes temps réel",
+    label: { fr: "Labo", en: "Lab" },
+    description: {
+      fr: "Simulations interactives : comportements émergents, clustering, systèmes temps réel",
+      en: "Interactive simulations: emergent behaviour, clustering, real-time systems",
+    },
   },
   {
     href: "/methode",
-    label: "Méthode",
-    description: "Comment je travaille avec des agents de code, et ce que je ne leur délègue pas",
+    label: { fr: "Méthode", en: "Method" },
+    description: {
+      fr: "Comment je travaille avec des agents de code, et ce que je ne leur délègue pas",
+      en: "How I work with coding agents, and what I never hand over",
+    },
   },
   {
     href: "/parcours",
-    label: "Parcours",
-    description: "Formation, alternance, compétences",
+    label: { fr: "Parcours", en: "Background" },
+    description: { fr: "Formation, alternance, compétences", en: "Education, apprenticeship, skills" },
   },
   {
     href: "/contact",
-    label: "Contact",
-    description: "Pour en parler",
+    label: { fr: "Contact", en: "Contact" },
+    description: { fr: "Pour en parler", en: "To talk it over" },
   },
 ] as const;
 
 /** Sections hors navigation principale — atteignables, non affichées. */
-export const NAV_DISCRETE = [{ href: "/making-of", label: "Making-of" }] as const;
+export const NAV_DISCRETE = [
+  { href: "/making-of", label: { fr: "Making-of", en: "Making-of" } },
+] as const;
 
 /**
  * Portrait.
@@ -149,7 +206,15 @@ export const NAV_DISCRETE = [{ href: "/making-of", label: "Making-of" }] as cons
  * Le traitement bichrome est appliqué en CSS, donc une photo brute suffit —
  * inutile de la retoucher.
  */
-export const PORTRAIT: { src: string; alt: string } | null = {
+export const PORTRAIT: { src: string; alt: Bilingue } | null = {
   src: "/portrait.jpg",
-  alt: "Portrait d'Esteban Beretti-Prenant",
+  alt: {
+    fr: "Portrait d'Esteban Beretti-Prenant",
+    en: "Portrait of Esteban Beretti-Prenant",
+  },
 };
+
+/** Titre complet d'une page, tel qu'il apparaît dans l'onglet. */
+export function titreParDefaut(langue: Langue): string {
+  return `${SITE.nom} — ${SITE.fonction[langue]}`;
+}

@@ -1,26 +1,28 @@
 import Link from "next/link";
 
+import { UI } from "@/content/interface";
+import { lien, t, type Langue } from "@/lib/langue";
 import { CONTACT, NAV_DISCRETE, NAV_ITEMS, SITE } from "@/lib/site";
 
-export function Pied() {
+export function Pied({ langue }: { langue: Langue }) {
   return (
     <footer className="border-trait mt-auto border-t">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:col-span-2 lg:col-span-2">
           <p className="font-display text-texte text-lg font-semibold tracking-tight">{SITE.nom}</p>
-          <p className="text-texte-attenue mt-2 max-w-sm text-sm">{SITE.accroche}</p>
+          <p className="text-texte-attenue mt-2 max-w-sm text-sm">{t(SITE.accroche, langue)}</p>
         </div>
 
-        <nav aria-label="Pied de page">
-          <p className="annotation mb-3">Sections</p>
+        <nav aria-label={t(UI.piedDePage, langue)}>
+          <p className="annotation mb-3">{t(UI.sections, langue)}</p>
           <ul className="space-y-2">
             {NAV_ITEMS.map((item) => (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={lien(item.href, langue)}
                   className="text-texte-attenue hover:text-signal text-sm transition-colors"
                 >
-                  {item.label}
+                  {t(item.label, langue)}
                 </Link>
               </li>
             ))}
@@ -28,14 +30,14 @@ export function Pied() {
         </nav>
 
         <div>
-          <p className="annotation mb-3">Ailleurs</p>
+          <p className="annotation mb-3">{t(UI.ailleurs, langue)}</p>
           <ul className="space-y-2">
             <li>
               <a
                 href={`mailto:${CONTACT.email}`}
                 className="text-texte-attenue hover:text-signal text-sm transition-colors"
               >
-                Courriel
+                {t(UI.courriel, langue)}
               </a>
             </li>
             <li>
@@ -51,10 +53,10 @@ export function Pied() {
             {NAV_DISCRETE.map((item) => (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={lien(item.href, langue)}
                   className="text-texte-faible hover:text-signal text-sm transition-colors"
                 >
-                  {item.label}
+                  {t(item.label, langue)}
                 </Link>
               </li>
             ))}
@@ -67,7 +69,7 @@ export function Pied() {
           <p className="annotation">
             © {new Date().getFullYear()} {SITE.nom}
           </p>
-          <p className="annotation">Aucun traceur · Aucun cookie</p>
+          <p className="annotation">{t(UI.sansTraceur, langue)}</p>
         </div>
       </div>
     </footer>

@@ -5,6 +5,20 @@ import { Canvas } from "@react-three/fiber";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 
+import { locale, type Langue } from "@/lib/langue";
+
+const MOTS = {
+  fr: {
+    variance: "de variance conservée",
+    invite:
+      "Faites glisser pour orbiter, molette pour approcher. Survolez un point pour lire le passage.",
+  },
+  en: {
+    variance: "of variance retained",
+    invite: "Drag to orbit, scroll to zoom. Hover a point to read the passage.",
+  },
+} as const;
+
 export type Point3D = {
   xyz: [number, number, number];
   source: string;
@@ -96,11 +110,14 @@ export default function Nuage3D({
   points,
   variance,
   sources,
+  langue,
 }: {
   points: Point3D[];
   variance: number;
   sources: string[];
+  langue: Langue;
 }) {
+  const mots = MOTS[langue];
   const [survol, setSurvol] = useState<number | null>(null);
 
   const { palette, trait } = useMemo(() => {
@@ -134,7 +151,9 @@ export default function Nuage3D({
         </Canvas>
 
         <span className="annotation text-texte-faible pointer-events-none absolute right-3 bottom-2">
-          {String(variance).replace(".", ",")} % de variance conservée
+          {variance.toLocaleString(locale(langue), { minimumFractionDigits: 1 })}
+          {langue === "fr" ? " % " : "% "}
+          {mots.variance}
         </span>
       </div>
 
@@ -146,8 +165,7 @@ export default function Nuage3D({
           </>
         ) : (
           <p className="text-texte-faible text-sm">
-            Faites glisser pour orbiter, molette pour approcher. Survolez un point pour lire le
-            passage.
+            {mots.invite}
           </p>
         )}
       </div>

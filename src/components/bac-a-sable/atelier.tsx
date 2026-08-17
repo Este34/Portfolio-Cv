@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import { LIBELLE_ETAPE, type EtapeChargement, type ResultatRequete } from "@/lib/duckdb-types";
+import type { Langue } from "@/lib/langue";
 
 type TableChargee = {
   nom: string;
@@ -24,7 +25,48 @@ const FORMATS = ["csv", "tsv", "json", "ndjson", "parquet", "txt"];
  *
  * Le moteur n'est chargé qu'au premier dépôt, jamais à l'ouverture de la page.
  */
-export function Atelier() {
+
+const MOTS = {
+  fr: {
+    deposez: "Déposez un fichier ici",
+    lu: ". Il est lu dans votre navigateur et interrogé sur place, ",
+    rienEnvoye: "rien n'est envoyé nulle part",
+    aucunServeur: ", il n'y a aucun serveur au bout.",
+    choisir: "Choisir un fichier",
+    amorcage: ", une dizaine de méga-octets, une seule fois.",
+    requeteInvalide: "Requête invalide",
+    chargementImpossible: "Chargement impossible",
+    votreRequete: "Votre requête",
+    executer: "Exécuter",
+    execution: "Exécution…",
+    raccourci: "Ctrl + Entrée",
+    tables: (n: number) => `${n} table${n > 1 ? "s" : ""} chargée${n > 1 ? "s" : ""}`,
+    lignes: (n: number) => `${n.toLocaleString("fr-FR")} ligne${n > 1 ? "s" : ""}`,
+    tronque: (total: number) =>
+      `500 premières lignes affichées sur ${total.toLocaleString("fr-FR")}. La requête, elle, a porté sur tout.`,
+  },
+  en: {
+    deposez: "Drop a file here",
+    lu: ". It is read inside your browser and queried on the spot, ",
+    rienEnvoye: "nothing is sent anywhere",
+    aucunServeur: "; there is no server at the other end.",
+    choisir: "Choose a file",
+    amorcage: ", about ten megabytes, once.",
+    requeteInvalide: "Invalid query",
+    chargementImpossible: "Could not load the file",
+    votreRequete: "Your query",
+    executer: "Run",
+    execution: "Running…",
+    raccourci: "Ctrl + Enter",
+    tables: (n: number) => `${n} table${n > 1 ? "s" : ""} loaded`,
+    lignes: (n: number) => `${n.toLocaleString("en-US")} row${n > 1 ? "s" : ""}`,
+    tronque: (total: number) =>
+      `Showing the first 500 rows out of ${total.toLocaleString("en-US")}. The query itself covered all of them.`,
+  },
+} as const;
+
+export function Atelier({ langue }: { langue: Langue }) {
+  const mots = MOTS[langue];
   const champFichier = useRef<HTMLInputElement>(null);
 
   const [etape, setEtape] = useState<EtapeChargement>("inactif");
@@ -50,7 +92,7 @@ export function Atelier() {
         // Séquentiel et non parallèle : deux `CREATE TABLE` concurrents sur la
         // même connexion se marchent dessus, et l'ordre d'affichage doit suivre
         // l'ordre de dépôt.
-        chargees.push(await chargerFichier(f));
+        chargees.push(await chargerFichier(f, langue));
       }
 
       setEtape("pret");
@@ -64,9 +106,9 @@ export function Atelier() {
       if (chargees[0]) setSql(`SELECT * FROM ${chargees[0].nom} LIMIT 20`);
     } catch (e: unknown) {
       setEtape("echec");
-      setErreur(e instanceof Error ? e.message : "Chargement impossible");
+      setErreur(e instanceof Error ? e.message : mots.chargementImpossible);
     }
-  }, []);
+  }, [langue, mots]);
 
   async function lancer() {
     const requete = sql.trim();
@@ -75,10 +117,10 @@ export function Atelier() {
     setErreur(null);
     try {
       const { executer } = await import("@/lib/duckdb");
-      setResultat(await executer(requete));
+      setResultat(await executer(requete, langue));
     } catch (e: unknown) {
       setResultat(null);
-      setErreur(e instanceof Error ? e.message : "Requête invalide");
+      setErreur(e instanceof Error ? e.message : mots.requeteInvalide);
     } finally {
       setEnCours(false);
     }
@@ -104,11 +146,12 @@ export function Atelier() {
           survol ? "border-corail bg-signal-voile" : "border-trait"
         }`}
       >
-        <p className="text-texte text-lg font-bold uppercase">Déposez un fichier ici</p>
+        <p className="text-texte text-lg font-bold uppercase">{mots.deposez}</p>
         <p className="text-texte-attenue mx-auto mt-2 max-w-md text-sm leading-relaxed">
-          {FORMATS.join(", ")}. Il est lu dans votre navigateur et interrogé sur place —{" "}
-          <strong className="text-texte font-semibold">rien n&apos;est envoyé nulle part</strong>,
-          il n&apos;y a aucun serveur au bout.
+          {FORMATS.join(", ")}
+          {mots.lu}
+          <strong className="text-texte font-semibold">{mots.rienEnvoye}</strong>
+          {mots.aucunServeur}
         </p>
 
         <button
@@ -116,7 +159,7 @@ export function Atelier() {
           onClick={() => champFichier.current?.click()}
           className="bloc-corail mt-5 px-5 py-2.5 text-sm font-bold uppercase"
         >
-          Choisir un fichier
+          {mots.choisir}
         </button>
         <input
           ref={champFichier}
@@ -132,7 +175,8 @@ export function Atelier() {
 
         {amorcage && (
           <p className="text-corail mt-4 animate-pulse text-sm font-semibold">
-            {LIBELLE_ETAPE[etape]} — une dizaine de méga-octets, une seule fois.
+            {LIBELLE_ETAPE[langue][etape]}
+            {mots.amorcage}
           </p>
         )}
       </div>
@@ -147,8 +191,7 @@ export function Atelier() {
       {tables.length > 0 && (
         <section>
           <h2 className="text-texte text-lg uppercase">
-            {tables.length} table{tables.length > 1 ? "s" : ""} chargée
-            {tables.length > 1 ? "s" : ""}
+            {mots.tables(tables.length)}
           </h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {tables.map((t) => (
@@ -156,7 +199,7 @@ export function Atelier() {
                 <div className="flex items-baseline justify-between gap-3">
                   <code className="text-corail donnee font-bold">{t.nom}</code>
                   <span className="annotation tabulaire">
-                    {t.lignes.toLocaleString("fr-FR")} lignes
+                    {mots.lignes(t.lignes)}
                   </span>
                 </div>
                 <ul className="mt-2 flex flex-wrap gap-1">
@@ -181,7 +224,7 @@ export function Atelier() {
       {tables.length > 0 && (
         <section>
           <label htmlFor="sql" className="text-texte text-lg uppercase">
-            Votre requête
+            {mots.votreRequete}
           </label>
           <textarea
             id="sql"
@@ -205,9 +248,9 @@ export function Atelier() {
               disabled={enCours}
               className="bloc-corail px-5 py-2.5 text-sm font-bold uppercase disabled:opacity-40"
             >
-              {enCours ? "Exécution…" : "Exécuter"}
+              {enCours ? mots.execution : mots.executer}
             </button>
-            <span className="annotation">Ctrl + Entrée</span>
+            <span className="annotation">{mots.raccourci}</span>
           </div>
         </section>
       )}
@@ -217,7 +260,7 @@ export function Atelier() {
         <section>
           <div className="mb-2 flex items-baseline justify-between">
             <h2 className="text-texte text-lg uppercase">
-              {resultat.lignes.length} ligne{resultat.lignes.length > 1 ? "s" : ""}
+              {mots.lignes(resultat.lignes.length)}
             </h2>
             <span className="annotation tabulaire">{resultat.duree.toFixed(1)} ms</span>
           </div>
@@ -247,8 +290,7 @@ export function Atelier() {
           </div>
           {resultat.lignes.length > 500 && (
             <p className="annotation mt-2">
-              500 premières lignes affichées sur {resultat.lignes.length.toLocaleString("fr-FR")} —
-              la requête, elle, a porté sur tout.
+              {mots.tronque(resultat.lignes.length)}
             </p>
           )}
         </section>

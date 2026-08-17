@@ -46,3 +46,12 @@ next-env.d.ts
 
 # Captures de vérification visuelle — locales, non versionnées.
 /.captures/
+
+# Sorties de Playwright. Les images de référence, elles, SONT versionnées :
+# elles vivent dans tests-visuels/*-snapshots/ et constituent l'attendu contre
+# lequel la suite compare. Ce qui est ignoré ici, ce sont les rapports et les
+# images produites par un échec.
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

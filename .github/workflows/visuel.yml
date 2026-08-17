@@ -1,0 +1,90 @@
+name: Régression visuelle
+
+# Les images de référence dépendent de la plateforme : Windows et Linux ne
+# rastérisent pas le texte de la même façon. Ce workflow est le seul endroit où
+# le jeu Linux est produit et comparé, et il tourne dans le conteneur officiel
+# de Playwright pour que deux exécutions partent du même moteur de rendu.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      rafraichir:
+        description: "Régénérer les références Linux et les committer"
+        type: boolean
+        default: false
+
+concurrency:
+  group: visuel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  comparer:
+    name: Comparer au rendu de référence
+    runs-on: ubuntu-latest
+    # La version doit suivre celle de `@playwright/test` dans package.json :
+    # un conteneur plus récent que la bibliothèque installe des navigateurs que
+    # la bibliothèque ne sait pas piloter, et le rendu change.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Cache du modèle de vectorisation
+        uses: actions/cache@v4
+        with:
+          path: node_modules/@huggingface/transformers/.cache
+          key: modele-${{ hashFiles('src/lib/rag-types.ts') }}
+
+      - name: Comparer
+        if: ${{ !inputs.rafraichir }}
+        run: npx playwright test
+
+      # Le rapport porte les trois images d'un échec — attendue, obtenue,
+      # différence. C'est la seule chose qui permette de juger si un écart est
+      # une régression ou une évolution voulue.
+      - name: Publier le rapport
+        if: ${{ failure() && !inputs.rafraichir }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-visuel
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+      # ------------------------------------------------------------------
+      # Rafraîchissement manuel, déclenché depuis l'onglet Actions.
+      #
+      # C'est le seul moyen de produire les références Linux : elles ne peuvent
+      # pas être générées sur un poste Windows, et un jeu manquant ferait
+      # échouer la comparaison sans que personne ne puisse le corriger.
+      # ------------------------------------------------------------------
+      - name: Régénérer les références
+        if: ${{ inputs.rafraichir }}
+        run: npx playwright test --update-snapshots
+
+      - name: Committer les références
+        if: ${{ inputs.rafraichir }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests-visuels
+          if git diff --cached --quiet; then
+            echo "Aucune référence à mettre à jour."
+          else
+            git commit -m "Références visuelles Linux, régénérées en intégration"
+            git push
+          fi

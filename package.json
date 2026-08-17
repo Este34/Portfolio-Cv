@@ -20,7 +20,9 @@
     "verifier:embeddings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-embeddings.ts",
     "capturer": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/capturer.ts",
     "verifier:bac-a-sable": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-bac-a-sable.ts",
-    "capturer:simulateurs": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/capturer-simulateurs.ts"
+    "capturer:simulateurs": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/capturer-simulateurs.ts",
+    "test:visuel": "playwright test",
+    "test:visuel:references": "playwright test --update-snapshots"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev57.0",

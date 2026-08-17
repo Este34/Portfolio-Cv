@@ -63,6 +63,10 @@ jobs:
       - name: Les artefacts générés sont à jour
         run: git diff --exit-code -- public/data || (echo "::error::public/data est périmé — lancer npm run generer:donnees && npm run generer:embeddings" && exit 1)
 
+      # La régression visuelle vit dans son propre workflow : elle a besoin du
+      # conteneur Playwright, et son échec ne doit pas se confondre avec celui
+      # d'un test unitaire. Voir .github/workflows/visuel.yml.
+
   performance:
     name: Lighthouse
     runs-on: ubuntu-latest

@@ -3,6 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { locale, type Langue } from "@/lib/langue";
+
+const MOTS = {
+  fr: {
+    label: (n: number) => `Nuage des ${n} passages du corpus, projetés en deux dimensions`,
+    variance: "de variance conservée",
+    invite: "Survolez un point pour lire le passage. Cliquez pour aller à sa source.",
+  },
+  en: {
+    label: (n: number) => `Cloud of the ${n} corpus passages, projected onto two dimensions`,
+    variance: "of variance retained",
+    invite: "Hover a point to read the passage. Click to go to its source.",
+  },
+} as const;
+
 export type PointCorpus = {
   xy: [number, number];
   source: string;
@@ -25,7 +40,16 @@ export type PointCorpus = {
  * Pas de boucle d'animation : la figure est fixe, elle n'est redessinée qu'au
  * survol. Une simulation qui tourne pour rien est du chauffage.
  */
-export function NuageCorpus({ points, variance }: { points: PointCorpus[]; variance: number }) {
+export function NuageCorpus({
+  points,
+  variance,
+  langue,
+}: {
+  points: PointCorpus[];
+  variance: number;
+  langue: Langue;
+}) {
+  const mots = MOTS[langue];
   const router = useRouter();
   const canvas = useRef<HTMLCanvasElement>(null);
   const conteneur = useRef<HTMLDivElement>(null);
@@ -168,16 +192,32 @@ export function NuageCorpus({ points, variance }: { points: PointCorpus[]; varia
         }}
         style={{ cursor: actif ? "pointer" : "default" }}
       >
+        {/*
+          Positionnement absolu, et ce n'est pas cosmétique.
+
+          En flux normal, un canvas porte une taille intrinsèque tirée de ses
+          attributs `width` et `height` — ceux-là mêmes que le composant calcule
+          depuis la hauteur mesurée du conteneur, multipliée par la densité de
+          pixels. La boucle se referme : le canvas grossit, il pousse la boîte à
+          rapport d'aspect qui l'héberge, la mesure suivante donne une hauteur
+          plus grande, et ainsi de suite. La page passait de 5900 à 8400 pixels
+          de haut en trois mesures, ce qui ne s'est vu qu'en tentant de la
+          photographier entière.
+
+          Hors du flux, le canvas ne peut plus rien pousser du tout.
+        */}
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Nuage des ${points.length} passages du corpus, projetés en deux dimensions`}
-          className="block h-full w-full"
+          aria-label={mots.label(points.length)}
+          className="absolute inset-0 block h-full w-full"
         />
 
         <span className="annotation text-texte-faible absolute right-3 bottom-2">
-          {/* Virgule décimale : le site est en français. */}
-          {String(variance).replace(".", ",")} % de variance conservée
+          {/* Séparateur décimal et espace avant le signe : selon la langue. */}
+          {variance.toLocaleString(locale(langue), { minimumFractionDigits: 1 })}
+          {langue === "fr" ? " % " : "% "}
+          {mots.variance}
         </span>
       </div>
 
@@ -191,7 +231,7 @@ export function NuageCorpus({ points, variance }: { points: PointCorpus[]; varia
           </>
         ) : (
           <p className="text-texte-faible text-sm">
-            Survolez un point pour lire le passage. Cliquez pour aller à sa source.
+            {mots.invite}
           </p>
         )}
       </div>

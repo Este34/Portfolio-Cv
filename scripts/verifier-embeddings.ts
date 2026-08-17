@@ -20,6 +20,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import { LANGUES } from "../src/lib/langue.ts";
 import { DIMENSIONS_EMBEDDING, MODELE_EMBEDDING } from "../src/lib/rag-types.ts";
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -31,46 +32,51 @@ function echouer(message: string): never {
   process.exit(1);
 }
 
-let meta: {
-  modele: string;
-  dimensions: number;
-  passages: { id: string; texte: string }[];
-};
-let octets: number;
+for (const langue of LANGUES) {
+  let meta: {
+    modele: string;
+    dimensions: number;
+    passages: { id: string; texte: string }[];
+  };
+  let octets: number;
 
-try {
-  meta = JSON.parse(await readFile(join(dossier, "embeddings.json"), "utf8"));
-  octets = (await readFile(join(dossier, "embeddings.bin"))).byteLength;
-} catch {
-  echouer("Vecteurs absents de public/data/.");
-}
-
-const corpus = construireCorpus();
-
-if (meta.modele !== MODELE_EMBEDDING) {
-  echouer(`Modèle périmé : « ${meta.modele} » au lieu de « ${MODELE_EMBEDDING} ».`);
-}
-
-if (meta.dimensions !== DIMENSIONS_EMBEDDING) {
-  echouer(`Dimensions périmées : ${meta.dimensions} au lieu de ${DIMENSIONS_EMBEDDING}.`);
-}
-
-const attendu = corpus.length * DIMENSIONS_EMBEDDING * 4;
-if (octets !== attendu) {
-  echouer(`Binaire incohérent : ${octets} octets au lieu de ${attendu} pour ${corpus.length} passages.`);
-}
-
-if (meta.passages.length !== corpus.length) {
-  echouer(`${meta.passages.length} passages vectorisés pour ${corpus.length} dans le contenu.`);
-}
-
-for (const [i, p] of corpus.entries()) {
-  if (meta.passages[i].id !== p.id) {
-    echouer(`Passage ${i} : identifiant « ${meta.passages[i].id} » au lieu de « ${p.id} ».`);
+  try {
+    meta = JSON.parse(await readFile(join(dossier, `embeddings-${langue}.json`), "utf8"));
+    octets = (await readFile(join(dossier, `embeddings-${langue}.bin`))).byteLength;
+  } catch {
+    echouer(`Vecteurs ${langue} absents de public/data/.`);
   }
-  if (meta.passages[i].texte !== p.texte) {
-    echouer(`Le texte du passage « ${p.id} » a changé depuis la dernière vectorisation.`);
-  }
-}
 
-console.log(`✓ Vecteurs à jour — ${corpus.length} passages, ${MODELE_EMBEDDING}`);
+  const corpus = construireCorpus(langue);
+  const ou = (m: string) => `[${langue}] ${m}`;
+
+  if (meta.modele !== MODELE_EMBEDDING) {
+    echouer(ou(`Modèle périmé : « ${meta.modele} » au lieu de « ${MODELE_EMBEDDING} ».`));
+  }
+
+  if (meta.dimensions !== DIMENSIONS_EMBEDDING) {
+    echouer(ou(`Dimensions périmées : ${meta.dimensions} au lieu de ${DIMENSIONS_EMBEDDING}.`));
+  }
+
+  const attendu = corpus.length * DIMENSIONS_EMBEDDING * 4;
+  if (octets !== attendu) {
+    echouer(
+      ou(`Binaire incohérent : ${octets} octets au lieu de ${attendu} pour ${corpus.length} passages.`),
+    );
+  }
+
+  if (meta.passages.length !== corpus.length) {
+    echouer(ou(`${meta.passages.length} passages vectorisés pour ${corpus.length} dans le contenu.`));
+  }
+
+  for (const [i, p] of corpus.entries()) {
+    if (meta.passages[i].id !== p.id) {
+      echouer(ou(`Passage ${i} : identifiant « ${meta.passages[i].id} » au lieu de « ${p.id} ».`));
+    }
+    if (meta.passages[i].texte !== p.texte) {
+      echouer(ou(`Le texte du passage « ${p.id} » a changé depuis la dernière vectorisation.`));
+    }
+  }
+
+  console.log(`✓ Vecteurs ${langue} à jour — ${corpus.length} passages, ${MODELE_EMBEDDING}`);
+}
