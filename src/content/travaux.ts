@@ -52,6 +52,15 @@ export type Travail = {
     depot?: string;
     demo?: string;
   };
+  /**
+   * Captures prises sur les déploiements réels.
+   *
+   * Pour les travaux sous anonymat, la neutralisation est appliquée au document
+   * vivant avant le déclenchement de la capture : logos retirés, noms de
+   * modèles et territoires réécrits. Ce qui est photographié est déjà propre,
+   * il n'existe aucune image intermédiaire à effacer.
+   */
+  captures?: readonly { src: string; legende: string }[];
 };
 
 export const TRAVAUX: readonly Travail[] = [
@@ -128,6 +137,12 @@ export const TRAVAUX: readonly Travail[] = [
      * public est une version neutralisée hébergée ici — code et interface
      * d'origine, valeurs fabriquées.
      */
+    captures: [
+      { src: "/captures/simulateur-energie.png", legende: "Volet énergie : scénarios de référence, parc pilotable et étalement de la matière." },
+      { src: "/captures/simulateur-numerique.png", legende: "Volet numérique : parc d'équipements, matières mobilisées et soutenabilité." },
+      { src: "/captures/simulateur-mobilite.png", legende: "Volet mobilité : passagers-kilomètres et flux de matières par système de transport." },
+      { src: "/captures/simulateur-agriculture.png", legende: "Volet agriculture : surfaces, cheptel et pratiques, à l'échelle de la culture." },
+    ],
     liens: { demo: "/demonstration" },
   },
 
@@ -190,6 +205,12 @@ export const TRAVAUX: readonly Travail[] = [
       "Un socle de composants réutilisé par les outils suivants.",
       "Déploiement continu à chaque intégration sur la branche principale.",
     ],
+    captures: [
+      {
+        src: "/captures/plateforme.png",
+        legende: "La page d'accueil de la plateforme, et son fond animé écrit en GLSL.",
+      },
+    ],
     liens: {},
   },
 
@@ -249,6 +270,13 @@ export const TRAVAUX: readonly Travail[] = [
       "Cinq angles d'analyse : chaînes de valeur, dépendances entre pays, origine des matières, comparaison de minerais, suivi produit détaillé.",
       "Traitement dédié des matières critiques, avec pré-agrégation et vue bilatérale.",
       "Application déployée et consultable publiquement.",
+    ],
+    captures: [
+      {
+        src: "/captures/comtrade.png",
+        legende:
+          "L'application d'analyse : des requêtes DuckDB-WASM sur vingt-cinq ans de déclarations douanières, sans serveur.",
+      },
     ],
     liens: {
       depot: "https://github.com/Este34/pipeline-comtrade",

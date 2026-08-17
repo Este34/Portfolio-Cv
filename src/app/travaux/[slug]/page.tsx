@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -88,6 +89,25 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
               </div>
             </dl>
           </header>
+
+          {/* ---- Captures --------------------------------------------------- */}
+          {travail.captures && travail.captures.length > 0 && (
+            <section aria-label="Captures" className="grid gap-6 pb-4 sm:grid-cols-2">
+              {travail.captures.map((c) => (
+                <figure key={c.src} className="flex flex-col gap-2">
+                  <Image
+                    src={c.src}
+                    alt={c.legende}
+                    width={1440}
+                    height={900}
+                    sizes="(min-width: 640px) 50vw, 100vw"
+                    className="border-trait-fort w-full border-2"
+                  />
+                  <figcaption className="annotation text-texte-attenue normal-case">{c.legende}</figcaption>
+                </figure>
+              ))}
+            </section>
+          )}
 
           {/* ---- Chiffres ------------------------------------------------- */}
           <section aria-label="Chiffres" className="border-trait border-t">
