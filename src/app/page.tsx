@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CarteTravail } from "@/components/carte-travail";
+import { SectionGlobe } from "@/components/globe/section-globe";
 import { Portrait } from "@/components/portrait";
 import { TRAVAUX_TRIES } from "@/content/travaux";
 import { SITE } from "@/lib/site";
@@ -79,6 +80,8 @@ export default function Accueil() {
             ))}
           </dl>
         </section>
+
+        <SectionGlobe />
 
         {/* ---- Travaux ------------------------------------------------------ */}
         <section className="mx-auto max-w-6xl px-5 py-20">
