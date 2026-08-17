@@ -3,14 +3,27 @@ import type { Metadata } from "next";
 import { Agar } from "@/components/labo/agar";
 import { Boids } from "@/components/labo/boids";
 import { KMeans } from "@/components/labo/kmeans";
+import { Reseau } from "@/components/labo/reseau";
 
 export const metadata: Metadata = {
   title: "Labo",
   description:
-    "Simulations interactives : comportements émergents, k-moyennes itératif, systèmes temps réel jouables.",
+    "Simulations interactives : rétropropagation écrite à la main, comportements émergents, k-moyennes itératif, systèmes temps réel jouables.",
 };
 
 const DEMOS = [
+  {
+    id: "reseau",
+    titre: "Un réseau qui apprend",
+    sousTitre: "Rétropropagation écrite à la main, sans bibliothèque",
+    corps: [
+      "Deux spirales entrelacées. J'ai mesuré ce qu'obtient le meilleur demi-plan possible sur ces données, par balayage exhaustif des orientations et des seuils : 75 % de justesse, et il ne fera jamais mieux. Le réseau — deux entrées, deux couches cachées de douze neurones, une sortie — les sépare intégralement en quelques secondes, après moins d'un millier de mini-lots. La frontière de décision se forme sous vos yeux, et l'apprentissage repart de zéro peu après avoir convergé : vous voyez donc le cycle complet, quel que soit le moment où vous arrivez.",
+      "Passe avant, passe arrière, descente de gradient sur mini-lots : tout est écrit à la main, en une centaine de lignes, sans TensorFlow ni PyTorch. C'est le même parti pris que mon projet de recherche augmentée — on ne comprend un mécanisme qu'en l'implémentant, et l'entropie croisée binaire combinée à une sigmoïde donne directement la dérivée de sortie, sans passer par la dérivée de l'activation.",
+      "L'opacité du fond suit la certitude du réseau : la frontière apparaît en creux, là où il hésite. La courbe citron en bas est la perte. Cliquez pour réinitialiser les poids et regarder l'apprentissage repartir de zéro.",
+      "Le bogue qui m'a coûté le plus de temps ici n'était ni dans les gradients ni dans l'architecture : les points étaient générés classe par classe, et un parcours séquentiel produisait des mini-lots presque mono-classe. Le réseau apprenait alternativement « tout est 0 » puis « tout est 1 » et s'effondrait à 50 %. Un mélange de Fisher-Yates a suffi. C'est le genre de défaut qu'aucune relecture ne montre et qu'une mesure trouve en dix minutes.",
+    ],
+    composant: <Reseau />,
+  },
   {
     id: "nuee",
     titre: "Nuée",
