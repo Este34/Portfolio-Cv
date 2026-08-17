@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { NuageCorpus, type PointCorpus } from "./nuage";
+import { BasculeNuage } from "./bascule-nuage";
+import type { PointCorpus } from "./nuage";
+import type { Point3D } from "./nuage-3d";
 
 /**
  * Section « le corpus », lue au build.
@@ -13,26 +15,46 @@ import { NuageCorpus, type PointCorpus } from "./nuage";
  *
  * Le fichier complet reste chargé à la demande par le moteur de recherche.
  */
-function lireProjection(): { points: PointCorpus[]; variance: number } {
+function lireProjection(): {
+  points: PointCorpus[];
+  points3d: Point3D[];
+  variance: number;
+  variance3d: number;
+} {
   const chemin = join(process.cwd(), "public", "data", "embeddings.json");
   const brut = JSON.parse(readFileSync(chemin, "utf8")) as {
-    projection: { variance: number };
-    passages: { xy: [number, number]; source: string; href: string; texte: string }[];
+    projection: { variance: number; variance3d: number };
+    passages: {
+      xy: [number, number];
+      xyz: [number, number, number];
+      source: string;
+      href: string;
+      texte: string;
+    }[];
   };
+
+  const apercu = (t: string) => (t.length > 190 ? `${t.slice(0, 190).trimEnd()}…` : t);
 
   return {
     variance: brut.projection.variance,
+    variance3d: brut.projection.variance3d,
     points: brut.passages.map((p) => ({
       xy: p.xy,
       source: p.source,
       href: p.href,
-      apercu: p.texte.length > 190 ? `${p.texte.slice(0, 190).trimEnd()}…` : p.texte,
+      apercu: apercu(p.texte),
+    })),
+    points3d: brut.passages.map((p) => ({
+      xyz: p.xyz,
+      source: p.source,
+      href: p.href,
+      apercu: apercu(p.texte),
     })),
   };
 }
 
 export function SectionCorpus() {
-  const { points, variance } = lireProjection();
+  const { points, points3d, variance, variance3d } = lireProjection();
 
   return (
     <section className="filet-fort">
@@ -61,13 +83,17 @@ export function SectionCorpus() {
             <strong className="text-texte font-semibold">
               {String(variance).replace(".", ",")} %
             </strong>{" "}
-            de la variance. C&apos;est
-            peu, et c&apos;est normal : c&apos;est exactement pour cette raison que la recherche
-            travaille sur les 384, pas sur cette image.
+            de la variance. Une troisième en retient{" "}
+            <strong className="text-texte font-semibold">
+              {String(variance3d).replace(".", ",")} %
+            </strong>{" "}
+            — c&apos;est ce gain mesuré, et lui seul, qui justifie la vue en volume. Cela reste peu,
+            et c&apos;est normal : c&apos;est exactement pour cette raison que la recherche travaille
+            sur les 384 dimensions, pas sur cette image.
           </p>
         </div>
 
-        <NuageCorpus points={points} variance={variance} />
+        <BasculeNuage points={points} points3d={points3d} variance={variance} variance3d={variance3d} />
       </div>
     </section>
   );

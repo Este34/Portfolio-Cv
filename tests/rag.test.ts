@@ -125,3 +125,45 @@ describe("classement", () => {
     expect(r.length).toBeLessThanOrEqual(2);
   });
 });
+
+describe("projection en composantes principales", () => {
+  it("expose les deux projections et leurs variances", () => {
+    const p = (meta as unknown as { projection: { variance: number; variance3d: number } })
+      .projection;
+    expect(p.variance).toBeGreaterThan(0);
+    expect(p.variance3d).toBeGreaterThan(0);
+  });
+
+  it("la troisième composante apporte de la variance", () => {
+    /*
+     * C'est la seule justification acceptable pour ajouter une dimension à une
+     * figure. Si le gain était nul, la vue en volume ne serait que de la
+     * décoration — et ce test échouerait avant qu'elle ne soit publiée.
+     */
+    const p = (meta as unknown as { projection: { variance: number; variance3d: number } })
+      .projection;
+    expect(p.variance3d).toBeGreaterThan(p.variance + 3);
+  });
+
+  it("les coordonnées sont normalisées dans [0, 1]", () => {
+    const passages = meta.passages as unknown as {
+      xy: [number, number];
+      xyz: [number, number, number];
+    }[];
+    for (const p of passages) {
+      for (const v of [...p.xy, ...p.xyz]) {
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it("chaque passage porte les deux jeux de coordonnées", () => {
+    const passages = meta.passages as unknown as { xy?: number[]; xyz?: number[] }[];
+    expect(passages).toHaveLength(meta.passages.length);
+    for (const p of passages) {
+      expect(p.xy).toHaveLength(2);
+      expect(p.xyz).toHaveLength(3);
+    }
+  });
+});

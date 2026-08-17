@@ -104,8 +104,14 @@ function projeterACP(v: Float32Array, n: number, d: number) {
     for (let k = 0; k < d; k++) centre[i * d + k] = v[i * d + k] - moyenne[k];
   }
 
-  /** Une itération de la puissance sur la matrice de covariance implicite. */
-  function composante(exclure: Float64Array | null): Float64Array {
+  /**
+   * Une itération de la puissance sur la matrice de covariance implicite.
+   *
+   * La déflation porte sur **toutes** les composantes déjà extraites, pas
+   * seulement la précédente : pour la troisième, retirer la deuxième sans
+   * retirer la première laisserait l'itération reconverger vers celle-ci.
+   */
+  function composante(exclure: Float64Array[]): Float64Array {
     let u = new Float64Array(d).fill(1 / Math.sqrt(d));
     for (let pas = 0; pas < 120; pas++) {
       const suivant = new Float64Array(d);
@@ -114,12 +120,10 @@ function projeterACP(v: Float32Array, n: number, d: number) {
         for (let k = 0; k < d; k++) produit += centre[i * d + k] * u[k];
         for (let k = 0; k < d; k++) suivant[k] += produit * centre[i * d + k];
       }
-      // Déflation : on retire la part portée par la composante précédente,
-      // sinon l'itération reconverge simplement vers elle.
-      if (exclure) {
+      for (const dejaVue of exclure) {
         let produit = 0;
-        for (let k = 0; k < d; k++) produit += suivant[k] * exclure[k];
-        for (let k = 0; k < d; k++) suivant[k] -= produit * exclure[k];
+        for (let k = 0; k < d; k++) produit += suivant[k] * dejaVue[k];
+        for (let k = 0; k < d; k++) suivant[k] -= produit * dejaVue[k];
       }
       let norme = 0;
       for (let k = 0; k < d; k++) norme += suivant[k] * suivant[k];
@@ -130,48 +134,64 @@ function projeterACP(v: Float32Array, n: number, d: number) {
     return u;
   }
 
-  const pc1 = composante(null);
-  const pc2 = composante(pc1);
+  const pc1 = composante([]);
+  const pc2 = composante([pc1]);
+  const pc3 = composante([pc1, pc2]);
+  const axes = [pc1, pc2, pc3];
 
-  const brut: [number, number][] = [];
+  // Coordonnées sur les trois axes. La vue 2D n'en emploie que les deux
+  // premières ; la vue 3D les trois.
+  const brut: [number, number, number][] = [];
   for (let i = 0; i < n; i++) {
-    let x = 0;
-    let y = 0;
-    for (let k = 0; k < d; k++) {
-      x += centre[i * d + k] * pc1[k];
-      y += centre[i * d + k] * pc2[k];
+    const c = [0, 0, 0];
+    for (let a = 0; a < 3; a++) {
+      for (let k = 0; k < d; k++) c[a] += centre[i * d + k] * axes[a][k];
     }
-    brut.push([x, y]);
+    brut.push([c[0], c[1], c[2]]);
   }
 
   // Ramené dans [0, 1] : le composant de rendu n'a plus à connaître l'échelle.
-  const xs = brut.map((p) => p[0]);
-  const ys = brut.map((p) => p[1]);
   const etendue = (a: number[]) => {
     const min = Math.min(...a);
     const max = Math.max(...a);
     return { min, ecart: max - min || 1 };
   };
-  const ex = etendue(xs);
-  const ey = etendue(ys);
+  const bornes = [0, 1, 2].map((a) => etendue(brut.map((p) => p[a])));
+  const norme = (v: number, a: number) =>
+    Number(((v - bornes[a].min) / bornes[a].ecart).toFixed(4));
 
-  // Part de variance conservée : la seule mesure qui dise si la figure est
-  // informative ou décorative.
+  /*
+   * Part de variance conservée : la seule mesure qui dise si la figure est
+   * informative ou décorative. Elle est donnée pour les deux vues, parce que
+   * l'écart entre elles est précisément ce qui justifie la troisième dimension.
+   */
   let varianceTotale = 0;
   for (let i = 0; i < n * d; i++) varianceTotale += centre[i] * centre[i];
-  const varianceProjetee = brut.reduce((s, [x, y]) => s + x * x + y * y, 0);
+  const part = (dims: number) =>
+    Number(
+      (
+        (brut.reduce((s, p) => s + p.slice(0, dims).reduce((t, v) => t + v * v, 0), 0) /
+          varianceTotale) *
+        100
+      ).toFixed(1),
+    );
 
   return {
-    points: brut.map(([x, y]) => [
-      Number(((x - ex.min) / ex.ecart).toFixed(4)),
-      Number(((y - ey.min) / ey.ecart).toFixed(4)),
-    ]) as [number, number][],
-    variance: Number(((varianceProjetee / varianceTotale) * 100).toFixed(1)),
+    points: brut.map(([x, y]) => [norme(x, 0), norme(y, 1)]) as [number, number][],
+    points3d: brut.map(([x, y, z]) => [norme(x, 0), norme(y, 1), norme(z, 2)]) as [
+      number,
+      number,
+      number,
+    ][],
+    variance: part(2),
+    variance3d: part(3),
   };
 }
 
 const projection = projeterACP(vecteurs, corpus.length, DIMENSIONS);
-console.log(`Projection ACP : ${projection.variance} % de la variance conservée`);
+console.log(
+  `Projection ACP : ${projection.variance} % en 2D, ${projection.variance3d} % en 3D`,
+);
 
 await mkdir(dossier, { recursive: true });
 await writeFile(join(dossier, "embeddings.bin"), Buffer.from(vecteurs.buffer));
@@ -188,6 +208,7 @@ await writeFile(
       href,
       poids,
       xy: projection.points[i],
+      xyz: projection.points3d[i],
     })),
   }),
 );
