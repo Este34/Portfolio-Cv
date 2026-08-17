@@ -17,7 +17,9 @@
     "verifier:anonymat": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-anonymat.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verifier:embeddings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-embeddings.ts"
+    "verifier:embeddings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-embeddings.ts",
+    "capturer": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/capturer.ts",
+    "verifier:bac-a-sable": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-bac-a-sable.ts"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev57.0",

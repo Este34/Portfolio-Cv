@@ -40,6 +40,15 @@ export function connexionDuckDB(
   return promesse;
 }
 
+/**
+ * Poignée sur le moteur lui-même, conservée à part de la connexion.
+ *
+ * Le bac à sable en a besoin pour enregistrer les fichiers déposés par le
+ * visiteur : `registerFileBuffer` vit sur la base, pas sur la connexion. Un
+ * second moteur pour ça coûterait 35 Mo de plus, pour rien.
+ */
+let base: AsyncDuckDB | null = null;
+
 async function amorcer(
   surEtape?: (etape: EtapeChargement) => void,
 ): Promise<AsyncDuckDBConnection> {
@@ -62,6 +71,8 @@ async function amorcer(
   URL.revokeObjectURL(urlWorker);
 
   surEtape?.("donnees");
+
+  base = db;
 
   const connexion = await db.connect();
   await chargerTables(db, connexion);
@@ -104,4 +115,89 @@ export async function executer(sql: string): Promise<ResultatRequete> {
   });
 
   return { colonnes, lignes, duree };
+}
+
+/* ---------------------------------------------------------------------------
+   Bac à sable : fichiers déposés par le visiteur
+   --------------------------------------------------------------------------- */
+
+export type TableChargee = {
+  nom: string;
+  lignes: number;
+  colonnes: { nom: string; type: string }[];
+};
+
+/** Extensions reconnues, et la fonction DuckDB qui sait les lire. */
+const LECTEURS: Record<string, (chemin: string) => string> = {
+  csv: (f) => `read_csv_auto('${f}', SAMPLE_SIZE=-1)`,
+  tsv: (f) => `read_csv_auto('${f}', SAMPLE_SIZE=-1, delim='\\t')`,
+  txt: (f) => `read_csv_auto('${f}', SAMPLE_SIZE=-1)`,
+  json: (f) => `read_json_auto('${f}')`,
+  ndjson: (f) => `read_json_auto('${f}')`,
+  parquet: (f) => `read_parquet('${f}')`,
+};
+
+export const EXTENSIONS_ACCEPTEES = Object.keys(LECTEURS);
+
+/**
+ * Nettoie un nom de fichier pour en faire un identifiant SQL utilisable.
+ *
+ * Un visiteur dépose « Ventes 2024 (final).csv » ; il doit pouvoir écrire
+ * `SELECT * FROM ventes_2024_final` sans se battre avec des guillemets.
+ */
+export function nomTable(fichier: string): string {
+  const sansExtension = fichier.replace(/\.[^.]+$/, "");
+  const propre = sansExtension
+    .normalize("NFD")
+    // Marques diacritiques combinantes, désignées par leur code plutôt qu'en
+    // clair : écrites littéralement, elles sont invisibles dans un éditeur et
+    // se perdent au premier copier-coller.
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  // Un identifiant SQL ne peut pas commencer par un chiffre.
+  return /^[0-9]/.test(propre) || propre === "" ? `t_${propre || "donnees"}` : propre;
+}
+
+/**
+ * Enregistre un fichier local dans DuckDB et en crée une table.
+ *
+ * **Le fichier ne quitte pas la machine du visiteur.** Il est lu en mémoire par
+ * le navigateur, remis au moteur WebAssembly qui tourne dans l'onglet, et rien
+ * n'est envoyé nulle part — c'est la propriété qui rend cet outil utilisable sur
+ * des données qu'on n'a pas le droit de téléverser ailleurs.
+ */
+export async function chargerFichier(fichier: File): Promise<TableChargee> {
+  const connexion = await connexionDuckDB();
+  if (!base) throw new Error("Moteur non initialisé");
+
+  const extension = fichier.name.split(".").pop()?.toLowerCase() ?? "";
+  const lecteur = LECTEURS[extension];
+  if (!lecteur) {
+    throw new Error(
+      `Format « ${extension || "inconnu"} » non pris en charge. Formats acceptés : ${EXTENSIONS_ACCEPTEES.join(", ")}.`,
+    );
+  }
+
+  const table = nomTable(fichier.name);
+  const chemin = `${table}.${extension}`;
+
+  await base.registerFileBuffer(chemin, new Uint8Array(await fichier.arrayBuffer()));
+  await connexion.query(`CREATE OR REPLACE TABLE "${table}" AS SELECT * FROM ${lecteur(chemin)}`);
+
+  const schema = await connexion.query(
+    `SELECT column_name, data_type FROM information_schema.columns
+     WHERE table_name = '${table}' ORDER BY ordinal_position`,
+  );
+  const compte = await connexion.query(`SELECT count(*) AS n FROM "${table}"`);
+
+  return {
+    nom: table,
+    lignes: Number((compte.toArray()[0] as { n: bigint | number }).n),
+    colonnes: schema.toArray().map((l) => {
+      const o = l.toJSON() as { column_name: string; data_type: string };
+      return { nom: o.column_name, type: o.data_type };
+    }),
+  };
 }
