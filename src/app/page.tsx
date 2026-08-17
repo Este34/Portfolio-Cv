@@ -1,69 +1,100 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+import { CarteTravail } from "@/components/carte-travail";
+import { Portrait } from "@/components/portrait";
+import { TRAVAUX_TRIES } from "@/content/travaux";
+import { SITE } from "@/lib/site";
+
+/**
+ * Chiffres de tête.
+ *
+ * Choisis pour qu'un lecteur qui ne lira rien d'autre reparte avec la bonne
+ * idée : de la fidélité mesurée, du volume, et zéro infrastructure.
+ */
+const CHIFFRES_CLES = [
+  { valeur: "2·10⁻⁵ %", libelle: "écart au modèle d'origine", note: "vérifié à chaque génération" },
+  { valeur: "4", libelle: "modèles de prospective portés", note: "horizon 2050" },
+  { valeur: "240", libelle: "pays dans le pipeline", note: "sur 25 ans de déclarations" },
+  { valeur: "0", libelle: "serveur d'analyse", note: "tout s'exécute côté client" },
+] as const;
+
+export default function Accueil() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      {/* ---- Bandeau d'accueil ------------------------------------------ */}
+        <section className="relative overflow-hidden">
+          <div
+            aria-hidden="true"
+            className="trame pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]"
+          />
+
+          <div className="relative mx-auto max-w-6xl px-5">
+            <div className="border-trait flex items-center justify-between border-b py-3">
+              <span className="annotation">Index / 001</span>
+              <span className="annotation">{TRAVAUX_TRIES.length} travaux · 2024—2026</span>
+            </div>
+
+            <div className="grid gap-12 py-20 lg:grid-cols-[1.35fr_1fr] lg:gap-16 lg:py-28">
+              <div>
+                <h1 className="font-display text-display text-texte font-semibold">
+                  {SITE.accroche}
+                </h1>
+
+                <p className="text-texte-attenue mt-8 max-w-xl text-lg leading-relaxed">
+                  {SITE.sousTitre}
+                </p>
+
+                <div className="mt-10 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/travaux"
+                    className="bg-signal text-fond rounded-instrument hover:bg-signal-vif px-5 py-2.5 text-sm font-medium transition-colors"
+                  >
+                    Voir les travaux
+                  </Link>
+                  <Link
+                    href="/methode"
+                    className="border-trait-fort text-texte hover:border-signal hover:text-signal rounded-instrument border px-5 py-2.5 text-sm font-medium transition-colors"
+                  >
+                    Comment je travaille
+                  </Link>
+                </div>
+              </div>
+
+              <Portrait className="mx-auto w-full max-w-xs lg:mx-0 lg:max-w-none lg:self-center" />
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Chiffres ---------------------------------------------------- */}
+        <section aria-label="Chiffres clés" className="border-trait border-y">
+          <dl className="divide-trait mx-auto grid max-w-6xl divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+            {CHIFFRES_CLES.map((c) => (
+              <div key={c.libelle} className="px-5 py-7">
+                <dt className="annotation">{c.libelle}</dt>
+                <dd className="font-display text-texte tabulaire mt-2 text-3xl font-semibold tracking-tight">
+                  {c.valeur}
+                </dd>
+                <p className="annotation text-texte-faible mt-1.5 normal-case">{c.note}</p>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* ---- Travaux ------------------------------------------------------ */}
+        <section className="mx-auto max-w-6xl px-5 py-20">
+          <div className="mb-2 flex items-baseline justify-between">
+            <h2 className="font-display text-titre text-texte font-semibold">Travaux</h2>
+            <Link href="/travaux" className="annotation hover:text-signal transition-colors">
+              Tout voir →
+            </Link>
+          </div>
+
+          <div>
+            {TRAVAUX_TRIES.map((travail, i) => (
+              <CarteTravail key={travail.slug} travail={travail} index={i} />
+            ))}
+          </div>
+      </section>
+    </>
   );
 }

@@ -1,26 +1,250 @@
 @import "tailwindcss";
 
+/* Thème piloté par une classe sur <html> (next-themes, attribute="class"). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Jetons de design — « instrument »
+   Palette volontairement pauvre : encre, os, un signal. Les teintes de données
+   ne servent QUE dans les graphes, jamais dans l'interface.
+   --------------------------------------------------------------------------- */
+
+@theme {
+  /* Typographie */
+  --font-display: var(--police-display), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--police-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--police-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* Échelle typographique — resserrée, précise */
+  --text-micro: 0.6875rem; /* 11px — annotations d'instrument */
+  --text-micro--line-height: 1.2;
+  --text-micro--letter-spacing: 0.08em;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.6;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.7;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.65;
+
+  --text-titre: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+  --text-titre--line-height: 1.15;
+  --text-titre--letter-spacing: -0.02em;
+
+  --text-display: clamp(2.75rem, 1.2rem + 6.4vw, 6.5rem);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.04em;
+
+  /* Rayons — un instrument n'est pas arrondi */
+  --radius-instrument: 2px;
+  --radius-panneau: 4px;
+
+  /* Courbes — mécaniques, jamais élastiques */
+  --ease-instrument: cubic-bezier(0.2, 0, 0, 1);
+  --ease-sortie: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Trame de fond */
+  --spacing-trame: 5.5rem;
+}
+
+/* --- Mode sombre (défaut) --------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --police-display: var(--font-archivo);
+  --police-sans: var(--font-inter);
+  --police-mono: var(--font-jetbrains);
+
+  --fond: #08090a;
+  --fond-eleve: #0e1012;
+  --surface: #131619;
+  --trait: #23282d;
+  --trait-fort: #363d44;
+
+  --texte: #edeae4;
+  --texte-attenue: #9aa1a8;
+  --texte-faible: #666e76;
+
+  --signal: #ff8a3d;
+  --signal-vif: #ffa062;
+  --signal-sourd: #7a4620;
+  --signal-voile: rgb(255 138 61 / 0.1);
+
+  /* Séries de données — réservées aux graphes */
+  --serie-1: #ff8a3d;
+  --serie-2: #4de1c1;
+  --serie-3: #7aa2f7;
+  --serie-4: #c58af9;
+  --serie-5: #e0af68;
+
+  --ombre-panneau: 0 1px 0 0 rgb(255 255 255 / 0.03) inset;
+  color-scheme: dark;
 }
 
+/* --- Mode clair — « papier technique », pas une inversion paresseuse -------- */
+:root:not(.dark) {
+  --fond: #f4f2ed;
+  --fond-eleve: #faf9f6;
+  --surface: #ffffff;
+  --trait: #d9d5cc;
+  --trait-fort: #b8b2a6;
+
+  --texte: #14161a;
+  --texte-attenue: #55595f;
+  --texte-faible: #83878d;
+
+  --signal: #c2410c;
+  --signal-vif: #9a3412;
+  --signal-sourd: #fed7aa;
+  --signal-voile: rgb(194 65 12 / 0.07);
+
+  --serie-1: #c2410c;
+  --serie-2: #0f766e;
+  --serie-3: #1d4ed8;
+  --serie-4: #7e22ce;
+  --serie-5: #a16207;
+
+  --ombre-panneau: 0 1px 2px 0 rgb(20 22 26 / 0.04);
+  color-scheme: light;
+}
+
+/* Expose les jetons sémantiques aux utilitaires Tailwind. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-fond: var(--fond);
+  --color-fond-eleve: var(--fond-eleve);
+  --color-surface: var(--surface);
+  --color-trait: var(--trait);
+  --color-trait-fort: var(--trait-fort);
+  --color-texte: var(--texte);
+  --color-texte-attenue: var(--texte-attenue);
+  --color-texte-faible: var(--texte-faible);
+  --color-signal: var(--signal);
+  --color-signal-vif: var(--signal-vif);
+  --color-signal-sourd: var(--signal-sourd);
+  --color-signal-voile: var(--signal-voile);
+  --color-serie-1: var(--serie-1);
+  --color-serie-2: var(--serie-2);
+  --color-serie-3: var(--serie-3);
+  --color-serie-4: var(--serie-4);
+  --color-serie-5: var(--serie-5);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--trait);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--fond);
+    color: var(--texte);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.7;
+    font-feature-settings: "kern", "liga", "cv05";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Chiffres alignés partout — c'est un instrument. */
+  table,
+  time,
+  data,
+  .tabulaire {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Focus visible, sans compromis. */
+  :focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  ::selection {
+    background-color: var(--signal);
+    color: var(--fond);
+  }
+
+  /* Le mouvement est un service rendu à la lecture, jamais un dû. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------------------------------------------------------------------
+   Utilitaires propres à l'instrument
+   --------------------------------------------------------------------------- */
+
+@utility annotation {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texte-faible);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Trame de fond millimétrée — la grille d'un papier technique. */
+@utility trame {
+  background-image:
+    linear-gradient(to right, var(--trait) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--trait) 1px, transparent 1px);
+  background-size: var(--spacing-trame) var(--spacing-trame);
+  opacity: 0.4;
+}
+
+/* Filet de séparation qui s'efface aux extrémités. */
+@utility filet {
+  background-image: linear-gradient(
+    to right,
+    transparent,
+    var(--trait) 12%,
+    var(--trait) 88%,
+    transparent
+  );
+  height: 1px;
+}
+
+/* Grain — dosé, jamais visible consciemment. */
+@utility grain {
+  position: relative;
+}
+@utility grain-couche {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23b)'/%3E%3C/svg%3E");
 }

@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Les modules de `src/content` sont chargés à la fois par Next et par les
+    // scripts de build sous Node, qui exigent l'extension explicite.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

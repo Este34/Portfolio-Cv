@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio — Esteban Beretti-Prenant
 
-## Getting Started
+Portfolio personnel. Le contenu est du HTML généré au build ; les moteurs
+lourds (base analytique, modèle de vectorisation) ne se chargent qu'à la
+demande explicite du visiteur.
 
-First, run the development server:
+## Stack
+
+|              |                                                            |
+| ------------ | ---------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router) + TypeScript strict                |
+| Styles       | Tailwind CSS v4, jetons de design maison                    |
+| Typographie  | Archivo (titres), Inter (texte), JetBrains Mono (données)   |
+| Console SQL  | DuckDB-WASM, chargé à l'ouverture de la console             |
+| Recherche    | transformers.js, vecteurs pré-calculés au build             |
+| Simulations  | Canvas 2D, sans bibliothèque                                |
+| Tests        | Vitest                                                      |
+| Déploiement  | Vercel                                                      |
+
+Langue de l'interface, des contenus et des commentaires : **français**.
+
+## Démarrer
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Le premier lancement génère les données et télécharge le modèle de
+vectorisation (quelques dizaines de méga-octets, une seule fois).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Commande                     | Rôle                                              |
+| ---------------------------- | ------------------------------------------------- |
+| `npm run dev`                | serveur de développement                          |
+| `npm run build`              | build de production (génère et vérifie d'abord)   |
+| `npm test`                   | tests Vitest                                      |
+| `npm run typecheck`          | `tsc --noEmit`                                    |
+| `npm run lint`               | ESLint                                            |
+| `npm run generer:donnees`    | régénère `public/data/portfolio.json`             |
+| `npm run generer:embeddings` | régénère `public/data/embeddings.{bin,json}`      |
+| `npm run verifier:anonymat`  | vérifie qu'aucun terme sous anonymat n'a fuité    |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
+```
+src/
+  app/              routes (App Router), URL françaises
+    api/rediger/    seul point serveur, facultatif
+  components/
+    console/        palette Ctrl+K : navigation, SQL, questions
+    labo/           simulations canvas (nuée, k-moyennes, agar)
+    layout/         en-tête, pied de page
+  content/          SOURCE DE VÉRITÉ — travaux, parcours, corpus
+  lib/
+    site.ts         identité du site, anonymisation
+    duckdb.ts       chargement paresseux de la base analytique
+    rag.ts          recherche augmentée côté navigateur
+scripts/            génération des artefacts et vérifications
+tests/              Vitest
+public/data/        artefacts générés — ne pas éditer à la main
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Règles du dépôt
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Le contenu ne s'écrit qu'à un seul endroit.** `src/content/` alimente les
+pages, les tables SQL et le corpus de recherche. Modifier un artefact généré de
+`public/data/` à la main les désynchronise silencieusement — la CI le détecte,
+mais autant ne pas le faire.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**L'anonymisation n'est pas négociable.** Les travaux menés en alternance sont
+présentés sans nommer l'organisme, ses instituts, ses sites, ses modèles ni ses
+territoires. La formulation est décidée dans `lib/site.ts` (`EMPLOYEUR`), et
+`npm run verifier:anonymat` échoue si un terme interdit réapparaît. Ce script
+tourne avant chaque build.
 
-## Deploy on Vercel
+**Les moteurs lourds restent hors du lot initial.** `lib/duckdb.ts` et
+`lib/rag.ts` ne doivent jamais être importés statiquement depuis un composant.
+Les types et constantes nécessaires à l'interface vivent dans `duckdb-types.ts`
+et `rag-types.ts`, précisément pour éviter qu'un import de type ne tire un
+moteur de plusieurs dizaines de méga-octets dans la première page.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Variables d'environnement
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable               | Rôle                                                        |
+| ---------------------- | ----------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | domaine de production (canonical, Open Graph, sitemap)       |
+| `ANTHROPIC_API_KEY`    | facultative — active le bouton « réponse rédigée » du RAG    |
+
+Sans `ANTHROPIC_API_KEY`, la recherche fonctionne intégralement : seule la
+reformulation par un modèle est indisponible, et l'interface n'en montre rien.
