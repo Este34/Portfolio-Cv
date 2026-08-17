@@ -70,10 +70,10 @@ export const SITE = {
    * mesuré automatiquement à chaque génération des données.
    */
   sousTitre:
-    "Énergie, mobilité, agriculture, numérique — des classeurs Excel et des tableaux de bord Power BI devenus des applications web autonomes, sans serveur. Vérifiées contre le modèle d'origine à 2·10⁻⁵ % près.",
+    "Énergie, mobilité, agriculture, numérique — des classeurs Excel et des tableaux de bord Power BI devenus des applications web autonomes, sans serveur. Vérifiées contre le modèle d'origine à 0,00002 % près.",
 
   description:
-    "Portfolio d'Esteban Beretti — ingénierie de la donnée, portage de modèles de prospective vers le web, applications d'analyse sans serveur (DuckDB-WASM, Parquet) et systèmes de recherche augmentée.",
+    "Portfolio d'Esteban Beretti-Prenant — ingénierie de la donnée, portage de modèles de prospective vers le web, applications d'analyse sans serveur (DuckDB-WASM, Parquet) et systèmes de recherche augmentée.",
 } as const;
 
 /**

@@ -76,9 +76,12 @@ export const TRAVAUX: readonly Travail[] = [
     ],
     chiffres: [
       {
-        valeur: "2·10⁻⁵ %",
+        // Décimale et non « 2·10⁻⁵ % » : la notation scientifique est juste,
+        // mais elle se lit mal en gros corps et l'accueil affiche déjà la forme
+        // décimale. Deux écritures du même chiffre font douter de l'une des deux.
+        valeur: "0,00002 %",
         libelle: "écart au modèle d'origine",
-        note: "mesuré automatiquement, échec du build au-delà de 0,1 %",
+        note: "mesuré automatiquement, échec du build au-delà de 0,1 %",
       },
       { valeur: "4", libelle: "domaines couverts", note: "énergie, mobilité, agriculture, numérique" },
       { valeur: "93", libelle: "cultures paramétrables", note: "sur le seul volet agricole" },
@@ -98,7 +101,7 @@ export const TRAVAUX: readonly Travail[] = [
           "Pré-calculer aurait figé l'outil sur les quelques scénarios de référence. Porter le modèle rend le scénario libre réellement éditable : on bouge un paramètre, toute la chaîne se recalcule, sans repasser par Excel.",
       },
       {
-        choix: "Vérifier le portage automatiquement, et faire échouer la génération au-delà de 0,1 % d'écart",
+        choix: "Vérifier le portage automatiquement, et faire échouer la génération au-delà de 0,1 % d'écart",
         raison:
           "C'est la seule façon de tenir la promesse de fidélité dans la durée. Le générateur rejoue les trajectoires de référence avec le modèle porté et les compare feuille à feuille. Écart constaté : 2·10⁻⁵ %.",
       },
@@ -210,7 +213,7 @@ export const TRAVAUX: readonly Travail[] = [
       { valeur: "240", libelle: "pays déclarants" },
       { valeur: "2000-2025", libelle: "profondeur historique" },
       { valeur: "97", libelle: "chapitres produits", note: "classification harmonisée à 2 chiffres" },
-      { valeur: "100 %", libelle: "des requêtes côté client", note: "aucune donnée ne quitte le navigateur" },
+      { valeur: "100 %", libelle: "des requêtes côté client", note: "aucune donnée ne quitte le navigateur" },
     ],
     contexte:
       "Analyser les chaînes d'approvisionnement en matières critiques suppose de croiser des déclarations douanières bilatérales sur deux décennies. L'API source est payante et limitée en débit ; les volumes dépassent ce qu'un tableur absorbe. Il fallait un pipeline qui extraie une fois, proprement, et une interface qui interroge ensuite sans rien redemander.",
@@ -262,7 +265,7 @@ export const TRAVAUX: readonly Travail[] = [
     chiffres: [
       { valeur: "384", libelle: "dimensions par vecteur" },
       { valeur: "0", libelle: "framework d'orchestration", note: "ni LangChain, ni LlamaIndex" },
-      { valeur: "100 %", libelle: "en local", note: "aucun appel à une API tierce" },
+      { valeur: "100 %", libelle: "en local", note: "aucun appel à une API tierce" },
     ],
     contexte:
       "Les bibliothèques d'orchestration rendent un prototype de recherche augmentée trivial à assembler — et opaque à comprendre. J'ai voulu l'inverse : écrire chaque étage moi-même pour savoir exactement où se perdent la pertinence et le contexte.",

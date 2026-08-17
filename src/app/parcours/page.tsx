@@ -17,13 +17,8 @@ export default function Parcours() {
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <div className="border-trait flex items-center justify-between border-b py-3">
-        <span className="annotation">Index / 004</span>
-        <span className="annotation">Parcours</span>
-      </div>
-
       <header className="py-16 lg:py-20">
-        <h1 className="font-display text-titre text-texte font-semibold">Parcours</h1>
+        <h1 className="font-display text-titre text-texte uppercase">Parcours</h1>
         <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
           En alternance dans {""}
           <span className="text-texte">un institut de recherche public</span>, où je porte des
@@ -77,7 +72,7 @@ function Chronologie({ etapes }: { etapes: readonly Etape[] }) {
         <li key={e.titre} className="grid gap-2 py-6 first:pt-0 last:pb-0 sm:grid-cols-[8rem_1fr] sm:gap-6">
           <span className="annotation sm:pt-1">{e.periode}</span>
           <div>
-            <h3 className="font-display text-texte text-lg font-semibold tracking-tight">
+            <h3 className="font-display text-texte text-lg">
               {e.titre}
             </h3>
             <p className="text-texte-faible mt-0.5 text-sm">{e.lieu}</p>
@@ -92,7 +87,7 @@ function Chronologie({ etapes }: { etapes: readonly Etape[] }) {
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-display text-texte h-fit text-sm font-semibold tracking-widest uppercase lg:sticky lg:top-20">
+      <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
         {titre}
       </h2>
       <div className="lg:pb-4">{children}</div>

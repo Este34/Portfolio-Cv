@@ -78,7 +78,12 @@ describe("identité du site", () => {
     // permanente. Le courriel suffit et se change.
     const serialise = JSON.stringify({ SITE, CONTACT });
     expect(serialise).not.toMatch(/\b0[1-9]([ .-]?\d{2}){4}\b/);
-    expect(serialise).not.toMatch(/\b\d{5}\b/);
+    /*
+     * Le groupe de cinq chiffres ne doit pas être bordé d'un séparateur
+     * décimal : sans cette précaution, « 0,00002 % » passait pour un code
+     * postal et le test échouait sur une donnée parfaitement légitime.
+     */
+    expect(serialise).not.toMatch(/(?<![\d.,])\d{5}(?![\d.,])/);
   });
 });
 

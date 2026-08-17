@@ -29,19 +29,13 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
 
   const index = TRAVAUX_TRIES.findIndex((t) => t.slug === travail.slug);
   const suivant = TRAVAUX_TRIES[(index + 1) % TRAVAUX_TRIES.length];
-  const numero = String(index + 1).padStart(3, "0");
 
   return (
     <article className="mx-auto max-w-6xl px-5">
-          <div className="border-trait flex items-center justify-between border-b py-3">
-            <span className="annotation">Travail / {numero}</span>
-            <span className="annotation">{travail.annee}</span>
-          </div>
-
           {/* ---- Titre ---------------------------------------------------- */}
           <header className="grid gap-10 py-16 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:py-20">
             <div>
-              <h1 className="font-display text-titre text-texte font-semibold">{travail.titre}</h1>
+              <h1 className="font-display text-titre text-texte uppercase">{travail.titre}</h1>
               <p className="text-texte-attenue mt-3 text-lg">{travail.sousTitre}</p>
               <p className="text-texte-attenue mt-6 max-w-2xl leading-relaxed">{travail.resume}</p>
 
@@ -101,7 +95,7 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
               {travail.chiffres.map((c) => (
                 <div key={c.libelle} className="border-trait border-b px-1 py-6 lg:border-b-0 lg:px-5">
                   <dt className="annotation">{c.libelle}</dt>
-                  <dd className="font-display text-texte tabulaire mt-2 text-2xl font-semibold tracking-tight">
+                  <dd className="font-display text-texte tabulaire mt-2 text-2xl uppercase">
                     {c.valeur}
                   </dd>
                   {c.note && (
@@ -134,7 +128,7 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
                 {travail.decisions.map((d, i) => (
                   <li key={d.choix} className="py-6 first:pt-0 last:pb-0">
                     <span className="annotation">Décision {String(i + 1).padStart(2, "0")}</span>
-                    <h3 className="font-display text-texte mt-2 text-lg font-semibold tracking-tight">
+                    <h3 className="font-display text-texte mt-2 text-lg">
                       {d.choix}
                     </h3>
                     <p className="text-texte-attenue mt-2 leading-relaxed">{d.raison}</p>
@@ -159,7 +153,7 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
           <nav className="border-trait border-t py-10" aria-label="Travail suivant">
             <Link href={`/travaux/${suivant.slug}`} className="group block">
               <span className="annotation">Travail suivant</span>
-              <p className="font-display text-texte group-hover:text-signal mt-2 text-xl font-semibold tracking-tight transition-colors">
+              <p className="font-display text-texte group-hover:text-signal mt-2 text-xl uppercase transition-colors">
                 {suivant.titre} →
               </p>
             </Link>
@@ -172,7 +166,7 @@ export default async function PageTravail({ params }: PageProps<"/travaux/[slug]
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-display text-texte h-fit text-sm font-semibold tracking-widest uppercase lg:sticky lg:top-20">
+      <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
         {titre}
       </h2>
       <div className="lg:pb-4">{children}</div>

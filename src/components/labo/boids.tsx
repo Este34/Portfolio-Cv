@@ -4,7 +4,8 @@ import { useMemo } from "react";
 
 import { Toile, type Pilote } from "./toile";
 
-type Boid = { x: number; y: number; vx: number; vy: number };
+/** `voisins` est conservé d'une frame à l'autre : il sert au rendu. */
+type Boid = { x: number; y: number; vx: number; vy: number; voisins: number };
 
 const SEPARATION = 22;
 const PERCEPTION = 58;
@@ -33,9 +34,16 @@ export function Boids() {
 
     return {
       initialiser({ largeur, hauteur }) {
-        // Densité constante par surface : la nuée reste lisible quelle que
-        // soit la largeur d'écran, au lieu d'être étouffée sur mobile.
-        const nombre = Math.round((largeur * hauteur) / 5200);
+        /*
+         * Densité constante par surface : la nuée reste lisible quelle que soit
+         * la largeur d'écran, au lieu d'être étouffée sur mobile.
+         *
+         * Le diviseur est passé de 5200 à 2400 après vérification en capture :
+         * une cinquantaine d'individus dans un cadre de 640 × 400 se lisaient
+         * comme de la poussière dispersée, pas comme une nuée — et un
+         * comportement collectif qu'on ne perçoit pas ne démontre rien.
+         */
+        const nombre = Math.round((largeur * hauteur) / 2400);
         sim.troupe = Array.from({ length: nombre }, () => {
           const angle = Math.random() * Math.PI * 2;
           const v = VITESSE_MIN + Math.random() * (VITESSE_MAX - VITESSE_MIN);
@@ -44,13 +52,17 @@ export function Boids() {
             y: Math.random() * hauteur,
             vx: Math.cos(angle) * v,
             vy: Math.sin(angle) * v,
+            voisins: 0,
           };
         });
       },
 
       dessiner({ ctx, largeur, hauteur, dt, souris }) {
-        const signal = jeton("--signal", "#ff8a3d");
-        const attenue = jeton("--texte-faible", "#666e76");
+        // Le citron marque les individus rapides ; le gris moyen les autres.
+        // La version précédente employait le gris le plus faible de la palette,
+        // à moitié transparent : sur fond sombre, les boids étaient invisibles.
+        const rapideCouleur = jeton("--citron", "#e8ff54");
+        const attenue = jeton("--texte-attenue", "#a5a5b2");
 
         ctx.clearRect(0, 0, largeur, hauteur);
 
@@ -84,6 +96,8 @@ export function Boids() {
               sy -= (dy / d) * (SEPARATION - d);
             }
           }
+
+          b.voisins = voisins;
 
           if (voisins > 0) {
             b.vx += (ax / voisins - b.vx) * 0.9 * dt;
@@ -120,19 +134,29 @@ export function Boids() {
           else if (b.y > hauteur) b.y -= hauteur;
         }
 
-        // Rendu : un chevron orienté par la vitesse, plus lisible qu'un point.
+        /*
+         * Rendu : un chevron orienté par la vitesse, plus lisible qu'un point.
+         *
+         * **La couleur encode le nombre de voisins perçus**, pas la vitesse.
+         * La version précédente colorait les individus « rapides », mais la
+         * vitesse est bornée par le modèle et le seuil ne se déclenchait
+         * pratiquement jamais : la nuée restait uniformément grise, donc muette.
+         * Le voisinage, lui, varie énormément — et c'est exactement la grandeur
+         * que la démonstration prétend illustrer. On voit désormais les
+         * agrégats se former et se défaire.
+         */
         for (const b of sim.troupe) {
           const angle = Math.atan2(b.vy, b.vx);
-          const rapide = Math.hypot(b.vx, b.vy) > VITESSE_MAX * 0.86;
+          const groupe = b.voisins >= 4;
           ctx.save();
           ctx.translate(b.x, b.y);
           ctx.rotate(angle);
-          ctx.fillStyle = rapide ? signal : attenue;
-          ctx.globalAlpha = rapide ? 0.95 : 0.5;
+          ctx.fillStyle = groupe ? rapideCouleur : attenue;
+          ctx.globalAlpha = groupe ? 1 : 0.62;
           ctx.beginPath();
-          ctx.moveTo(5, 0);
-          ctx.lineTo(-3.5, 2.6);
-          ctx.lineTo(-3.5, -2.6);
+          ctx.moveTo(7, 0);
+          ctx.lineTo(-4.6, 3.5);
+          ctx.lineTo(-4.6, -3.5);
           ctx.closePath();
           ctx.fill();
           ctx.restore();

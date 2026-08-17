@@ -18,6 +18,7 @@ const DEMOS = [
     corps: [
       "Séparation, alignement, cohésion. Chaque individu ne perçoit que ses voisins immédiats et n'a aucune idée de la forme du groupe — celle-ci n'est écrite nulle part, elle apparaît.",
       "C'est le contre-exemple le plus court à l'intuition qu'un comportement collectif lisible demande une coordination centrale. Le curseur fait office de prédateur.",
+      "La couleur n'indique pas la vitesse mais le nombre de voisins perçus : un individu passe au citron dès qu'il en compte quatre. On voit ainsi les agrégats se former et se défaire — ce qui est précisément la grandeur que la démonstration prétend illustrer.",
     ],
     composant: <Boids />,
   },
@@ -46,13 +47,8 @@ const DEMOS = [
 export default function Labo() {
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <div className="border-trait flex items-center justify-between border-b py-3">
-        <span className="annotation">Index / 006</span>
-        <span className="annotation">{DEMOS.length} simulations</span>
-      </div>
-
       <header className="py-16 lg:py-20">
-        <h1 className="font-display text-titre text-texte font-semibold">Labo</h1>
+        <h1 className="font-display text-titre text-texte uppercase">Labo</h1>
         <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
           Des systèmes qu&apos;on ne comprend qu&apos;en les faisant tourner. Tout ce qui suit
           s&apos;exécute dans votre navigateur, en canvas, sans bibliothèque : quelques centaines de
@@ -70,7 +66,7 @@ export default function Labo() {
             <div className="grid gap-8 lg:grid-cols-[1fr_1.55fr] lg:gap-14">
               <div>
                 <span className="annotation">Démonstration {String(i + 1).padStart(2, "0")}</span>
-                <h2 className="font-display text-texte mt-2 text-2xl font-semibold tracking-tight">
+                <h2 className="font-display text-texte mt-2 text-2xl uppercase">
                   {demo.titre}
                 </h2>
                 <p className="text-texte-attenue mt-1 text-sm">{demo.sousTitre}</p>

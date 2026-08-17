@@ -14,12 +14,12 @@ import { SITE } from "@/lib/site";
  * gris sur gris, ce qui les rendait invisibles alors qu'ils sont l'argument le
  * plus solide du site.
  *
- * « 0,00002 % » plutôt que « 2·10⁻⁵ % » : la notation scientifique est juste
+ * « 0,00002 % » plutôt que « 2·10⁻⁵ % » : la notation scientifique est juste
  * mais elle se lit mal en très gros corps, et un recruteur ne s'arrête pas
  * pour décoder un exposant.
  */
 const CHIFFRES_CLES = [
-  { valeur: "0,00002 %", libelle: "écart au modèle d'origine", bloc: "bloc-bleu" },
+  { valeur: "0,00002 %", libelle: "écart au modèle d'origine", bloc: "bloc-bleu" },
   { valeur: "4", libelle: "modèles de prospective portés", bloc: "bloc-corail" },
   { valeur: "240", libelle: "pays dans le pipeline", bloc: "bloc-citron" },
   { valeur: "0", libelle: "serveur d'analyse", bloc: "bg-trait-fort text-fond" },

@@ -43,3 +43,6 @@ next-env.d.ts
 # Clone vide créé par erreur dans le dossier du projet — conservé sur disque,
 # non suivi. Supprimable sans risque.
 /Portfolio/
+
+# Captures de vérification visuelle — locales, non versionnées.
+/.captures/

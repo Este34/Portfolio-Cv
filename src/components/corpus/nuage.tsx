@@ -85,20 +85,38 @@ export function NuageCorpus({ points, variance }: { points: PointCorpus[]; varia
     }
 
     points.forEach((p, i) => {
-      const couleur = palette[sources.indexOf(p.source) % palette.length];
+      /*
+       * Huit sources pour cinq couleurs : au-delà de la cinquième, le marqueur
+       * passe en cercle creux plutôt que plein. Sans cette variation de forme,
+       * « Parcours » portait la même couleur que « Présentation » et « Labo »
+       * que « La plateforme » — une couleur qui se répète ne renseigne plus.
+       * La forme a en outre l'avantage de rester lisible sans percevoir la
+       * teinte.
+       */
+      const rang = sources.indexOf(p.source);
+      const couleur = palette[rang % palette.length];
+      const creux = rang >= palette.length;
+
       const actif = survol === i;
       const r = actif ? 8 : 4.5;
 
       ctx.beginPath();
       ctx.arc(px(p.xy[0]), py(p.xy[1]), r, 0, Math.PI * 2);
-      ctx.fillStyle = couleur;
-      ctx.globalAlpha = actif ? 1 : 0.78;
-      ctx.fill();
+      ctx.globalAlpha = actif ? 1 : 0.8;
+
+      if (creux) {
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = couleur;
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = couleur;
+        ctx.fill();
+      }
 
       if (actif) {
         ctx.globalAlpha = 1;
         ctx.lineWidth = 2;
-        ctx.strokeStyle = fond;
+        ctx.strokeStyle = creux ? couleur : fond;
         ctx.stroke();
       }
     });
@@ -158,7 +176,8 @@ export function NuageCorpus({ points, variance }: { points: PointCorpus[]; varia
         />
 
         <span className="annotation text-texte-faible absolute right-3 bottom-2">
-          {variance} % de variance conservée
+          {/* Virgule décimale : le site est en français. */}
+          {String(variance).replace(".", ",")} % de variance conservée
         </span>
       </div>
 
@@ -179,16 +198,25 @@ export function NuageCorpus({ points, variance }: { points: PointCorpus[]; varia
 
       {/* Légende — sans elle, la couleur ne veut rien dire. */}
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
-        {sources.map((s, i) => (
-          <li key={s} className="flex items-center gap-1.5">
-            <span
-              aria-hidden="true"
-              className="size-2.5 shrink-0"
-              style={{ background: `var(--serie-${(i % 5) + 1})` }}
-            />
-            <span className="annotation text-texte-attenue">{s}</span>
-          </li>
-        ))}
+        {sources.map((s, i) => {
+          const couleur = `var(--serie-${(i % 5) + 1})`;
+          const creux = i >= 5;
+          return (
+            <li key={s} className="flex items-center gap-1.5">
+              {/* Plein puis creux : voir la note sur les marqueurs du nuage. */}
+              <span
+                aria-hidden="true"
+                className="size-2.5 shrink-0 rounded-full"
+                style={
+                  creux
+                    ? { border: `2px solid ${couleur}` }
+                    : { background: couleur }
+                }
+              />
+              <span className="annotation text-texte-attenue">{s}</span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

@@ -10,14 +10,9 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <div className="border-trait flex items-center justify-between border-b py-3">
-        <span className="annotation">Index / 005</span>
-        <span className="annotation">Contact</span>
-      </div>
-
       <div className="grid gap-12 py-16 lg:grid-cols-[1.3fr_1fr] lg:gap-20 lg:py-24">
         <div>
-          <h1 className="font-display text-titre text-texte font-semibold">Parlons-en.</h1>
+          <h1 className="font-display text-titre text-texte uppercase">Parlons-en.</h1>
           <p className="text-texte-attenue mt-6 max-w-xl text-lg leading-relaxed">
             Je ne cherche pas de poste — je suis en alternance et j&apos;y reste. Mais si vous
             travaillez sur de la prospective, de la donnée lourde à rendre lisible, ou sur ce qu&apos;on

@@ -17,13 +17,8 @@ export const metadata: Metadata = {
 export default function Methode() {
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <div className="border-trait flex items-center justify-between border-b py-3">
-        <span className="annotation">Index / 003</span>
-        <span className="annotation">Méthode</span>
-      </div>
-
       <header className="py-16 lg:py-20">
-        <h1 className="font-display text-titre text-texte font-semibold">
+        <h1 className="font-display text-titre text-texte uppercase">
           J&apos;écris du code avec des agents. Voici où passe la frontière.
         </h1>
         <p className="text-texte-attenue mt-6 max-w-2xl text-lg leading-relaxed">
@@ -58,7 +53,7 @@ export default function Methode() {
               {
                 titre: "Le choix des invariants à vérifier",
                 corps:
-                  "Un agent écrit volontiers le test qu'on lui demande. Savoir que le test qui compte est la comparaison feuille à feuille avec le classeur d'origine — et fixer le seuil d'échec à 0,1 % — relève du jugement, pas de la génération.",
+                  "Un agent écrit volontiers le test qu'on lui demande. Savoir que le test qui compte est la comparaison feuille à feuille avec le classeur d'origine — et fixer le seuil d'échec à 0,1 % — relève du jugement, pas de la génération.",
               },
               {
                 titre: "Les arbitrages contraints",
@@ -72,7 +67,7 @@ export default function Methode() {
               },
             ].map((item) => (
               <li key={item.titre} className="py-6 first:pt-0 last:pb-0">
-                <h3 className="font-display text-texte text-lg font-semibold tracking-tight">
+                <h3 className="font-display text-texte text-lg">
                   {item.titre}
                 </h3>
                 <p className="text-texte-attenue mt-2 leading-relaxed">{item.corps}</p>
@@ -87,7 +82,7 @@ export default function Methode() {
             saurai-je que ça a cessé de marcher ? ». Sur les simulateurs, la réponse tient dans le
             générateur de données : il rejoue les trajectoires de référence avec le modèle porté en
             JavaScript, les compare aux sorties du classeur, et refuse de produire le jeu de données
-            au-delà de 0,1 % d&apos;écart.
+            au-delà de 0,1 % d&apos;écart.
           </p>
           <p className="text-texte-attenue mt-4 leading-relaxed">
             C&apos;est ce garde-fou, et pas la revue de code, qui garantit que le simulateur et le
@@ -115,7 +110,7 @@ export default function Methode() {
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-display text-texte h-fit text-sm font-semibold tracking-widest uppercase lg:sticky lg:top-20">
+      <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
         {titre}
       </h2>
       <div className="lg:pb-4">{children}</div>

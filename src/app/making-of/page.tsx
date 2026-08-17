@@ -50,13 +50,8 @@ const MESURES = [
 export default function MakingOf() {
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <div className="border-trait flex items-center justify-between border-b py-3">
-        <span className="annotation">Index / 007</span>
-        <span className="annotation">Making-of</span>
-      </div>
-
       <header className="py-16 lg:py-20">
-        <h1 className="font-display text-titre text-texte font-semibold">
+        <h1 className="font-display text-titre text-texte uppercase">
           Comment ce site est construit
         </h1>
         <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
@@ -71,7 +66,7 @@ export default function MakingOf() {
           {MESURES.map((m) => (
             <div key={m.libelle} className="border-trait border-b px-1 py-6 lg:border-b-0 lg:px-5">
               <dt className="annotation">{m.libelle}</dt>
-              <dd className="font-display text-texte tabulaire mt-2 text-2xl font-semibold tracking-tight">
+              <dd className="font-display text-texte tabulaire mt-2 text-2xl uppercase">
                 {m.valeur}
               </dd>
               <p className="annotation text-texte-faible mt-1.5 normal-case">{m.note}</p>
@@ -120,7 +115,7 @@ export default function MakingOf() {
             {ARBITRAGES.map((a, i) => (
               <li key={a.titre} className="py-6 first:pt-0 last:pb-0">
                 <span className="annotation">Arbitrage {String(i + 1).padStart(2, "0")}</span>
-                <h3 className="font-display text-texte mt-2 text-lg font-semibold tracking-tight">
+                <h3 className="font-display text-texte mt-2 text-lg">
                   {a.titre}
                 </h3>
                 <p className="text-texte-attenue mt-2 leading-relaxed">{a.corps}</p>
@@ -165,7 +160,7 @@ export default function MakingOf() {
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-display text-texte h-fit text-sm font-semibold tracking-widest uppercase lg:sticky lg:top-20">
+      <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
         {titre}
       </h2>
       <div className="lg:pb-4">{children}</div>

@@ -58,7 +58,10 @@ export function SectionCorpus() {
 
           <p className="text-texte-attenue mt-4 leading-relaxed">
             Deux dimensions ne retiennent que{" "}
-            <strong className="text-texte font-semibold">{variance} %</strong> de la variance. C&apos;est
+            <strong className="text-texte font-semibold">
+              {String(variance).replace(".", ",")} %
+            </strong>{" "}
+            de la variance. C&apos;est
             peu, et c&apos;est normal : c&apos;est exactement pour cette raison que la recherche
             travaille sur les 384, pas sur cette image.
           </p>

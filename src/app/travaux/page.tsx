@@ -14,13 +14,8 @@ export default function Travaux() {
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-          <div className="border-trait flex items-center justify-between border-b py-3">
-            <span className="annotation">Index / 002</span>
-            <span className="annotation">{TRAVAUX_TRIES.length} entrées</span>
-          </div>
-
           <header className="py-16 lg:py-20">
-            <h1 className="font-display text-titre text-texte font-semibold">Travaux</h1>
+            <h1 className="font-display text-titre text-texte uppercase">Travaux</h1>
             <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
               Quatre chantiers, un même geste : prendre un modèle enfermé dans un outil que peu de
               gens peuvent ouvrir, et le rendre manipulable par tous — sans perdre en fidélité.
