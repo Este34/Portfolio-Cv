@@ -2,8 +2,11 @@ name: Régression visuelle
 
 # Les images de référence dépendent de la plateforme : Windows et Linux ne
 # rastérisent pas le texte de la même façon. Ce workflow est le seul endroit où
-# le jeu Linux est produit et comparé, et il tourne dans le conteneur officiel
-# de Playwright pour que deux exécutions partent du même moteur de rendu.
+# le jeu Linux est produit et comparé.
+#
+# Le runner est épinglé sur `ubuntu-24.04` plutôt que sur `ubuntu-latest` : une
+# montée de version de l'image change les polices système, donc le rendu, donc
+# toutes les références d'un coup. Autant choisir le moment.
 
 on:
   push:
@@ -23,12 +26,7 @@ concurrency:
 jobs:
   comparer:
     name: Comparer au rendu de référence
-    runs-on: ubuntu-latest
-    # La version doit suivre celle de `@playwright/test` dans package.json :
-    # un conteneur plus récent que la bibliothèque installe des navigateurs que
-    # la bibliothèque ne sait pas piloter, et le rendu change.
-    container:
-      image: mcr.microsoft.com/playwright:v1.62.1-noble
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
 
@@ -41,6 +39,13 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # `playwright install` télécharge la version de navigateur qui correspond
+      # exactement à la bibliothèque installée. C'est préférable à une image
+      # Docker épinglée à la main : le numéro y est écrit deux fois, et le jour
+      # où l'un des deux bouge sans l'autre, le rendu change sans prévenir.
+      - name: Installer Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Cache du modèle de vectorisation
         uses: actions/cache@v4

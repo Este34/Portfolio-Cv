@@ -128,7 +128,10 @@ réduit, la seconde parce qu'elle n'a pas de boucle d'animation.
 pas le texte de la même façon, et Playwright suffixe donc les images par
 système. Le jeu Windows se régénère avec `npm run test:visuel:references` ; le
 jeu Linux se régénère depuis l'onglet *Actions* du dépôt, workflow *Régression
-visuelle*, en cochant « Régénérer les références Linux et les committer ».
+visuelle*, bouton *Run workflow*, en cochant « Régénérer les références Linux et
+les committer ». Ce job a besoin du droit d'écriture : si le push échoue en 403,
+c'est *Settings → Actions → General → Workflow permissions* qui est réglé en
+lecture seule.
 
 Le jeu complet pèse une dizaine de méga-octets. C'est la raison pour laquelle la
 matrice n'est pas complète : l'anglais n'est photographié que sur les pages à
