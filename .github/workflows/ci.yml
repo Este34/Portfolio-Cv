@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 # Une seule exécution par branche : pousser trois fois d'affilée ne doit pas
