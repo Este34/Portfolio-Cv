@@ -121,8 +121,14 @@ export const TRAVAUX: readonly Travail[] = [
       "Les scénarios de référence sont explorables par des non-spécialistes ; les paramètres experts restent accessibles derrière un mode dédié.",
       "Chaque livrable existe en deux formes : un fichier HTML autonome pour l'échange par courriel, et une version hébergée.",
       "La régénération des données depuis le classeur est scriptée, vérifiée et reproductible.",
+      "Une version publiable de l'un des quatre simulateurs est jouable sur ce site, avec ses données intégralement régénérées.",
     ],
-    liens: {},
+    /*
+     * Lien interne uniquement. Le dépôt reste privé ; ce qui est ouvert au
+     * public est une version neutralisée hébergée ici — code et interface
+     * d'origine, valeurs fabriquées.
+     */
+    liens: { demo: "/demonstration" },
   },
 
   {

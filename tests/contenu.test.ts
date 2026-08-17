@@ -50,11 +50,19 @@ describe("travaux", () => {
     }
   });
 
-  it("seuls les travaux publics exposent des liens", () => {
+  it("un travail sous anonymat n'expose aucun lien sortant", () => {
+    /*
+     * La règle a été affinée : un travail anonymisé peut renvoyer vers une
+     * démonstration **interne** — une version neutralisée hébergée sur ce site,
+     * dont le code et l'interface sont d'origine mais dont les données ont été
+     * régénérées. Ce qu'il ne peut pas faire, c'est pointer vers un dépôt ou un
+     * domaine qui le rattacherait à son commanditaire.
+     */
     for (const t of TRAVAUX) {
-      if (t.confidentialite === "anonymise") {
-        expect(t.liens.depot, t.slug).toBeUndefined();
-        expect(t.liens.demo, t.slug).toBeUndefined();
+      if (t.confidentialite !== "anonymise") continue;
+      expect(t.liens.depot, `${t.slug} ne doit pas exposer de dépôt`).toBeUndefined();
+      if (t.liens.demo) {
+        expect(t.liens.demo.startsWith("/"), `${t.slug} : démo interne attendue`).toBe(true);
       }
     }
   });

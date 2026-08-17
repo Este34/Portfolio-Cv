@@ -104,6 +104,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
     description: "Simulateurs de prospective, pipelines de données, systèmes de recherche",
   },
   {
+    href: "/demonstration",
+    label: "Démonstration",
+    description: "Un de mes simulateurs de prospective, jouable, en données fabriquées",
+  },
+  {
     href: "/bac-a-sable",
     label: "Bac à sable",
     description: "Déposez vos données, interrogez-les en SQL dans votre navigateur",

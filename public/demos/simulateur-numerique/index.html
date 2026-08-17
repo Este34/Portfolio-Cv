@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simulateur numérique — Simulateur numérique</title>
+<link rel="stylesheet" href="vendor/nouislider.min.css" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<!-- Page de garde (diapo de présentation) affichée en premier -->
+<div id="cover">
+  <div class="cover-body">
+    <h1 class="cover-title">Simulateur numérique — Simulateur numérique</h1>
+    <p class="cover-sub">Le numérique national mobilise des matières premières. Ce simulateur en projette les quantités de 2025 à 2050, selon cinq trajectoires d'équipement.</p>
+    <button id="coverLaunch" class="cover-btn" type="button">Lancer le simulateur <span aria-hidden="true">→</span></button>
+  </div>
+  <div class="cover-credit">institut / institut</div>
+</div>
+
+<!-- Choix du territoire : national (Territoire national) ou régional (Territoire régional).
+     Le classeur décline le modèle en régional au prorata de la population. -->
+<div id="regionSelect" role="dialog" aria-modal="true" aria-labelledby="regionTitle">
+  <div class="region-body">
+    <h2 id="regionTitle" class="region-title">Sur quel territoire veux-tu travailler ?</h2>
+    <p class="region-sub">Le modèle régional reprend le modèle national, ramené au poids de la
+      région dans la population nationale. Tu pourras changer à tout moment.</p>
+    <div class="region-choices">
+      <button type="button" class="region-card" data-region="fr">
+        <span class="region-map-wrap" role="img" aria-label="Carte de le territoire métropolitaine">
+          </span>
+        <span class="region-nom">Territoire national</span>
+        <span class="region-desc">Le modèle national complet, tel qu'aujourd'hui.</span>
+      </button>
+      <button type="button" class="region-card" data-region="occ">
+        <span class="region-map-wrap" role="img" aria-label="Carte de le territoire, région Territoire régional surlignée">
+          </span>
+        <span class="region-nom">Territoire régional <span class="region-part" id="regionPartOcc"></span></span>
+        <span class="region-desc">Le modèle ramené au poids de la région.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="site-banner"><img src="assets/DataCenter-1020x512%20(1).jpg" alt="Centre de données : allée de baies de serveurs"></div>
+<header>
+  <div id="activeScenarioBadge" class="scen-badge"></div>
+  <div class="header-inner">
+    <div class="header-title">
+      <h1>Simulateur numérique — Simulateur numérique</h1>
+    </div>
+    <button type="button" id="regionBtn" class="region-btn"
+      title="Changer de territoire (national / régional)" aria-haspopup="dialog"></button>
+  </div>
+</header>
+
+<div id="status" role="status" aria-live="polite" aria-atomic="true">Chargement des données…</div>
+
+<nav id="tabs" role="tablist" aria-label="Sections du simulateur">
+  <button class="tab active" data-page="synthese" role="tab" id="tab-synthese" aria-selected="true" aria-controls="page-synthese">Synthèse</button>
+  <button class="tab" data-page="traj" role="tab" id="tab-traj" aria-selected="false" aria-controls="page-traj" tabindex="-1">Paramètres</button>
+  <button class="tab" data-page="stock" role="tab" id="tab-stock" aria-selected="false" aria-controls="page-data" tabindex="-1">Matières mobilisées</button>
+  <button class="tab" data-page="entrants" role="tab" id="tab-entrants" aria-selected="false" aria-controls="page-data" tabindex="-1">Flux matières entrants</button>
+  <button class="tab" data-page="sortants" role="tab" id="tab-sortants" aria-selected="false" aria-controls="page-data" tabindex="-1">Flux matières sortants</button>
+  <button class="tab" data-page="sout" role="tab" id="tab-sout" aria-selected="false" aria-controls="page-sout" tabindex="-1">Soutenabilité</button>
+  <button class="tab" data-page="elec" role="tab" id="tab-elec" aria-selected="false" aria-controls="page-elec" tabindex="-1">Électricité</button>
+</nav>
+
+<!-- Bandeau territoire : visible dès qu'on n'est plus sur la Territoire national, pour qu'un
+     chiffre régional ne soit jamais confondu avec un chiffre national -->
+<div id="regionBanner" role="status"></div>
+
+<!-- Barre de trajectoire : elle pilote tous les onglets -->
+<div id="scenBar" role="group" aria-label="Trajectoire d'équipement">
+  <span class="scen-lab">Trajectoire :</span>
+  <div class="scen-btns" id="scenBtns"></div>
+  <button type="button" id="scenReset" class="scen-reset" title="Remettre T′ sur les valeurs de sa trajectoire de départ">↺ Valeurs d'origine</button>
+</div>
+
+<div class="layout" id="app" style="display:none">
+  <!-- FILTRES (partagés) -->
+  <aside class="panel" id="filters">
+    <button type="button" id="resetFilters" class="reset-btn">↺ Réinitialiser les filtres</button>
+    <div class="slicer" id="slicerMatiere">
+      <h3>Filtre matière <span class="slicer-count" id="matiereCount"></span></h3>
+      <div class="checks" id="matiereChecks"></div>
+    </div>
+    <div class="slicer">
+      <h3>Filtre thème <span class="slicer-count" id="energieCount"></span></h3>
+      <div class="checks" id="energieChecks"></div>
+    </div>
+    <div class="slicer">
+      <h3>Filtre technologie <span class="slicer-count" id="technoCount"></span></h3>
+      <div class="checks" id="technoChecks"></div>
+    </div>
+    <div class="slicer">
+      <h3>Filtre année (période)</h3>
+      <div class="yearbox">
+        <div class="yearvals"><span id="yearStart">2025</span><span id="yearEnd">2050</span></div>
+        <div id="yearSlider"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- VISUELS -->
+  <div class="right">
+    <div class="kpis" id="kpis">
+      <div class="kpi"><div class="label">Nombre de matières sélectionnées</div><div class="value" id="kpiCount">0</div></div>
+      <div class="kpi"><div class="label">Valeur totale sur la période</div><div class="value" id="kpiTotal">0</div></div>
+    </div>
+
+    <!-- Onglet 1 : Synthèse -->
+    <section class="page active" id="page-synthese" role="tabpanel" aria-labelledby="tab-synthese" tabindex="0">
+      <div class="note">Le numérique national repose sur des appareils. Chaque appareil contient des métaux.
+        Ce simulateur compte les appareils, puis en déduit les matières mobilisées jusqu'en 2050.
+        Cinq trajectoires décrivent des futurs d'équipement contrastés.</div>
+      <div class="kpis kpis-wide" id="synthKpis"></div>
+
+      <div class="chart-card"><div class="card-head"><h3>Nombre de terminaux en circulation</h3>
+        <div class="chart-btns"><button type="button" class="chart-btn btn-export" data-export="term">⭳ CSV</button></div></div>
+        <p class="det">Ce graphe compte les appareils détenus par les national, année après année.
+          Chaque couleur correspond à un type d'appareil. La hauteur totale donne le parc complet.</p>
+        <div class="chart-wrap" style="height:420px"><canvas id="termChart" role="img" aria-label="Nombre de terminaux en circulation"></canvas></div>
+        <div class="sr-only"><table id="termTable" aria-live="polite"></table></div>
+        <div id="termTop" class="ecart-grid"></div></div>
+
+      <div class="chart-card"><h3>Population nationale par tranche d'âge</h3>
+        <p class="det">Ce graphe montre l'évolution de la population nationale jusqu'en 2050.
+          Le modèle projette l'équipement âge par âge : la démographie détermine donc le nombre d'appareils.
+          Source : projections démographie de référence.</p>
+        <div class="chart-wrap" style="height:340px"><canvas id="demoChart" role="img" aria-label="Population nationale par tranche d'âge"></canvas></div></div>
+
+      <div class="chart-card"><div class="card-head"><h3>Comparaison des cinq trajectoires</h3>
+        <div class="chart-btns" role="group" aria-label="Grandeur comparée">
+          <button type="button" class="chart-btn active" data-comp="term">Terminaux</button>
+          <button type="button" class="chart-btn" data-comp="stock">Matière mobilisée</button>
+          <button type="button" class="chart-btn" data-comp="entrants">Besoin annuel</button>
+          <button type="button" class="chart-btn" data-comp="elec">Électricité</button>
+          <button type="button" class="chart-btn btn-export" data-export="comp">⭳ CSV</button>
+        </div></div>
+        <p class="det">Ce graphe superpose les cinq trajectoires sur une même grandeur.
+          Chaque courbe répond à la même question : que se passe-t-il si les national s'équipent plus, ou moins ?</p>
+        <div class="chart-wrap" style="height:400px"><canvas id="compChart" role="img" aria-label="Comparaison des cinq trajectoires"></canvas></div>
+        <div class="sr-only"><table id="compTable" aria-live="polite"></table></div>
+        <div id="compEcart" class="ecart-grid"></div>
+      </div>
+      <div class="chart-card"><h3>Répartition du parc d'appareils en 2050</h3>
+        <p class="det">Ce graphe montre quels appareils composent le parc national.
+          La taille de chaque part indique le nombre d'appareils en circulation.</p>
+        <div class="chart-wrap" style="height:360px"><canvas id="synthParc" role="img" aria-label="Répartition du parc d'appareils"></canvas></div>
+      </div>
+    </section>
+
+    <!-- Onglet 2 : Paramètres -->
+    <section class="page" id="page-traj" role="tabpanel" aria-labelledby="tab-traj" tabindex="0">
+      <div class="note">Une trajectoire fixe deux choses : le niveau d'équipement des national en 2050
+        et la durée de vie des appareils. Les trajectoires <strong>T1 à T4 sont des références figées</strong> :
+        tu les sélectionnes pour les comparer.
+        <br>La trajectoire <strong>T′ Libre est la seule éditable</strong> : pars d'une trajectoire de référence
+        (bouton « Partir de »), puis ajuste les facteurs ci-dessous — tout le simulateur se recalcule.</div>
+
+      <div class="chart-card" id="facEditCard"><h3>Niveau d'équipement en 2050</h3>
+        <p class="det">Un facteur multiplie le niveau d'équipement de 2025. Un facteur de 1 maintient l'équipement actuel.
+          Un facteur de 2 le double. Un facteur de 0,5 le divise par deux.
+          Modifie une valeur : le parc d'appareils et les matières se recalculent immédiatement.</p>
+        <div id="facTables"></div></div>
+
+      <div class="chart-card"><div class="card-head"><h3>Durée de vie des appareils</h3>
+        <div class="chart-btns"><button type="button" class="chart-btn btn-export" data-export="dv">⭳ CSV</button></div></div>
+        <p class="det">La durée de vie détermine le rythme de remplacement des appareils.
+          Un appareil gardé plus longtemps se remplace moins souvent. Il mobilise donc moins de matière neuve.
+          Ce levier agit sans réduire le nombre d'appareils détenus.</p>
+        <div id="dvTable"></div>
+        <div class="chart-wrap" style="height:320px"><canvas id="dvChart" role="img" aria-label="Effet de la durée de vie sur le besoin de matière"></canvas></div>
+        <p class="det" id="dvCaption"></p></div>
+    </section>
+
+    <!-- Onglets type de données : Stock / Flux Entrants / Flux Sortants (4 visuels) -->
+    <section class="page" id="page-data" role="tabpanel" aria-labelledby="tab-stock" tabindex="0">
+      <div class="data-head"><h2 id="dataTitle" style="margin:0;color:var(--dark)">Matières mobilisées</h2>
+        <button type="button" class="chart-btn" id="matSortBtn" title="Trier les matières par valeur (décroissant / croissant)" aria-label="Sens de tri des matières">↓</button></div>
+      <p class="det" id="dataIntro"></p>
+      <div class="charts-stack">
+        <div class="chart-card"><div class="card-head"><h3>Masse totale par matière</h3><button type="button" class="chart-btn btn-export" data-export="donut">⭳ CSV</button></div>
+          <p class="det">Ce graphe classe les matières par masse, sur toute la période choisie.
+            Quelques matières dominent en poids. Les autres pèsent peu, mais comptent pour l'approvisionnement.</p>
+          <div class="chart-wrap"><canvas id="donut" role="img" aria-label="Masse totale par matière"></canvas></div><div class="sr-only"><table id="donutTable" aria-live="polite"></table></div></div>
+        <div class="chart-card"><div class="card-head"><h3>Masse par année et par matière</h3><button type="button" class="chart-btn btn-export" data-export="line">⭳ CSV</button></div>
+          <p class="det">Ce graphe suit la masse de chaque matière au fil des années.
+            La pente indique le sens de l'évolution : une pente qui monte signale un besoin croissant.</p>
+          <div class="chart-wrap"><canvas id="line" role="img" aria-label="Masse par année et par matière"></canvas></div><div class="sr-only"><table id="lineTable" aria-live="polite"></table></div></div>
+        <div class="chart-card"><div class="card-head"><h3>Matières à faible masse</h3><button type="button" class="chart-btn btn-export" data-export="lineSmall">⭳ CSV</button></div>
+          <p class="det">Ce graphe isole les matières peu volumineuses. Le fer et l'aluminium écrasent les autres sur un graphe commun.
+            Règle la plage de tonnage ci-dessous : le graphe ne trace que les matières dont le total tombe dans cet intervalle.</p>
+          <div class="yearbox" style="max-width:360px">
+            <div class="yearvals"><span>Plage de tonnage : <span id="smallMatMinVal">0</span> – <span id="smallMatMaxVal">6 000 000</span> t</span></div>
+            <div id="smallMatRangeSlider"></div>
+          </div>
+          <p class="det" id="lineSmallCaption"></p>
+          <div class="chart-wrap"><canvas id="lineSmall" role="img" aria-label="Évolution des matières à faible masse, par année"></canvas></div><div class="sr-only"><table id="lineSmallTable" aria-live="polite"></table></div></div>
+        <div class="chart-card"><div class="card-head"><h3>Répartition par matière et par équipement</h3>
+          <div class="chart-btns" role="group" aria-label="Type de graphique">
+            <button type="button" class="chart-btn" data-kind="treemap">Treemap</button>
+            <button type="button" class="chart-btn" data-kind="stackh">Barres empilées</button>
+            <button type="button" class="chart-btn" data-kind="rank">Barres classées</button>
+            <button type="button" class="chart-btn" data-kind="log">Échelle log</button>
+            <button type="button" class="chart-btn" data-kind="donut">Donut</button>
+            <button type="button" class="chart-btn" data-kind="col">Histogramme</button>
+            <button type="button" class="chart-btn btn-export" data-export="tree">⭳ CSV</button>
+          </div></div>
+          <p class="det">Ce graphe croise les matières et les équipements qui les contiennent.
+            Il répond à une question simple : quel appareil mobilise quelle matière ?</p>
+          <div id="treeCrumb" class="tree-crumb" role="navigation" aria-label="Niveau du treemap"></div>
+          <div class="chart-wrap" id="techWrap" style="height:460px"><canvas id="tree" role="img" aria-label="Répartition par matière et équipement"></canvas>
+            <div id="techChartHint" class="chart-hint">Choisis un type de graphe ci-dessus pour l'afficher.</div></div>
+          <div id="treeSmall" class="tree-small"></div>
+          <div class="sr-only"><table id="treeTable" aria-live="polite"></table></div></div>
+      </div>
+    </section>
+
+    <!-- Onglet 6 : Soutenabilité -->
+    <section class="page" id="page-sout" role="tabpanel" aria-labelledby="tab-sout" tabindex="0">
+      <div class="note">Le besoin national en une matière se compare à la production mondiale de cette matière.
+        Ce rapport mesure la tension d'approvisionnement. Trois repères situent le poids de le territoire dans le monde.</div>
+      <div class="sout-ctrl">
+        <label for="soutMatSel">Matière analysée :</label>
+        <select id="soutMatSel" style="max-width:260px"></select>
+        <span class="sub" style="color:var(--muted)">Besoin annuel moyen ÷ production mondiale</span>
+      </div>
+      <div class="sout-top">
+        <div class="chart-card">
+          <h3>Part du besoin national dans la production mondiale</h3>
+          <p class="det">Cette jauge compare le besoin national annuel à la production mondiale de la matière.
+            La territoire représente 0,84 % de la population mondiale. Une aiguille au-delà de ce repère signale un besoin
+            supérieur au poids démographique du pays.</p>
+          <div class="gauge-wrap"><canvas id="gauge" aria-hidden="true"></canvas></div>
+          <div id="gaugeMeter" role="meter" aria-label="Part du besoin national dans la production mondiale" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="sr-only" id="gaugeMeterText"></span></div>
+          <div class="gauge-legend">
+            <span><i class="dot" style="background:var(--green)" aria-hidden="true"></i>Superficie territoire/Monde &lt; <span data-seuil="0">0,365</span> %</span>
+            <span><i class="dot" style="background:var(--yellow)" aria-hidden="true"></i>Population FR/Monde &lt; <span data-seuil="1">0,841</span> %</span>
+            <span><i class="dot" style="background:var(--orange)" aria-hidden="true"></i>PIB territoire/Monde &lt; <span data-seuil="2">2,170</span> %</span>
+            <span><i class="dot" style="background:var(--red)" aria-hidden="true"></i>&gt; <span data-seuil="2b">2,170</span> %</span>
+          </div>
+        </div>
+        <div class="chart-card"><h3>Détail par thème et par équipement</h3>
+          <p class="det">Ce tableau répartit le besoin entre les équipements qui consomment la matière.
+            La couleur reprend les repères de la jauge.</p>
+          <div id="soutMatrix" style="overflow:auto;max-height:300px"></div></div>
+      </div>
+      <div class="chart-card"><div class="card-head"><h3>Évolution du besoin annuel par rapport à la production mondiale</h3><button type="button" class="chart-btn btn-export" data-export="soutLine">⭳ CSV</button></div>
+        <p class="det">Ce graphe suit la tension d'approvisionnement année après année.
+          Une courbe qui monte signale un besoin qui croît plus vite que la production mondiale.</p>
+        <div class="chart-wrap"><canvas id="soutLine" role="img" aria-label="Évolution du besoin annuel par rapport à la production mondiale"></canvas></div><div class="sr-only"><table id="soutLineTable" aria-live="polite"></table></div></div>
+      <div class="chart-card"><div class="card-head"><h3>Tension d'approvisionnement par matière et par année</h3>
+        <button type="button" class="chart-btn btn-export" data-export="soutHeatmap">⭳ CSV</button></div>
+        <p class="det">Cette heatmap compare, pour chaque matière, le besoin national annuel à la production
+          mondiale — la couleur reprend les repères de la jauge. La ligne de la matière sélectionnée ci-dessus
+          est mise en évidence.</p>
+        <div id="soutHeatmap" style="overflow:auto;max-height:420px"></div></div>
+    </section>
+
+    <!-- Onglet 7 : Électricité -->
+    <section class="page" id="page-elec" role="tabpanel" aria-labelledby="tab-elec" tabindex="0">
+      <div class="note">Le numérique consomme de l'électricité. Les terminaux, les réseaux et les centres de données
+        se partagent cette consommation. Ce total se compare à la production électrique nationale.</div>
+      <div class="kpis kpis-wide" id="elecKpis"></div>
+      <div class="chart-card"><div class="card-head"><h3>Consommation électrique du numérique</h3>
+        <div class="chart-btns"><button type="button" class="chart-btn btn-export" data-export="elec">⭳ CSV</button></div></div>
+        <p class="det">Ce graphe répartit la consommation entre les trois postes du numérique.
+          Les terminaux réagissent à la trajectoire d'équipement. Les réseaux et les centres de données suivent
+          leur propre trajectoire, indépendante du nombre d'appareils.</p>
+        <div class="chart-wrap" style="height:400px"><canvas id="elecChart" role="img" aria-label="Consommation électrique du numérique"></canvas></div>
+        <div class="sr-only"><table id="elecTable" aria-live="polite"></table></div></div>
+      <div class="chart-card"><h3>Part du numérique dans la production électrique nationale</h3>
+        <p class="det">Ce graphe rapporte la consommation du numérique à la production électrique nationale.
+          La référence vaut 536,5 TWh, soit la production nationale nette de 2024.
+          Le repère suppose une production constante : il situe un ordre de grandeur, pas une prévision.</p>
+        <div class="chart-wrap" style="height:340px"><canvas id="elecPartChart" role="img" aria-label="Part du numérique dans la production électrique nationale"></canvas></div></div>
+    </section>
+  </div>
+</div>
+
+<footer class="institut-banner">
+  <div class="institut-banner-inner">
+    <p class="data-info"><span id="dataInfo"></span>
+      <span>Modèle Simulateur numérique · Source : institut</span></p>
+  </div>
+</footer>
+
+<script src="vendor/chart.umd.min.js"></script>
+<script src="vendor/chartjs-chart-treemap.min.js"></script>
+<script src="vendor/nouislider.min.js"></script>
+<script src="js/etat.js"></script>
+<script src="js/simulateurNumerique.js"></script>
+<script src="js/export-csv.js"></script>
+<script src="js/donnees.js"></script>
+<script src="js/filtres-ui.js"></script>
+<script src="js/graphes.js"></script>
+<script src="js/soutenabilite.js"></script>
+<script src="js/trajectoires.js"></script>
+<script src="js/synthese.js"></script>
+<script src="js/electricite.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
