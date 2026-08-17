@@ -4,111 +4,133 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------------------
-   Jetons de design — « instrument »
-   Palette volontairement pauvre : encre, os, un signal. Les teintes de données
-   ne servent QUE dans les graphes, jamais dans l'interface.
+   Jetons de design — « Signal »
+   Aplats de couleur pleins, typographie massive, contraste sans nuance.
+   Quatre couleurs qui travaillent ensemble, là où la version précédente n'en
+   avait qu'une et paraissait froide pour cette seule raison.
    --------------------------------------------------------------------------- */
 
 @theme {
-  /* Typographie */
   --font-display: var(--police-display), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--police-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--police-mono), ui-monospace, "SFMono-Regular", monospace;
 
-  /* Échelle typographique — resserrée, précise */
-  --text-micro: 0.6875rem; /* 11px — annotations d'instrument */
-  --text-micro--line-height: 1.2;
-  --text-micro--letter-spacing: 0.08em;
+  /* Échelle typographique — écarts francs, sans palier tiède. */
+  --text-etiquette: 0.75rem;
+  --text-etiquette--line-height: 1.35;
+  --text-etiquette--letter-spacing: 0.01em;
 
-  --text-xs: 0.75rem;
+  --text-xs: 0.8125rem;
   --text-xs--line-height: 1.5;
-  --text-sm: 0.8125rem;
+  --text-sm: 0.875rem;
   --text-sm--line-height: 1.6;
-  --text-base: 0.9375rem;
-  --text-base--line-height: 1.7;
-  --text-lg: 1.0625rem;
-  --text-lg--line-height: 1.65;
+  --text-base: 1rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.6;
 
-  --text-titre: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
-  --text-titre--line-height: 1.15;
-  --text-titre--letter-spacing: -0.02em;
+  --text-titre: clamp(1.75rem, 1.1rem + 2.4vw, 2.75rem);
+  --text-titre--line-height: 1;
+  --text-titre--letter-spacing: -0.03em;
 
-  --text-display: clamp(2.75rem, 1.2rem + 6.4vw, 6.5rem);
-  --text-display--line-height: 0.92;
+  --text-display: clamp(2.5rem, 0.9rem + 6.6vw, 6rem);
+  --text-display--line-height: 0.88;
   --text-display--letter-spacing: -0.04em;
 
-  /* Rayons — un instrument n'est pas arrondi */
-  --radius-instrument: 2px;
-  --radius-panneau: 4px;
+  /*
+   * Angles vifs : cette direction n'a pas de coins arrondis.
+   *
+   * `instrument` et `panneau` sont les noms hérités de la direction
+   * précédente, conservés à zéro plutôt que supprimés. Les retirer aurait
+   * silencieusement vidé une trentaine de classes réparties dans une quinzaine
+   * de fichiers — Tailwind ne signale pas un utilitaire inexistant, il ne
+   * génère simplement rien, et le défaut ne se voit qu'à l'œil.
+   */
+  --radius-bloc: 0px;
+  --radius-instrument: 0px;
+  --radius-panneau: 0px;
 
-  /* Courbes — mécaniques, jamais élastiques */
-  --ease-instrument: cubic-bezier(0.2, 0, 0, 1);
-  --ease-sortie: cubic-bezier(0.4, 0, 1, 1);
-
-  /* Trame de fond */
-  --spacing-trame: 5.5rem;
+  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-instrument: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* --- Mode sombre (défaut) --------------------------------------------------- */
+/* --- Thème clair (défaut) — fond blanc, mêmes aplats saturés -------------- */
 :root {
   --police-display: var(--font-archivo);
   --police-sans: var(--font-inter);
   --police-mono: var(--font-jetbrains);
 
-  --fond: #08090a;
-  --fond-eleve: #0e1012;
-  --surface: #131619;
-  --trait: #23282d;
-  --trait-fort: #363d44;
+  --fond: #f5f3ef;
+  --fond-eleve: #ffffff;
+  --surface: #ebe8e2;
+  --trait: #d6d2ca;
+  --trait-fort: #0e0e12;
 
-  --texte: #edeae4;
-  --texte-attenue: #9aa1a8;
-  --texte-faible: #666e76;
+  --texte: #0e0e12;
+  --texte-attenue: #55555f;
+  --texte-faible: #83838f;
 
-  --signal: #ff8a3d;
-  --signal-vif: #ffa062;
-  --signal-sourd: #7a4620;
-  --signal-voile: rgb(255 138 61 / 0.1);
+  /* Les trois couleurs de signal. Aucune n'est « la » couleur d'accent :
+     elles se relaient, et c'est ce qui empêche la monotonie. */
+  --bleu: #2036d6;
+  --corail: #e8341a;
+  --citron: #c8dd18;
 
-  /* Séries de données — réservées aux graphes */
-  --serie-1: #ff8a3d;
-  --serie-2: #4de1c1;
-  --serie-3: #7aa2f7;
-  --serie-4: #c58af9;
-  --serie-5: #e0af68;
+  /* Couleur d'encre à poser SUR chaque aplat. */
+  --sur-bleu: #f5f3ef;
+  --sur-corail: #f5f3ef;
+  --sur-citron: #0e0e12;
 
-  --ombre-panneau: 0 1px 0 0 rgb(255 255 255 / 0.03) inset;
-  color-scheme: dark;
-}
+  --serie-1: #2036d6;
+  --serie-2: #e8341a;
+  --serie-3: #7a8a00;
+  --serie-4: #00786b;
+  --serie-5: #8a2be0;
 
-/* --- Mode clair — « papier technique », pas une inversion paresseuse -------- */
-:root:not(.dark) {
-  --fond: #f4f2ed;
-  --fond-eleve: #faf9f6;
-  --surface: #ffffff;
-  --trait: #d9d5cc;
-  --trait-fort: #b8b2a6;
+  /* Alias hérités : `signal` désigne désormais le corail. Voir la note sur les
+     rayons — même raison, éviter de vider des classes en silence. */
+  --signal: var(--corail);
+  --signal-vif: #b8240c;
+  --signal-sourd: #f8c9c0;
+  --signal-voile: rgb(232 52 26 / 0.09);
 
-  --texte: #14161a;
-  --texte-attenue: #55595f;
-  --texte-faible: #83878d;
-
-  --signal: #c2410c;
-  --signal-vif: #9a3412;
-  --signal-sourd: #fed7aa;
-  --signal-voile: rgb(194 65 12 / 0.07);
-
-  --serie-1: #c2410c;
-  --serie-2: #0f766e;
-  --serie-3: #1d4ed8;
-  --serie-4: #7e22ce;
-  --serie-5: #a16207;
-
-  --ombre-panneau: 0 1px 2px 0 rgb(20 22 26 / 0.04);
   color-scheme: light;
 }
 
-/* Expose les jetons sémantiques aux utilitaires Tailwind. */
+/* --- Thème sombre — l'identité pleine de la direction --------------------- */
+.dark {
+  --fond: #0e0e12;
+  --fond-eleve: #16161c;
+  --surface: #1e1e26;
+  --trait: #2c2c36;
+  --trait-fort: #f5f3ef;
+
+  --texte: #f5f3ef;
+  --texte-attenue: #a5a5b2;
+  --texte-faible: #7c7c8a;
+
+  --bleu: #2b4cf2;
+  --corail: #ff5a3c;
+  --citron: #e8ff54;
+
+  --sur-bleu: #f5f3ef;
+  --sur-corail: #0e0e12;
+  --sur-citron: #0e0e12;
+
+  --serie-1: #2b4cf2;
+  --serie-2: #ff5a3c;
+  --serie-3: #e8ff54;
+  --serie-4: #3ce0c0;
+  --serie-5: #c07cff;
+
+  --signal: var(--corail);
+  --signal-vif: #ff7d66;
+  --signal-sourd: #6b1f12;
+  --signal-voile: rgb(255 90 60 / 0.12);
+
+  color-scheme: dark;
+}
+
 @theme inline {
   --color-fond: var(--fond);
   --color-fond-eleve: var(--fond-eleve);
@@ -118,15 +140,21 @@
   --color-texte: var(--texte);
   --color-texte-attenue: var(--texte-attenue);
   --color-texte-faible: var(--texte-faible);
-  --color-signal: var(--signal);
-  --color-signal-vif: var(--signal-vif);
-  --color-signal-sourd: var(--signal-sourd);
-  --color-signal-voile: var(--signal-voile);
+  --color-bleu: var(--bleu);
+  --color-corail: var(--corail);
+  --color-citron: var(--citron);
+  --color-sur-bleu: var(--sur-bleu);
+  --color-sur-corail: var(--sur-corail);
+  --color-sur-citron: var(--sur-citron);
   --color-serie-1: var(--serie-1);
   --color-serie-2: var(--serie-2);
   --color-serie-3: var(--serie-3);
   --color-serie-4: var(--serie-4);
   --color-serie-5: var(--serie-5);
+  --color-signal: var(--signal);
+  --color-signal-vif: var(--signal-vif);
+  --color-signal-sourd: var(--signal-sourd);
+  --color-signal-voile: var(--signal-voile);
 }
 
 /* ---------------------------------------------------------------------------
@@ -148,17 +176,30 @@
     color: var(--texte);
     font-family: var(--font-sans);
     font-size: var(--text-base);
-    line-height: 1.7;
-    font-feature-settings: "kern", "liga", "cv05";
+    line-height: 1.65;
+    font-feature-settings: "kern", "liga";
     text-rendering: optimizeLegibility;
   }
 
+  /*
+   * Les titres sont en graisse maximale, très serrés, et en capitales là où
+   * ils sont courts. C'est le geste central de cette direction : la masse
+   * typographique remplace la couleur d'accent unique de la version d'avant.
+   */
   h1,
   h2,
-  h3,
-  h4 {
+  h3 {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  h4,
+  h5 {
+    font-family: var(--font-display);
+    font-weight: 800;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
@@ -167,7 +208,6 @@
     text-wrap: pretty;
   }
 
-  /* Chiffres alignés partout — c'est un instrument. */
   table,
   time,
   data,
@@ -175,19 +215,17 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Focus visible, sans compromis. */
+  /* Focus franc, à la mesure du reste. */
   :focus-visible {
-    outline: 2px solid var(--signal);
+    outline: 3px solid var(--corail);
     outline-offset: 2px;
-    border-radius: 1px;
   }
 
   ::selection {
-    background-color: var(--signal);
-    color: var(--fond);
+    background-color: var(--citron);
+    color: #0e0e12;
   }
 
-  /* Le mouvement est un service rendu à la lecture, jamais un dû. */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -201,50 +239,53 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Utilitaires propres à l'instrument
+   Utilitaires
    --------------------------------------------------------------------------- */
 
+/**
+ * Petite étiquette.
+ *
+ * **Elle a remplacé le style « annotation » de la version précédente**, qui
+ * était en monospace, en capitales et interlettré — et que j'avais posé
+ * partout : navigation, listes de technos, pieds de page, légendes. À cette
+ * fréquence, le résultat criait au lieu d'informer.
+ *
+ * Ici : sans-serif, demi-gras, casse conservée. Lisible en petit corps sans
+ * hurler. Le nom de classe est resté `annotation` pour ne pas réécrire tous
+ * les gabarits d'un coup, mais le style n'a plus rien à voir.
+ */
 @utility annotation {
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: var(--text-etiquette);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   color: var(--texte-faible);
   font-variant-numeric: tabular-nums;
 }
 
-/* Trame de fond millimétrée — la grille d'un papier technique. */
-@utility trame {
-  background-image:
-    linear-gradient(to right, var(--trait) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--trait) 1px, transparent 1px);
-  background-size: var(--spacing-trame) var(--spacing-trame);
-  opacity: 0.4;
+/** Monospace réservé aux données et au code : requêtes SQL, tables, scores. */
+@utility donnee {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Filet de séparation qui s'efface aux extrémités. */
-@utility filet {
-  background-image: linear-gradient(
-    to right,
-    transparent,
-    var(--trait) 12%,
-    var(--trait) 88%,
-    transparent
-  );
-  height: 1px;
+/** Aplat de couleur pleine. La bordure n'existe pas : c'est la couleur qui délimite. */
+@utility bloc-bleu {
+  background-color: var(--bleu);
+  color: var(--sur-bleu);
+}
+@utility bloc-corail {
+  background-color: var(--corail);
+  color: var(--sur-corail);
+}
+@utility bloc-citron {
+  background-color: var(--citron);
+  color: var(--sur-citron);
 }
 
-/* Grain — dosé, jamais visible consciemment. */
-@utility grain {
-  position: relative;
-}
-@utility grain-couche {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.025;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23b)'/%3E%3C/svg%3E");
+/** Filet épais — la séparation franche de cette direction. */
+@utility filet-fort {
+  border-top: 2px solid var(--trait-fort);
 }

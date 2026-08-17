@@ -75,6 +75,104 @@ for (let i = 0; i < corpus.length; i++) {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Projection en deux dimensions, par analyse en composantes principales.
+   --------------------------------------------------------------------------- */
+
+/**
+ * Extrait les deux premières composantes principales par itération de la
+ * puissance, puis projette chaque passage dessus.
+ *
+ * **Pourquoi l'ACP et pas t-SNE ou UMAP.** Ces derniers donnent de plus jolis
+ * amas, mais ils inventent une structure locale : deux points voisins sur un
+ * graphe t-SNE ne le sont pas nécessairement dans l'espace d'origine, et les
+ * distances entre amas n'ont aucun sens. Une ACP est une projection linéaire —
+ * ce qu'on voit est une ombre fidèle du nuage réel, avec la part de variance
+ * qu'elle conserve écrite noir sur blanc. Sur un site qui prétend montrer son
+ * moteur de recherche au travail, une figure honnête vaut mieux qu'une belle.
+ *
+ * Le vecteur de départ est fixe et non aléatoire : deux builds successifs
+ * doivent produire exactement la même figure.
+ */
+function projeterACP(v: Float32Array, n: number, d: number) {
+  const moyenne = new Float64Array(d);
+  for (let i = 0; i < n; i++) for (let k = 0; k < d; k++) moyenne[k] += v[i * d + k];
+  for (let k = 0; k < d; k++) moyenne[k] /= n;
+
+  const centre = new Float64Array(n * d);
+  for (let i = 0; i < n; i++) {
+    for (let k = 0; k < d; k++) centre[i * d + k] = v[i * d + k] - moyenne[k];
+  }
+
+  /** Une itération de la puissance sur la matrice de covariance implicite. */
+  function composante(exclure: Float64Array | null): Float64Array {
+    let u = new Float64Array(d).fill(1 / Math.sqrt(d));
+    for (let pas = 0; pas < 120; pas++) {
+      const suivant = new Float64Array(d);
+      for (let i = 0; i < n; i++) {
+        let produit = 0;
+        for (let k = 0; k < d; k++) produit += centre[i * d + k] * u[k];
+        for (let k = 0; k < d; k++) suivant[k] += produit * centre[i * d + k];
+      }
+      // Déflation : on retire la part portée par la composante précédente,
+      // sinon l'itération reconverge simplement vers elle.
+      if (exclure) {
+        let produit = 0;
+        for (let k = 0; k < d; k++) produit += suivant[k] * exclure[k];
+        for (let k = 0; k < d; k++) suivant[k] -= produit * exclure[k];
+      }
+      let norme = 0;
+      for (let k = 0; k < d; k++) norme += suivant[k] * suivant[k];
+      norme = Math.sqrt(norme) || 1;
+      for (let k = 0; k < d; k++) suivant[k] /= norme;
+      u = suivant;
+    }
+    return u;
+  }
+
+  const pc1 = composante(null);
+  const pc2 = composante(pc1);
+
+  const brut: [number, number][] = [];
+  for (let i = 0; i < n; i++) {
+    let x = 0;
+    let y = 0;
+    for (let k = 0; k < d; k++) {
+      x += centre[i * d + k] * pc1[k];
+      y += centre[i * d + k] * pc2[k];
+    }
+    brut.push([x, y]);
+  }
+
+  // Ramené dans [0, 1] : le composant de rendu n'a plus à connaître l'échelle.
+  const xs = brut.map((p) => p[0]);
+  const ys = brut.map((p) => p[1]);
+  const etendue = (a: number[]) => {
+    const min = Math.min(...a);
+    const max = Math.max(...a);
+    return { min, ecart: max - min || 1 };
+  };
+  const ex = etendue(xs);
+  const ey = etendue(ys);
+
+  // Part de variance conservée : la seule mesure qui dise si la figure est
+  // informative ou décorative.
+  let varianceTotale = 0;
+  for (let i = 0; i < n * d; i++) varianceTotale += centre[i] * centre[i];
+  const varianceProjetee = brut.reduce((s, [x, y]) => s + x * x + y * y, 0);
+
+  return {
+    points: brut.map(([x, y]) => [
+      Number(((x - ex.min) / ex.ecart).toFixed(4)),
+      Number(((y - ey.min) / ey.ecart).toFixed(4)),
+    ]) as [number, number][],
+    variance: Number(((varianceProjetee / varianceTotale) * 100).toFixed(1)),
+  };
+}
+
+const projection = projeterACP(vecteurs, corpus.length, DIMENSIONS);
+console.log(`Projection ACP : ${projection.variance} % de la variance conservée`);
+
 await mkdir(dossier, { recursive: true });
 await writeFile(join(dossier, "embeddings.bin"), Buffer.from(vecteurs.buffer));
 await writeFile(
@@ -82,7 +180,15 @@ await writeFile(
   JSON.stringify({
     modele: MODELE,
     dimensions: DIMENSIONS,
-    passages: corpus.map(({ id, texte, source, href, poids }) => ({ id, texte, source, href, poids })),
+    projection,
+    passages: corpus.map(({ id, texte, source, href, poids }, i) => ({
+      id,
+      texte,
+      source,
+      href,
+      poids,
+      xy: projection.points[i],
+    })),
   }),
 );
 

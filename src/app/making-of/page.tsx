@@ -9,6 +9,16 @@ export const metadata: Metadata = {
 
 const ARBITRAGES = [
   {
+    titre: "Toute la direction artistique refaite après coup",
+    corps:
+      "La première version de ce site a été dessinée sans que personne ne la regarde : encre presque noire, une seule couleur d'accent, et un style d'étiquette en monospace capitales appliqué partout — navigation, listes de technologies, pieds de page. À cette fréquence, ce style ne renseigne plus, il crie. Le résultat était froid et vide, et la seule façon de le savoir était de le montrer. La refonte remplace l'accent unique par trois couleurs qui se relaient, rend la casse aux étiquettes, réserve le monospace aux données, et fait porter le contraste par la masse typographique plutôt que par la couleur.",
+  },
+  {
+    titre: "Une figure qui montre le moteur, à la place d'un globe",
+    corps:
+      "La page d'accueil portait un globe de points et d'arcs, décoratif et assumé comme tel. Il occupait la place la plus visible du site pour ne rien démontrer. Il est remplacé par la projection du corpus vectorisé : les 53 passages que le moteur de recherche compare réellement à votre question, réduits de 384 dimensions à deux par analyse en composantes principales. La part de variance conservée est affichée, parce qu'une projection qui ne dit pas ce qu'elle perd est une illustration, pas une mesure.",
+  },
+  {
     titre: "Pas de Parquet pour le contenu du site",
     corps:
       "Le contenu du portfolio tient en 101 lignes et 12 kilo-octets. Un format colonnaire compressé n'y rend aucun service : il ajoute une dépendance d'écriture, une étape de build et un binaire opaque pour économiser quelques kilo-octets sur un fichier qui n'est chargé que si l'on ouvre la console. DuckDB lit donc du JSON. Parquet garde sa place là où il en a une : dans le pipeline de commerce international, sur des millions de lignes.",

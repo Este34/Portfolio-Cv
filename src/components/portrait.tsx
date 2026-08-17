@@ -35,11 +35,11 @@ export function Portrait({ className = "" }: { className?: string }) {
                       0.2126 0.7152 0.0722 0 0
                       0      0      0      1 0"
             />
-            {/* Ombres → #08090A · hautes lumières → #FF8A3D */}
+            {/* Ombres → #0E0E12 · hautes lumières → #FF5A3C (le corail Signal) */}
             <feComponentTransfer>
-              <feFuncR type="table" tableValues="0.031 1" />
-              <feFuncG type="table" tableValues="0.035 0.541" />
-              <feFuncB type="table" tableValues="0.039 0.239" />
+              <feFuncR type="table" tableValues="0.055 1" />
+              <feFuncG type="table" tableValues="0.055 0.353" />
+              <feFuncB type="table" tableValues="0.071 0.235" />
             </feComponentTransfer>
           </filter>
         </defs>
@@ -63,11 +63,15 @@ export function Portrait({ className = "" }: { className?: string }) {
           className="h-full w-full object-cover [filter:url(#duotone-signal)] [mask-image:radial-gradient(ellipse_68%_74%_at_50%_42%,black_45%,transparent_100%)]"
         />
 
-        {/* Annotations d'instrument, cohérentes avec le reste du site. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between">
-          <span className="annotation text-signal">Sujet / 01</span>
-          <span className="annotation text-texte-faible">1024 × 1247</span>
-        </div>
+        {/*
+          Une seule étiquette, en aplat plein. La version précédente posait ici
+          « Sujet / 01 » et les dimensions du fichier — du vocabulaire
+          d'instrument de mesure, qui n'a plus lieu d'être et qui donnait au
+          portrait l'air d'une pièce à conviction.
+        */}
+        <span className="bloc-citron absolute bottom-0 left-0 px-2 py-1 text-xs font-bold uppercase">
+          Esteban
+        </span>
       </div>
     </figure>
   );

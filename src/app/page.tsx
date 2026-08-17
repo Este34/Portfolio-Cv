@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { CarteTravail } from "@/components/carte-travail";
-import { SectionGlobe } from "@/components/globe/section-globe";
+import { SectionCorpus } from "@/components/corpus/section-corpus";
 import { Portrait } from "@/components/portrait";
 import { TRAVAUX_TRIES } from "@/content/travaux";
 import { SITE } from "@/lib/site";
@@ -9,94 +9,90 @@ import { SITE } from "@/lib/site";
 /**
  * Chiffres de tête.
  *
- * Choisis pour qu'un lecteur qui ne lira rien d'autre reparte avec la bonne
- * idée : de la fidélité mesurée, du volume, et zéro infrastructure.
+ * Posés en aplats de couleur pleine, côte à côte, sur toute la largeur : c'est
+ * le geste signature de la direction. La version précédente les alignait en
+ * gris sur gris, ce qui les rendait invisibles alors qu'ils sont l'argument le
+ * plus solide du site.
+ *
+ * « 0,00002 % » plutôt que « 2·10⁻⁵ % » : la notation scientifique est juste
+ * mais elle se lit mal en très gros corps, et un recruteur ne s'arrête pas
+ * pour décoder un exposant.
  */
 const CHIFFRES_CLES = [
-  { valeur: "2·10⁻⁵ %", libelle: "écart au modèle d'origine", note: "vérifié à chaque génération" },
-  { valeur: "4", libelle: "modèles de prospective portés", note: "horizon 2050" },
-  { valeur: "240", libelle: "pays dans le pipeline", note: "sur 25 ans de déclarations" },
-  { valeur: "0", libelle: "serveur d'analyse", note: "tout s'exécute côté client" },
+  { valeur: "0,00002 %", libelle: "écart au modèle d'origine", bloc: "bloc-bleu" },
+  { valeur: "4", libelle: "modèles de prospective portés", bloc: "bloc-corail" },
+  { valeur: "240", libelle: "pays dans le pipeline", bloc: "bloc-citron" },
+  { valeur: "0", libelle: "serveur d'analyse", bloc: "bg-trait-fort text-fond" },
 ] as const;
 
 export default function Accueil() {
   return (
     <>
-      {/* ---- Bandeau d'accueil ------------------------------------------ */}
-        <section className="relative overflow-hidden">
-          <div
-            aria-hidden="true"
-            className="trame pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]"
-          />
+      {/* ---- Bandeau d'accueil -------------------------------------------- */}
+      <section className="mx-auto max-w-6xl px-5">
+        <div className="grid gap-10 py-14 lg:grid-cols-[1.5fr_1fr] lg:gap-14 lg:py-20">
+          <div className="flex flex-col justify-center">
+            <h1 className="text-display text-texte uppercase">
+              {SITE.accroche.replace(/\.$/, "")}
+            </h1>
 
-          <div className="relative mx-auto max-w-6xl px-5">
-            <div className="border-trait flex items-center justify-between border-b py-3">
-              <span className="annotation">Index / 001</span>
-              <span className="annotation">{TRAVAUX_TRIES.length} travaux · 2024—2026</span>
-            </div>
+            <p className="text-texte-attenue mt-7 max-w-xl text-lg leading-relaxed">
+              {SITE.sousTitre}
+            </p>
 
-            <div className="grid gap-12 py-20 lg:grid-cols-[1.35fr_1fr] lg:gap-16 lg:py-28">
-              <div>
-                <h1 className="font-display text-display text-texte font-semibold">
-                  {SITE.accroche}
-                </h1>
-
-                <p className="text-texte-attenue mt-8 max-w-xl text-lg leading-relaxed">
-                  {SITE.sousTitre}
-                </p>
-
-                <div className="mt-10 flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/travaux"
-                    className="bg-signal text-fond rounded-instrument hover:bg-signal-vif px-5 py-2.5 text-sm font-medium transition-colors"
-                  >
-                    Voir les travaux
-                  </Link>
-                  <Link
-                    href="/methode"
-                    className="border-trait-fort text-texte hover:border-signal hover:text-signal rounded-instrument border px-5 py-2.5 text-sm font-medium transition-colors"
-                  >
-                    Comment je travaille
-                  </Link>
-                </div>
-              </div>
-
-              <Portrait className="mx-auto w-full max-w-xs lg:mx-0 lg:max-w-none lg:self-center" />
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link
+                href="/travaux"
+                className="bloc-corail px-6 py-3 text-sm font-bold uppercase tracking-tight transition-transform duration-200 ease-(--ease-signal) hover:-translate-y-0.5"
+              >
+                Voir les travaux
+              </Link>
+              <Link
+                href="/labo"
+                className="border-trait-fort text-texte hover:bloc-citron border-2 px-6 py-3 text-sm font-bold uppercase tracking-tight transition-colors"
+              >
+                Le labo
+              </Link>
             </div>
           </div>
-        </section>
 
-        {/* ---- Chiffres ---------------------------------------------------- */}
-        <section aria-label="Chiffres clés" className="border-trait border-y">
-          <dl className="divide-trait mx-auto grid max-w-6xl divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
-            {CHIFFRES_CLES.map((c) => (
-              <div key={c.libelle} className="px-5 py-7">
-                <dt className="annotation">{c.libelle}</dt>
-                <dd className="font-display text-texte tabulaire mt-2 text-3xl font-semibold tracking-tight">
-                  {c.valeur}
-                </dd>
-                <p className="annotation text-texte-faible mt-1.5 normal-case">{c.note}</p>
-              </div>
-            ))}
-          </dl>
-        </section>
+          <Portrait className="mx-auto w-full max-w-xs lg:mx-0 lg:max-w-none lg:self-center" />
+        </div>
+      </section>
 
-        <SectionGlobe />
+      {/* ---- Chiffres, en aplats ------------------------------------------ */}
+      <section aria-label="Chiffres clés">
+        <dl className="grid sm:grid-cols-2 lg:grid-cols-4">
+          {CHIFFRES_CLES.map((c) => (
+            <div key={c.libelle} className={`${c.bloc} flex flex-col gap-1 px-5 py-7`}>
+              <dd className="font-display tabulaire text-3xl leading-none font-black tracking-tight">
+                {c.valeur}
+              </dd>
+              <dt className="text-xs font-semibold uppercase opacity-80">{c.libelle}</dt>
+            </div>
+          ))}
+        </dl>
+      </section>
 
-        {/* ---- Travaux ------------------------------------------------------ */}
-        <section className="mx-auto max-w-6xl px-5 py-20">
-          <div className="mb-2 flex items-baseline justify-between">
-            <h2 className="font-display text-titre text-texte font-semibold">Travaux</h2>
-            <Link href="/travaux" className="annotation hover:text-signal transition-colors">
-              Tout voir →
-            </Link>
-          </div>
+      <SectionCorpus />
 
-          <div>
-            {TRAVAUX_TRIES.map((travail, i) => (
-              <CarteTravail key={travail.slug} travail={travail} index={i} />
-            ))}
-          </div>
+      {/* ---- Travaux ------------------------------------------------------ */}
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <div className="mb-4 flex items-baseline justify-between gap-4">
+          <h2 className="text-titre text-texte uppercase">Travaux</h2>
+          <Link
+            href="/travaux"
+            className="annotation text-texte hover:text-corail shrink-0 transition-colors"
+          >
+            Tout voir →
+          </Link>
+        </div>
+
+        <div>
+          {TRAVAUX_TRIES.map((travail, i) => (
+            <CarteTravail key={travail.slug} travail={travail} index={i} />
+          ))}
+        </div>
       </section>
     </>
   );

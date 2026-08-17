@@ -2,51 +2,62 @@ import Link from "next/link";
 
 import type { Travail } from "@/content/travaux";
 
+/** Une couleur par entrée, en rotation : c'est la couleur qui numérote. */
+const BLOCS = ["bloc-bleu", "bloc-corail", "bloc-citron", "bg-trait-fort text-fond"] as const;
+
 /**
  * Carte d'un travail dans une liste.
  *
- * Le numéro d'index et le rappel de confidentialité sont posés en annotation :
- * c'est la signature de lecture de tout le site, et ça évite un badge coloré de
- * plus dans une palette qui n'en veut pas.
+ * Le numéro d'ordre est posé dans un aplat de couleur pleine plutôt qu'en
+ * petites capitales grises. La version précédente le noyait dans le même gris
+ * que tout le reste, ce qui donnait quatre lignes de texte indistinctes ; ici
+ * la couleur fait le repérage que la typographie ne peut pas faire seule.
  */
 export function CarteTravail({ travail, index }: { travail: Travail; index: number }) {
-  const numero = String(index + 1).padStart(3, "0");
+  const bloc = BLOCS[index % BLOCS.length];
 
   return (
-    <article className="group border-trait hover:border-trait-fort relative border-t transition-colors">
-      <Link href={`/travaux/${travail.slug}`} className="block py-8 focus:outline-none">
-        <div className="grid gap-5 lg:grid-cols-[7rem_1fr_auto] lg:gap-8">
-          <div className="flex items-baseline gap-3 lg:block">
-            <span className="annotation group-hover:text-signal transition-colors">{numero}</span>
-            <span className="annotation lg:mt-2 lg:block">{travail.annee}</span>
+    <article className="border-trait group border-t last:border-b">
+      <Link href={`/travaux/${travail.slug}`} className="block py-7 focus:outline-none">
+        <div className="grid gap-5 lg:grid-cols-[4.5rem_1fr_auto] lg:gap-8">
+          <div className="flex items-start gap-3 lg:flex-col lg:gap-2">
+            <span
+              className={`${bloc} font-display tabulaire grid size-11 place-items-center text-lg leading-none font-black`}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span className="annotation tabulaire pt-1 lg:pt-0">{travail.annee}</span>
           </div>
 
           <div className="max-w-2xl">
-            <h3 className="font-display text-texte group-hover:text-signal text-xl font-semibold tracking-tight transition-colors">
+            <h3 className="text-texte group-hover:text-corail text-xl uppercase transition-colors">
               {travail.titre}
             </h3>
-            <p className="text-texte-attenue mt-1 text-sm">{travail.sousTitre}</p>
+            <p className="text-texte-attenue mt-1 text-sm font-semibold">{travail.sousTitre}</p>
             <p className="text-texte-attenue mt-3 text-sm leading-relaxed">{travail.resume}</p>
 
-            <ul className="mt-4 flex flex-wrap gap-x-3 gap-y-1.5" aria-label="Technologies">
+            <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Technologies">
               {travail.stack.slice(0, 6).map((tech) => (
-                <li key={tech} className="annotation text-texte-faible">
+                <li
+                  key={tech}
+                  className="border-trait text-texte-attenue border px-2 py-0.5 text-xs font-semibold"
+                >
                   {tech}
                 </li>
               ))}
               {travail.stack.length > 6 && (
-                <li className="annotation text-texte-faible">+{travail.stack.length - 6}</li>
+                <li className="annotation self-center">+{travail.stack.length - 6}</li>
               )}
             </ul>
           </div>
 
-          <div className="lg:text-right">
+          <div className="flex items-center gap-3 lg:flex-col lg:items-end lg:justify-between">
             <span className="annotation">
               {travail.confidentialite === "public" ? "dépôt public" : "sous anonymat"}
             </span>
             <span
               aria-hidden="true"
-              className="text-texte-faible group-hover:text-signal mt-3 hidden text-lg transition-transform duration-300 ease-(--ease-instrument) group-hover:translate-x-1 lg:block"
+              className="text-texte-faible group-hover:text-corail text-2xl leading-none font-black transition-transform duration-300 ease-(--ease-signal) group-hover:translate-x-1"
             >
               →
             </span>

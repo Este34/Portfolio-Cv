@@ -10,13 +10,14 @@ export function Entete() {
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-5">
         <Link
           href="/"
-          className="group flex items-baseline gap-2.5 whitespace-nowrap"
+          className="group flex items-center gap-2.5 whitespace-nowrap"
           aria-label={`${SITE.nom} — accueil`}
         >
-          <span className="border-signal text-signal rounded-instrument border px-1.5 py-0.5 font-mono text-[0.6875rem] leading-none font-bold tracking-widest">
+          {/* Aplat plein, pas un contour : la couleur délimite, elle ne borde pas. */}
+          <span className="bloc-corail font-display px-2 py-1 text-sm leading-none font-black tracking-tight">
             EB
           </span>
-          <span className="font-display text-texte hidden text-sm font-semibold tracking-tight sm:inline">
+          <span className="font-display text-texte hidden text-sm font-bold tracking-tight sm:inline">
             {SITE.nom}
           </span>
         </Link>
@@ -27,7 +28,7 @@ export function Entete() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="annotation text-texte-attenue hover:text-signal rounded-instrument px-2.5 py-2 transition-colors"
+                  className="text-texte-attenue hover:text-corail px-2.5 py-2 text-sm font-semibold transition-colors"
                 >
                   {item.label}
                 </Link>
