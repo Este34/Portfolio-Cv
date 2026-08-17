@@ -6,9 +6,34 @@
  * finira désynchronisée.
  */
 
-export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://esteban-beretti.dev"
-).replace(/\/$/, "");
+/**
+ * Origine du site, pour les URL canoniques, Open Graph et le sitemap.
+ *
+ * Résolue dans cet ordre :
+ *
+ *  1. `NEXT_PUBLIC_SITE_URL` — à renseigner le jour où un vrai domaine existe.
+ *     C'est la seule valeur qui vaille pour la production.
+ *  2. `VERCEL_PROJECT_PRODUCTION_URL` — fournie par Vercel au build, sans
+ *     protocole. Donne le domaine de production du projet, y compris depuis
+ *     une préproduction : c'est bien ce qu'on veut dans un canonical, sinon
+ *     chaque déploiement de test se déclarerait comme l'original.
+ *  3. `localhost` en dernier recours.
+ *
+ * **Pas de domaine codé en dur.** Écrire ici un domaine qui n'est pas encore
+ * acheté ferait pointer tous les canoniques et toutes les vignettes de partage
+ * vers du vide — ou vers ce que quelqu'un d'autre y mettra un jour.
+ */
+function resoudreOrigine(): string {
+  const explicite = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicite) return explicite;
+
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${vercel}`;
+
+  return "http://localhost:3000";
+}
+
+export const SITE_URL = resoudreOrigine().replace(/\/$/, "");
 
 /**
  * **Anonymisation.** Les travaux menés en alternance sont présentés sans nommer

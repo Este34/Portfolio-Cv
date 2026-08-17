@@ -35,6 +35,13 @@ export const metadata: Metadata = {
   },
   description: SITE.description,
   authors: [{ name: SITE.nom }],
+  /*
+   * « ./ » fait que chaque page se déclare canonique d'elle-même, résolue
+   * contre `metadataBase`. Sans canonical, un même contenu servi sur le
+   * domaine de production, sur une préproduction et sur l'URL de déploiement
+   * apparaît comme trois pages distinctes et concurrentes.
+   */
+  alternates: { canonical: "./" },
   openGraph: {
     type: "website",
     locale: "fr_FR",

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run generer:donnees && next dev",
-    "prebuild": "npm run generer:donnees && npm run generer:embeddings && npm run verifier:anonymat",
+    "prebuild": "npm run verifier:anonymat && npm run generer:donnees && npm run verifier:embeddings",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -13,7 +13,8 @@
     "generer:embeddings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/generer-embeddings.ts",
     "verifier:anonymat": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-anonymat.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verifier:embeddings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verifier-embeddings.ts"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev57.0",
