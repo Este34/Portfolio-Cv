@@ -90,7 +90,7 @@ export const TRAVAUX: readonly Travail[] = [
     contexte: `Les équipes s'appuyaient sur des classeurs Excel de plusieurs dizaines de feuilles, doublés de tableaux de bord Power BI. Consulter un scénario supposait d'avoir le classeur, la bonne version, la licence, et de savoir rejouer les macros. Les résultats circulaient en captures d'écran. Ma mission : rendre ces modèles consultables et manipulables par n'importe qui, depuis un navigateur.`,
     contraintes: [
       "Aucun serveur applicatif : les livrables devaient pouvoir être envoyés par courriel et ouverts hors ligne.",
-      "Fidélité non négociable au modèle d'origine — un simulateur qui diverge du classeur ne vaut rien, il crée deux vérités.",
+      "Fidélité non négociable au modèle d'origine. Un simulateur qui diverge du classeur ne vaut rien, il crée deux vérités.",
       "Aucune donnée source sensible ni classeur d'origine versionné dans les dépôts.",
       "Un design system imposé, commun aux quatre outils.",
     ],
@@ -108,7 +108,7 @@ export const TRAVAUX: readonly Travail[] = [
       {
         choix: "JavaScript sans build, en modules chargés par ordre de balises",
         raison:
-          "La contrainte « un seul fichier ouvrable hors ligne » disqualifiait un bundler. Le coût — un ordre de chargement à respecter — est faible et documenté ; le bénéfice est un livrable qui survit à n'importe quel poste de travail.",
+          "La contrainte « un seul fichier ouvrable hors ligne » disqualifiait un bundler. Le coût, un ordre de chargement à respecter, est faible et documenté ; le bénéfice est un livrable qui survit à n'importe quel poste de travail.",
       },
       {
         choix: "Traiter un champ vide comme « suivre le tendanciel », et non comme zéro",
@@ -177,7 +177,7 @@ export const TRAVAUX: readonly Travail[] = [
       {
         choix: "Une source unique de vérité pour l'identité du site",
         raison:
-          "La version précédente répétait le domaine de production dans onze pages HTML — canonical, Open Graph, sitemap, robots. Un seul module exporte désormais tout cela ; il n'y a plus de valeur à oublier lors d'un changement.",
+          "La version précédente répétait le domaine de production dans onze pages HTML : canonical, Open Graph, sitemap, robots. Un seul module exporte désormais tout cela ; il n'y a plus de valeur à oublier lors d'un changement.",
       },
       {
         choix: "Sortir les quatre domaines de la navigation principale",
@@ -200,7 +200,7 @@ export const TRAVAUX: readonly Travail[] = [
     resume:
       "Une application d'analyse des chaînes d'approvisionnement en matières critiques, adossée à un pipeline en trois phases : extraction massive depuis l'API des Nations unies, nettoyage et export Parquet, puis interrogation intégralement dans le navigateur via DuckDB-WASM.",
     annee: "2026",
-    role: "Seul aux commandes — conception, pipeline, modèle de données et interface",
+    role: "Seul aux commandes : conception, pipeline, modèle de données et interface",
     confidentialite: "public",
     rang: 3,
     domaines: ["Ingénierie de la donnée", "Analyse", "Visualisation de données"],
@@ -225,7 +225,7 @@ export const TRAVAUX: readonly Travail[] = [
       "Analyser les chaînes d'approvisionnement en matières critiques suppose de croiser des déclarations douanières bilatérales sur deux décennies. L'API source est payante et limitée en débit ; les volumes dépassent ce qu'un tableur absorbe. Il fallait un pipeline qui extraie une fois, proprement, et une interface qui interroge ensuite sans rien redemander.",
     contraintes: [
       "API payante et limitée : ne jamais retélécharger un couple (déclarant, année) déjà obtenu.",
-      "L'extraction complète dure des heures et sera interrompue — la reprise doit être automatique.",
+      "L'extraction complète dure des heures et sera interrompue. La reprise doit être automatique.",
       "L'analyse devait rester utilisable sans backend, donc sans coût d'hébergement ni exposition des données.",
     ],
     decisions: [
@@ -261,7 +261,7 @@ export const TRAVAUX: readonly Travail[] = [
     titre: "Un RAG écrit à la main",
     sousTitre: "Comprendre la recherche augmentée en l'implémentant sans framework",
     resume:
-      "Un système de recherche augmentée écrit de zéro en Python — vectorisation, similarité cosinus, génération locale — délibérément sans bibliothèque d'orchestration, pour en maîtriser chaque étage.",
+      "Un système de recherche augmentée écrit de zéro en Python (vectorisation, similarité cosinus, génération locale), délibérément sans bibliothèque d'orchestration, pour en maîtriser chaque étage.",
     annee: "2026",
     role: "Projet personnel",
     confidentialite: "public",
@@ -274,7 +274,7 @@ export const TRAVAUX: readonly Travail[] = [
       { valeur: "100 %", libelle: "en local", note: "aucun appel à une API tierce" },
     ],
     contexte:
-      "Les bibliothèques d'orchestration rendent un prototype de recherche augmentée trivial à assembler — et opaque à comprendre. J'ai voulu l'inverse : écrire chaque étage moi-même pour savoir exactement où se perdent la pertinence et le contexte.",
+      "Les bibliothèques d'orchestration rendent un prototype de recherche augmentée trivial à assembler, et opaque à comprendre. J'ai voulu l'inverse : écrire chaque étage moi-même pour savoir exactement où se perdent la pertinence et le contexte.",
     contraintes: [
       "Tourner intégralement en local, sans clé d'API ni service tiers.",
       "Rester assez court pour être lu d'un bout à l'autre et servir de support pédagogique.",
@@ -288,12 +288,12 @@ export const TRAVAUX: readonly Travail[] = [
       {
         choix: "Un modèle d'embedding compact et un modèle de génération local",
         raison:
-          "384 dimensions suffisent largement pour de la recherche documentaire personnelle, et le couple tient sur une machine ordinaire — ce qui rend le projet reproductible par quiconque le clone.",
+          "384 dimensions suffisent largement pour de la recherche documentaire personnelle, et le couple tient sur une machine ordinaire, ce qui rend le projet reproductible par quiconque le clone.",
       },
     ],
     resultats: [
       "Un système fonctionnel en un seul fichier lisible, accompagné d'un guide qui explique chaque composant.",
-      "Le socle direct du moteur de recherche de ce portfolio — même modèle, porté cette fois dans le navigateur.",
+      "Le socle direct du moteur de recherche de ce portfolio : même modèle, porté cette fois dans le navigateur.",
     ],
     liens: {
       depot: "https://github.com/Este34/mon-rag",

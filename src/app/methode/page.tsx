@@ -7,12 +7,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * ⚠️ BROUILLON À VALIDER PAR ESTEBAN.
- *
- * Cette page parle à la première personne d'une pratique de travail. Le texte
- * a été écrit à partir de ce que montrent les dépôts (scripts de vérification,
- * conventions de modèle documentées, historique des commits), mais chaque
- * affirmation doit être relue et assumée avant mise en ligne.
+ * Cette page parle à la première personne d'une pratique de travail. Le texte a
+ * d'abord été écrit à partir de ce que montrent les dépôts (scripts de
+ * vérification, conventions de modèle documentées, historique des commits),
+ * puis relu et validé par Esteban : il l'assume.
  */
 export default function Methode() {
   return (

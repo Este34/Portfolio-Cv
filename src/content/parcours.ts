@@ -25,31 +25,31 @@ export type Etape = {
 export const FORMATION: readonly Etape[] = [
   {
     periode: "2026 →",
-    titre: "Master 1 — AI Engineer",
-    lieu: "À compléter : établissement",
-    description: "À compléter : intitulé exact et contenu du programme.",
-    aCompleter: true,
+    titre: "Master 1 · AI Engineer",
+    lieu: "Université Paris 8, Saint-Denis",
+    description:
+      "Formation à l'ingénierie des systèmes d'intelligence artificielle : apprentissage automatique, traitement du langage, mise en production de modèles.",
   },
   {
-    periode: "2022 — 2026",
+    periode: "2022 à 2026",
     titre: "Licence MIASHS, parcours sciences cognitives",
     lieu: "Université Paul-Valéry Montpellier 3",
     description:
-      "Mathématiques et informatique appliquées aux sciences humaines et sociales. Statistiques, programmation, modélisation — et le versant cognitif : perception, décision, comportement.",
+      "Mathématiques et informatique appliquées aux sciences humaines et sociales. Statistiques, programmation, modélisation. Et le versant cognitif : perception, décision, comportement.",
   },
 ];
 
 export const EXPERIENCES: readonly Etape[] = [
   {
     periode: "Juin 2026 →",
-    titre: "Data & AI engineering — alternance",
+    titre: "Data & AI engineering, en alternance",
     lieu: EMPLOYEUR.libelleCapitalise,
     description:
       "Portage de quatre modèles de prospective d'Excel et Power BI vers des applications web autonomes, vérifiées numériquement contre le modèle d'origine. Conception de la plateforme qui les héberge.",
   },
   {
     periode: "Mars 2023",
-    titre: "Panel citoyen européen — rapporteur de groupe",
+    titre: "Panel citoyen européen, rapporteur de groupe",
     lieu: "Parlement européen",
     description:
       "Sélectionné parmi cent citoyens européens pour formuler des recommandations sur la mobilité d'apprentissage. Rapporteur d'un groupe de travail : synthétiser des positions divergentes, puis les défendre en plénière.",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import {
   LOT,
@@ -23,22 +23,61 @@ function jeton(nom: string, repli: string) {
 /** Finesse de l'échantillonnage du champ de décision. */
 const GRILLE_X = 56;
 const GRILLE_Y = 40;
+/** Hauteur réservée à la courbe de perte, en pixels. */
+const H_COURBE = 56;
+
+type Ordre = "spirales" | "effacer" | null;
 
 /**
- * Réseau de neurones en apprentissage, rendu image par image.
+ * Réseau de neurones en apprentissage, et dessinable.
  *
- * Les mathématiques vivent dans `lib/mlp.ts`, sans dépendance à React — c'est
- * ce qui permet de vérifier en Node que le réseau apprend réellement, et non
- * qu'il affiche seulement une animation convaincante.
+ * Deux usages. Par défaut, le réseau sépare deux spirales entrelacées et
+ * l'apprentissage se rejoue en boucle. En mode libre, c'est le visiteur qui
+ * place les points : il dessine ses propres classes et regarde la frontière
+ * s'y adapter en direct.
+ *
+ * Le second usage est celui qui apprend quelque chose. On y découvre en
+ * quelques clics ce qu'aucun paragraphe n'explique aussi bien : qu'une seule
+ * donnée aberrante déforme une frontière, qu'un réseau extrapole n'importe quoi
+ * là où il n'a rien vu, et que deux amas bien séparés sont résolus
+ * instantanément là où deux amas imbriqués résistent.
+ *
+ * Les mathématiques vivent dans `lib/mlp.ts`, sans dépendance à React, ce qui
+ * permet de vérifier en Node que le réseau apprend réellement.
  */
 export function Reseau() {
-  const [etat, setEtat] = useState({ lots: 0, perte: 0.7, justesse: 50 });
+  const [etat, setEtat] = useState({ lots: 0, perte: 0.7, justesse: 50, points: 0 });
+  const [classe, setClasse] = useState<0 | 1>(1);
+  const [libre, setLibre] = useState(false);
+
+  /*
+   * Les ordres passent du panneau de commandes vers la boucle de rendu par une
+   * référence : la boucle vit dans un `useMemo` monté une seule fois et ne
+   * verrait jamais un état React qui change.
+   *
+   * Une référence et non un objet mémoïsé, parce que le compilateur React
+   * traite le résultat d'un `useMemo` comme immuable et refuse qu'on y écrive.
+   * `useRef` est exactement le mécanisme prévu pour une valeur mutable qui
+   * survit aux rendus, et l'écriture se fait dans un gestionnaire d'évènement,
+   * jamais pendant le rendu.
+   */
+  const canal = useRef<{ classe: 0 | 1; ordre: Ordre }>({ classe: 1, ordre: null });
+
+  const choisirClasse = useCallback((v: 0 | 1) => {
+    canal.current.classe = v;
+    setClasse(v);
+  }, []);
+
+  const commander = useCallback((ordre: Exclude<Ordre, null>) => {
+    canal.current.ordre = ordre;
+    setLibre(ordre === "effacer");
+  }, []);
 
   const pilote = useMemo<Pilote>(() => {
     const alea = creerAlea(20260817);
     const sim = {
       reseau: initialiser(alea),
-      donnees: spirales(alea),
+      donnees: spirales(alea) as Exemple[],
       lots: 0,
       perte: 0.7,
       justesse: 50,
@@ -46,10 +85,12 @@ export function Reseau() {
       accumulateur: 0,
       curseur: 0,
       convergeDepuis: 0,
+      libre: false,
     };
 
-    function repartir() {
+    function repartir(donnees?: Exemple[]) {
       sim.reseau = initialiser(alea);
+      if (donnees) sim.donnees = donnees;
       sim.lots = 0;
       sim.historique = [];
       sim.curseur = 0;
@@ -57,45 +98,81 @@ export function Reseau() {
     }
 
     return {
-      auClic: repartir,
+      /** Un clic dépose un point de la classe choisie, ou réinitialise. */
+      auClic({ largeur, hauteur, souris }) {
+        if (!souris) return;
+        const hChamp = hauteur - H_COURBE;
+        if (souris.y > hChamp) return; // clic dans la bande de la courbe
+
+        if (!sim.libre) {
+          repartir();
+          return;
+        }
+        sim.donnees.push({
+          x: (souris.x / largeur) * 2 - 1,
+          y: 1 - (souris.y / hChamp) * 2,
+          classe: canal.current.classe,
+        });
+      },
 
       dessiner({ ctx, largeur, hauteur, dt }) {
+        if (canal.current.ordre === "spirales") {
+          sim.libre = false;
+          repartir(spirales(alea));
+          canal.current.ordre = null;
+        } else if (canal.current.ordre === "effacer") {
+          sim.libre = true;
+          repartir([]);
+          canal.current.ordre = null;
+        }
+
         /*
-         * Trois mini-lots par image, et ce nombre est réglé sur l'observation.
+         * Trois mini-lots par image, réglé sur l'observation : à quatorze, le
+         * réseau convergeait en deux secondes et le visiteur arrivait devant
+         * une frontière déjà tracée, ce qui vide la démonstration de son objet.
          *
-         * À quatorze, le réseau atteignait 100 % de justesse en deux secondes :
-         * le visiteur arrivait devant une frontière déjà tracée et ne voyait
-         * rien se former, ce qui vide la démonstration de son objet. À trois,
-         * la convergence prend une dizaine de secondes — assez pour être suivie
-         * à l'œil, assez peu pour ne pas lasser.
+         * Rien n'est appris tant que les deux classes ne sont pas représentées :
+         * un réseau nourri d'une seule classe apprend « tout est 1 » et affiche
+         * 100 % de justesse, ce qui serait un mensonge à l'écran.
          */
-        for (let n = 0; n < 3; n++) {
-          const lot: Exemple[] = [];
-          for (let i = 0; i < LOT; i++) {
-            lot.push(sim.donnees[sim.curseur % sim.donnees.length]);
-            sim.curseur++;
+        const deuxClasses =
+          sim.donnees.length >= 2 && new Set(sim.donnees.map((e) => e.classe)).size === 2;
+
+        if (deuxClasses) {
+          for (let n = 0; n < 3; n++) {
+            const lot: Exemple[] = [];
+            for (let i = 0; i < LOT; i++) {
+              lot.push(sim.donnees[sim.curseur % sim.donnees.length]);
+              sim.curseur++;
+            }
+            sim.perte = apprendre(sim.reseau, lot);
+            sim.lots++;
           }
-          sim.perte = apprendre(sim.reseau, lot);
-          sim.lots++;
         }
 
         sim.accumulateur += dt;
         if (sim.accumulateur > 0.12) {
           sim.accumulateur = 0;
-          sim.historique.push(sim.perte);
-          if (sim.historique.length > 200) sim.historique.shift();
-          sim.justesse = Math.round(justesse(sim.reseau, sim.donnees));
-          setEtat({ lots: sim.lots, perte: sim.perte, justesse: sim.justesse });
+          if (deuxClasses) {
+            sim.historique.push(sim.perte);
+            if (sim.historique.length > 200) sim.historique.shift();
+            sim.justesse = Math.round(justesse(sim.reseau, sim.donnees));
+          }
+          setEtat({
+            lots: sim.lots,
+            perte: sim.perte,
+            justesse: deuxClasses ? sim.justesse : 0,
+            points: sim.donnees.length,
+          });
 
           /*
-           * Redémarrage automatique une fois la séparation atteinte et tenue
-           * quelques secondes. Sans lui, un visiteur qui arrive après la
-           * convergence ne voit qu'une image fixe, et la démonstration devient
-           * une illustration.
+           * Redémarrage automatique une fois la séparation tenue quelques
+           * secondes, mais seulement sur les spirales : effacer le dessin du
+           * visiteur sous ses yeux serait insupportable.
            */
-          if (sim.justesse >= 100) {
+          if (!sim.libre && sim.justesse >= 100) {
             sim.convergeDepuis++;
-            if (sim.convergeDepuis > 28) repartir();
+            if (sim.convergeDepuis > 28) repartir(spirales(alea));
           } else {
             sim.convergeDepuis = 0;
           }
@@ -107,33 +184,35 @@ export function Reseau() {
         const citron = jeton("--citron", "#e8ff54");
         const trait = jeton("--trait", "#2c2c36");
         const fond = jeton("--fond-eleve", "#16161c");
+        const faible = jeton("--texte-faible", "#7c7c8a");
 
         ctx.clearRect(0, 0, largeur, hauteur);
+        const hChamp = hauteur - H_COURBE;
 
-        const hCourbe = 56;
-        const hChamp = hauteur - hCourbe;
-
-        /*
-         * Le champ de décision est échantillonné sur une grille et peint en
-         * pavés. Évaluer un pixel sur deux coûterait des dizaines de milliers
-         * de passes avant par image pour un gain visuel nul à cette échelle.
-         */
-        const pasX = largeur / GRILLE_X;
-        const pasY = hChamp / GRILLE_Y;
-        for (let i = 0; i < GRILLE_X; i++) {
-          for (let j = 0; j < GRILLE_Y; j++) {
-            const nx = ((i + 0.5) / GRILLE_X) * 2 - 1;
-            const ny = 1 - ((j + 0.5) / GRILLE_Y) * 2;
-            const { a3 } = avant(sim.reseau, nx, ny);
-            // L'opacité suit la certitude : la frontière apparaît en creux, là
-            // où le réseau hésite encore.
-            const certitude = Math.abs(a3 - 0.5) * 2;
-            ctx.fillStyle = a3 >= 0.5 ? corail : bleu;
-            ctx.globalAlpha = 0.05 + certitude * 0.32;
-            ctx.fillRect(i * pasX, j * pasY, pasX + 1, pasY + 1);
+        if (deuxClasses) {
+          const pasX = largeur / GRILLE_X;
+          const pasY = hChamp / GRILLE_Y;
+          for (let i = 0; i < GRILLE_X; i++) {
+            for (let j = 0; j < GRILLE_Y; j++) {
+              const nx = ((i + 0.5) / GRILLE_X) * 2 - 1;
+              const ny = 1 - ((j + 0.5) / GRILLE_Y) * 2;
+              const { a3 } = avant(sim.reseau, nx, ny);
+              // L'opacité suit la certitude : la frontière apparaît en creux,
+              // là où le réseau hésite encore.
+              const certitude = Math.abs(a3 - 0.5) * 2;
+              ctx.fillStyle = a3 >= 0.5 ? corail : bleu;
+              ctx.globalAlpha = 0.05 + certitude * 0.32;
+              ctx.fillRect(i * pasX, j * pasY, pasX + 1, pasY + 1);
+            }
           }
+          ctx.globalAlpha = 1;
+        } else {
+          ctx.fillStyle = faible;
+          ctx.font = "600 14px ui-sans-serif, system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("Cliquez pour poser des points des deux couleurs", largeur / 2, hChamp / 2);
+          ctx.textAlign = "left";
         }
-        ctx.globalAlpha = 1;
 
         for (const ex of sim.donnees) {
           ctx.beginPath();
@@ -158,7 +237,7 @@ export function Reseau() {
           ctx.beginPath();
           sim.historique.forEach((v, i) => {
             const px = (i / (sim.historique.length - 1)) * largeur;
-            const py = hChamp + 12 + (1 - v / max) * (hCourbe - 24);
+            const py = hChamp + 12 + (1 - v / max) * (H_COURBE - 24);
             if (i === 0) ctx.moveTo(px, py);
             else ctx.lineTo(px, py);
           });
@@ -175,9 +254,63 @@ export function Reseau() {
       <Toile
         pilote={pilote}
         ratio={16 / 11}
-        label="Réseau de neurones apprenant à séparer deux spirales, avec sa courbe de perte"
+        label="Réseau de neurones apprenant à séparer deux classes, avec sa courbe de perte"
       />
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => commander("spirales")}
+          className={`border-2 px-3 py-1.5 text-xs font-bold uppercase transition-colors ${
+            libre
+              ? "border-trait text-texte-attenue hover:border-trait-fort"
+              : "bloc-citron border-citron"
+          }`}
+        >
+          Spirales
+        </button>
+        <button
+          type="button"
+          onClick={() => commander("effacer")}
+          className={`border-2 px-3 py-1.5 text-xs font-bold uppercase transition-colors ${
+            libre
+              ? "bloc-citron border-citron"
+              : "border-trait text-texte-attenue hover:border-trait-fort"
+          }`}
+        >
+          Dessiner
+        </button>
+
+        {libre && (
+          <>
+            <span className="annotation ml-2">Couleur posée au clic</span>
+            {(
+              [
+                [0, "Bleu", "bg-bleu text-sur-bleu border-bleu"],
+                [1, "Corail", "bg-corail text-sur-corail border-corail"],
+              ] as const
+            ).map(([v, nom, actif]) => (
+              <button
+                key={nom}
+                type="button"
+                onClick={() => choisirClasse(v)}
+                aria-pressed={classe === v}
+                className={`border-2 px-3 py-1.5 text-xs font-bold uppercase transition-colors ${
+                  classe === v ? actif : "border-trait text-texte-attenue hover:border-trait-fort"
+                }`}
+              >
+                {nom}
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+        <div className="flex gap-2">
+          <dt className="annotation">Points</dt>
+          <dd className="annotation text-texte tabulaire">{etat.points}</dd>
+        </div>
         <div className="flex gap-2">
           <dt className="annotation">Lots vus</dt>
           <dd className="annotation text-texte tabulaire">{etat.lots.toLocaleString("fr-FR")}</dd>
@@ -188,11 +321,12 @@ export function Reseau() {
         </div>
         <div className="flex gap-2">
           <dt className="annotation">Justesse</dt>
-          <dd className={`annotation tabulaire ${etat.justesse >= 95 ? "text-citron" : "text-texte"}`}>
+          <dd
+            className={`annotation tabulaire ${etat.justesse >= 95 ? "text-citron" : "text-texte"}`}
+          >
             {etat.justesse} %
           </dd>
         </div>
-        <p className="annotation text-texte-faible">Cliquez pour réinitialiser les poids.</p>
       </dl>
     </div>
   );
