@@ -1,12 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-
-  "//": "Playwright ne sert qu'aux captures de vérification, exécutées sur ma machine. Sans cette variable, son installation télécharge un navigateur complet — environ 150 Mo — à chaque déploiement, pour un outil que l'environnement de build n'utilise jamais.",
   "installCommand": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci",
-
   "headers": [
     {
-      "//": "Les artefacts générés au build portent un contenu figé pour un déploiement donné : vecteurs du moteur de recherche, tables de la console SQL, données du simulateur. Les mettre en cache longuement évite de les retélécharger à chaque visite, et un nouveau déploiement les sert sous une nouvelle URL de toute façon.",
       "source": "/data/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }]
     },

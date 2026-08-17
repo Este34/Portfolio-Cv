@@ -88,3 +88,23 @@ moteur de plusieurs dizaines de méga-octets dans la première page.
 
 Sans `ANTHROPIC_API_KEY`, la recherche fonctionne intégralement : seule la
 reformulation par un modèle est indisponible, et l'interface n'en montre rien.
+
+## Déploiement
+
+`vercel.json` porte deux réglages, et **aucun commentaire** : le schéma de
+Vercel rejette toute propriété inconnue, y compris la convention `"//"`. Un
+commentaire y fait échouer le déploiement avec `should NOT have additional
+property`. Les explications vivent donc ici.
+
+**`installCommand`** désactive le téléchargement du navigateur de Playwright.
+Celui-ci ne sert qu'aux captures de vérification, exécutées en local ; sans cette
+variable son installation tire environ 150 Mo à chaque déploiement, pour un outil
+que l'environnement de build n'utilise jamais.
+
+**Les en-têtes de cache** couvrent `/data/` et `/demos/` : vecteurs du moteur de
+recherche, tables de la console SQL et données du simulateur de démonstration.
+Leur contenu est figé pour un déploiement donné, et un nouveau déploiement les
+sert sous une nouvelle URL.
+
+Un build échoué se lit dans l'onglet *Deployments* du projet, jamais dans
+*Logs* — ce dernier ne montre que le trafic HTTP de la version déjà en ligne.
