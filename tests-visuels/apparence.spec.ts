@@ -280,3 +280,77 @@ for (const chemin of PAGES_A_TITRES_COLLANTS) {
     }
   });
 }
+
+/**
+ * Les quatre motifs de fond doivent avoir un poids d'encre comparable.
+ *
+ * Ce test existe à cause d'un défaut réel : le motif « flux » éteint les zones
+ * où le champ est plat, et ses deux bornes étaient calibrées sur des valeurs de
+ * gradient qui ne se produisent jamais. Résultat, il couvrait 0,7 % de l'écran
+ * contre 14 à 16 % pour les trois autres, et il était tout simplement invisible
+ * sur la page des travaux.
+ *
+ * Rien ne l'a signalé. Le shader compilait, la page se rendait, les captures de
+ * référence étaient stables — sur un fond qui n'existait pas. Seule une mesure
+ * pouvait le voir.
+ *
+ * La méthode : masquer tout sauf le conteneur du fond, qui porte `aria-hidden`,
+ * puis compter les pixels qui s'écartent du fond de page. C'est ce que l'œil
+ * voit une fois tout composé, et non ce que le shader croit produire.
+ */
+const MOTIFS_ATTENDUS = [
+  { motif: "niveaux", chemin: "/fr" },
+  { motif: "trame", chemin: "/fr/methode" },
+  { motif: "interference", chemin: "/fr/labo" },
+  { motif: "flux", chemin: "/fr/travaux" },
+] as const;
+
+for (const { motif, chemin } of MOTIFS_ATTENDUS) {
+  test(`le fond « ${motif} » a le poids attendu`, async ({ page }, infos) => {
+    test.skip(infos.project.name === "mobile", "une seule densité de pixels suffit à mesurer");
+
+    await page.goto(chemin);
+    await page.waitForLoadState("networkidle");
+    await page.addStyleTag({
+      content: `body > * { visibility: hidden !important }
+                [aria-hidden="true"], [aria-hidden="true"] * { visibility: visible !important }`,
+    });
+    await page.waitForTimeout(600);
+
+    const cliche = (
+      await page.screenshot({ clip: { x: 0, y: 0, width: 1440, height: 620 } })
+    ).toString("base64");
+
+    const couverture = await page.evaluate(async (b64) => {
+      const image = await createImageBitmap(
+        await (await fetch(`data:image/png;base64,${b64}`)).blob(),
+      );
+      const toile = document.createElement("canvas");
+      toile.width = image.width;
+      toile.height = image.height;
+      const ctx = toile.getContext("2d")!;
+      ctx.drawImage(image, 0, 0);
+      const pixels = ctx.getImageData(0, 0, toile.width, toile.height).data;
+      const fond = (getComputedStyle(document.body).backgroundColor.match(/\d+/g) ?? []).map(Number);
+
+      let couverts = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const ecart =
+          (Math.abs(pixels[i] - fond[0]) +
+            Math.abs(pixels[i + 1] - fond[1]) +
+            Math.abs(pixels[i + 2] - fond[2])) /
+          3;
+        if (ecart > 6) couverts++;
+      }
+      return (couverts / (pixels.length / 4)) * 100;
+    }, cliche);
+
+    /*
+     * Bande large à dessein. Ce test ne défend pas un réglage esthétique — il
+     * attrape le motif qui a disparu ou celui qui a doublé, c'est-à-dire l'ordre
+     * de grandeur, pas le pour cent près.
+     */
+    expect(couverture, `${motif} : couverture de ${couverture.toFixed(1)} %`).toBeGreaterThan(8);
+    expect(couverture, `${motif} : couverture de ${couverture.toFixed(1)} %`).toBeLessThan(26);
+  });
+}

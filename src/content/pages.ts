@@ -243,9 +243,9 @@ export const PAGE_MAKING_OF = {
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },
     {
-      valeur: "25",
-      libelle: { fr: "captures comparées", en: "screenshots compared" },
-      note: { fr: "à chaque intégration", en: "on every integration run" },
+      valeur: "36",
+      libelle: { fr: "vérifications visuelles", en: "visual checks" },
+      note: { fr: "captures, géométrie et densité", en: "screenshots, geometry and density" },
     },
   ],
   principe: {

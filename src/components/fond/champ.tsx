@@ -134,9 +134,23 @@ float encre(int motif, float v, vec2 p, float lignes) {
     float b = traitDe(p.x * lignes * 0.22 + v * 2.0);
     return max(1.0 - smoothstep(0.6, 1.8, a), 1.0 - smoothstep(0.6, 1.8, b)) * 0.75;
   }
-  /* Flux : les memes iso-valeurs, eteintes la ou le champ est plat. */
-  float pente = smoothstep(0.004, 0.030, fwidth(v));
-  return (1.0 - smoothstep(0.55, 1.70, traitDe(v * lignes * 1.4))) * pente;
+  /*
+   * Flux : les memes iso-valeurs, eteintes la ou le champ est plat.
+   *
+   * Les bornes sont calibrees sur la derivee reelle du champ, mesuree sur la
+   * page composee, pas choisies a vue. La premiere version montait de 0,004 a
+   * 0,030 ; or fwidth(v) vaut ici quelques dix-milliemes, si bien que la pente
+   * restait a zero presque partout : 0,7 % de couverture contre 14 a 16 % pour
+   * les trois autres motifs, soit seize fois trop faible. Le motif etait
+   * invisible sur la page des travaux.
+   *
+   * La densite de traits suit : 1,05 fois celle des courbes de niveau et non
+   * 1,4, sans quoi la correction des bornes faisait passer la couverture a
+   * 19 %. Etat final mesure : 14,8 % en sombre, 13,1 % en clair, contre 14,1 et
+   * 12,9 pour les courbes de niveau.
+   */
+  float pente = smoothstep(0.0005, 0.0032, fwidth(v));
+  return (1.0 - smoothstep(0.55, 1.70, traitDe(v * lignes * 1.05))) * pente;
 }
 
 void main() {
