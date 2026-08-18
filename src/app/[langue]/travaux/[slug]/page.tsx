@@ -131,12 +131,25 @@ export default async function PageTravail({ params }: PageProps<"/[langue]/trava
           {travail.chiffres.map((c) => (
             <div key={c.libelle.fr} className="border-trait border-b px-1 py-6 lg:border-b-0 lg:px-5">
               <dt className="annotation">{t(c.libelle, langue)}</dt>
-              <dd className="font-display text-texte tabulaire mt-2 text-2xl uppercase">
-                {t(c.valeur, langue)}
+              {/*
+                La précision vit dans le `dd`, pas dans un `p` frère.
+                
+                Une liste de définitions n'admet que des `dt` et des `dd`, y
+                compris à l'intérieur d'un `div` groupeur. Un paragraphe posé à
+                côté rompt l'association entre le terme et sa description : la
+                note se retrouvait orpheline pour un lecteur d'écran, alors
+                qu'elle qualifie précisément le chiffre au-dessus.
+              */}
+              <dd className="mt-2">
+                <span className="font-display text-texte tabulaire block text-2xl uppercase">
+                  {t(c.valeur, langue)}
+                </span>
+                {c.note && (
+                  <span className="annotation text-texte-faible mt-1.5 block normal-case">
+                    {t(c.note, langue)}
+                  </span>
+                )}
               </dd>
-              {c.note && (
-                <p className="annotation text-texte-faible mt-1.5 normal-case">{t(c.note, langue)}</p>
-              )}
             </div>
           ))}
         </dl>

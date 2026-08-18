@@ -159,6 +159,26 @@ raison d'être identique au bit près entre deux architectures. C'est
 `verifier:embeddings`, lancé avant chaque build, qui garantit qu'ils collent au
 contenu : il compare les identifiants et les textes, pas les flottants.
 
+## Lighthouse
+
+Cinq pages auditées, dans les deux thèmes implicites du runner. Les seuils ne
+sont pas tous serrés de la même façon, et c'est délibéré.
+
+**Le poids transféré est le seuil strict** : 750 Kio sur l'accueil, 480 Kio
+ailleurs. C'est une valeur déterministe, mesurée, et c'est le seul chiffre que
+le site promet. L'accueil porte 230 Kio de plus que les autres parce que la
+projection du corpus y charge Three.js dès l'hydratation.
+
+**La performance est le seuil lâche**, à 0,90. Le score dépend de la charge de
+la machine qui l'exécute : sur un poste au calme il monte à 100, sur un runner
+partagé il descend. Une barre à 0,97 aurait produit des échecs qui ne parlent
+que de la météo du runner. Les mesures locales tiennent entre 98 et 100.
+
+**Accessibilité, bonnes pratiques et référencement sont à 1**, sans tolérance.
+Ce sont des audits binaires : ils constatent des défauts, pas des degrés. Le
+premier passage réel en a trouvé quatre — contraste insuffisant, noms
+accessibles divergents, niveau de titre sauté, liste de définitions malformée.
+
 ## Variables d'environnement
 
 | Variable               | Rôle                                                        |

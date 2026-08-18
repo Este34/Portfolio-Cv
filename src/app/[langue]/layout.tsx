@@ -12,11 +12,18 @@ import { SITE, SITE_URL, titreParDefaut } from "@/lib/site";
 
 import "../globals.css";
 
+/*
+ * Archivo sans son axe de chasse.
+ *
+ * `axes: ["wdth"]` était déclaré, et aucune règle du site ne s'en sert : ni
+ * `font-stretch`, ni `font-variation-settings`, nulle part. Un axe variable
+ * inutilisé reste dans le fichier et se télécharge quand même. Mesuré : 54 Kio
+ * de transfert sur chaque page, pour rien.
+ */
 const archivo = Archivo({
   variable: "--font-archivo",
   subsets: ["latin"],
   display: "swap",
-  axes: ["wdth"],
 });
 
 const inter = Inter({

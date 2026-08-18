@@ -51,7 +51,7 @@ export default async function Travaux({ params }: PageProps<"/[langue]/travaux">
 
       <section className="pb-20">
         {TRAVAUX_TRIES.map((travail, i) => (
-          <CarteTravail key={travail.slug} travail={travail} index={i} langue={langue} />
+          <CarteTravail key={travail.slug} travail={travail} index={i} langue={langue} niveau={2} />
         ))}
       </section>
     </div>

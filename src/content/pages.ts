@@ -238,7 +238,7 @@ export const PAGE_MAKING_OF = {
       note: { fr: "et il est facultatif", en: "and it is optional" },
     },
     {
-      valeur: "72",
+      valeur: "96",
       libelle: { fr: "tests", en: "tests" },
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },

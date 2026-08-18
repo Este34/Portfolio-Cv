@@ -46,10 +46,15 @@ export default async function MakingOf({ params }: PageProps<"/[langue]/making-o
           {PAGE_MAKING_OF.mesures.map((m) => (
             <div key={m.valeur} className="border-trait border-b px-1 py-6 lg:border-b-0 lg:px-5">
               <dt className="annotation">{t(m.libelle, langue)}</dt>
-              <dd className="font-display text-texte tabulaire mt-2 text-2xl uppercase">
-                {m.valeur}
+              {/* Voir la note sur les listes de définitions dans travaux/[slug]. */}
+              <dd className="mt-2">
+                <span className="font-display text-texte tabulaire block text-2xl uppercase">
+                  {m.valeur}
+                </span>
+                <span className="annotation text-texte-faible mt-1.5 block normal-case">
+                  {t(m.note, langue)}
+                </span>
               </dd>
-              <p className="annotation text-texte-faible mt-1.5 normal-case">{t(m.note, langue)}</p>
             </div>
           ))}
         </dl>

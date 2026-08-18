@@ -7,15 +7,15 @@ import type { Langue } from "@/lib/langue";
 
 const MOTS: Record<Langue, Record<string, string>> = {
   fr: {
-    versClair: "Passer en mode clair",
-    versSombre: "Passer en mode sombre",
+    versClair: "Thème sombre. Passer en mode clair.",
+    versSombre: "Thème clair. Passer en mode sombre.",
     neutre: "Changer de thème",
     sombre: "sombre",
     clair: "clair",
   },
   en: {
-    versClair: "Switch to light mode",
-    versSombre: "Switch to dark mode",
+    versClair: "Dark theme. Switch to light mode.",
+    versSombre: "Light theme. Switch to dark mode.",
     neutre: "Change theme",
     sombre: "dark",
     clair: "light",
@@ -24,6 +24,11 @@ const MOTS: Record<Langue, Record<string, string>> = {
 
 /**
  * Bascule sombre / clair.
+ *
+ * Le libellé accessible **contient** le mot affiché sur le bouton — « thème
+ * sombre » quand on lit « sombre ». Sans cette précaution, le nom accessible
+ * et le texte visible divergent, ce qui met en échec la commande vocale :
+ * quelqu'un prononce le mot qu'il voit, et rien ne se déclenche.
  *
  * Le thème résolu n'existe pas au rendu serveur. Tout ce qui en dépend —
  * libellé visible **et** `aria-label` — reste donc neutre tant que la page

@@ -74,12 +74,26 @@
 
   --texte: #0e0e12;
   --texte-attenue: #55555f;
-  --texte-faible: #83838f;
+  /*
+   * Assombri de #83838f à #676771, et c'est une correction d'accessibilité, pas
+   * un goût. L'ancienne valeur donnait 3,38 contre le fond, 3,74 contre la
+   * surface élevée et 3,06 contre la surface : trois échecs au seuil WCAG AA de
+   * 4,5. Or c'est la couleur de l'utilitaire « annotation », donc celle de la
+   * moitié des petits textes du site. Cette valeur est la plus claire qui passe
+   * les trois à la fois.
+   */
+  --texte-faible: #676771;
 
   /* Les trois couleurs de signal. Aucune n'est « la » couleur d'accent :
      elles se relaient, et c'est ce qui empêche la monotonie. */
   --bleu: #2036d6;
-  --corail: #e8341a;
+  /*
+   * Assombri de #e8341a à #d32f18. Sur l'ancien corail, l'encre claire posée
+   * dessus ne donnait que 3,84 : le bouton principal du site échouait au seuil
+   * AA en thème clair, à pleine opacité. Neuf pour cent de plus suffisent à
+   * passer à 4,52 sans que la couleur cesse d'être ce corail-là.
+   */
+  --corail: #d32f18;
   --citron: #c8dd18;
 
   /* Couleur d'encre à poser SUR chaque aplat. */
@@ -88,7 +102,7 @@
   --sur-citron: #0e0e12;
 
   --serie-1: #2036d6;
-  --serie-2: #e8341a;
+  --serie-2: #d32f18;
   --serie-3: #7a8a00;
   --serie-4: #00786b;
   --serie-5: #8a2be0;
@@ -113,7 +127,12 @@
 
   --texte: #f5f3ef;
   --texte-attenue: #a5a5b2;
-  --texte-faible: #7c7c8a;
+  /*
+   * Éclairci de #7c7c8a à #858592. L'ancienne valeur passait sur le fond (4,68)
+   * mais échouait sur les deux surfaces élevées, à 4,38 et 4,02 — c'est-à-dire
+   * précisément dans les panneaux et les cartouches, là où on lit des légendes.
+   */
+  --texte-faible: #858592;
 
   --bleu: #2b4cf2;
   --corail: #ff5a3c;

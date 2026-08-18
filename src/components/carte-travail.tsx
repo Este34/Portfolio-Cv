@@ -24,12 +24,24 @@ export function CarteTravail({
   travail,
   index,
   langue,
+  niveau,
 }: {
   travail: Travail;
   index: number;
   langue: Langue;
+  /**
+   * Niveau du titre de la carte, imposé par la page qui l'affiche.
+   *
+   * La carte était figée en `h3`. Sur la page des travaux, où le titre
+   * précédent est le `h1` de la page, cela sautait le niveau 2 — un lecteur
+   * d'écran qui navigue de titre en titre perd alors la hiérarchie. Sur
+   * l'accueil, où les cartes suivent un `h2` « Travaux », `h3` est juste.
+   * Aucune valeur ne convient aux deux, donc c'est l'appelant qui tranche.
+   */
+  niveau: 2 | 3;
 }) {
   const bloc = BLOCS[index % BLOCS.length];
+  const Titre = niveau === 2 ? "h2" : "h3";
 
   return (
     <article className="border-trait group border-t last:border-b">
@@ -48,9 +60,9 @@ export function CarteTravail({
           </div>
 
           <div className="max-w-2xl">
-            <h3 className="text-texte group-hover:text-corail text-xl uppercase transition-colors">
+            <Titre className="text-texte group-hover:text-corail text-xl uppercase transition-colors">
               {t(travail.titre, langue)}
-            </h3>
+            </Titre>
             <p className="text-texte-attenue mt-1 text-sm font-semibold">
               {t(travail.sousTitre, langue)}
             </p>

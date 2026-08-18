@@ -32,21 +32,41 @@ export function Entete({ langue }: { langue: Langue }) {
         relais : elle contient déjà toute la navigation.
       */}
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-5">
-        <Link
-          href={lien("/", langue)}
-          className="group flex items-center gap-2.5 whitespace-nowrap"
-          aria-label={`${SITE.nom} — ${t(UI.accueil, langue)}`}
-        >
+        {/*
+          Aucun `aria-label` ici, et c'est délibéré.
+          
+          Il en portait un — « Esteban Beretti-Prenant, accueil » — qui ne
+          contenait ni le monogramme « EB », ni la forme courte « Esteban
+          B.-P. » affichée en dessous de 1536 px. Un nom accessible qui ne
+          contient pas le texte visible met en échec la commande vocale : la
+          personne prononce ce qu'elle lit, et rien ne répond.
+          
+          Le monogramme et le nom raccourci sont donc masqués aux technologies
+          d'assistance — ils répètent une information déjà présente — et le nom
+          accessible vient d'un texte réservé aux lecteurs d'écran, identique à
+          la version longue affichée sur grand écran.
+        */}
+        <Link href={lien("/", langue)} className="group flex items-center gap-2.5 whitespace-nowrap">
           {/* Aplat plein, pas un contour : la couleur délimite, elle ne borde pas. */}
-          <span className="bloc-corail font-display px-2 py-1 text-sm leading-none font-black tracking-tight">
+          <span
+            aria-hidden="true"
+            className="bloc-corail font-display px-2 py-1 text-sm leading-none font-black tracking-tight"
+          >
             EB
           </span>
-          <span className="font-display text-texte hidden text-sm font-bold tracking-tight sm:inline 2xl:hidden">
+          <span
+            aria-hidden="true"
+            className="font-display text-texte hidden text-sm font-bold tracking-tight sm:inline 2xl:hidden"
+          >
             {SITE.nomCourt}
           </span>
           <span className="font-display text-texte hidden text-sm font-bold tracking-tight 2xl:inline">
             {SITE.nom}
           </span>
+          <span className="sr-only 2xl:hidden">
+            {SITE.nom} — {t(UI.accueil, langue)}
+          </span>
+          <span className="sr-only hidden 2xl:inline">— {t(UI.accueil, langue)}</span>
         </Link>
 
         <nav aria-label={t(UI.navigationPrincipale, langue)} className="ml-auto hidden xl:block">

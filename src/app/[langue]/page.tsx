@@ -81,7 +81,17 @@ export default async function Accueil({ params }: PageProps<"/[langue]">) {
               <dd className="font-display tabulaire text-3xl leading-none font-black tracking-tight">
                 {t(c.valeur, langue)}
               </dd>
-              <dt className="text-xs font-semibold uppercase opacity-80">{t(c.libelle, langue)}</dt>
+              {/*
+                Aucune opacité sur ce libellé, et c'est une règle plutôt qu'un
+                oubli. Il était posé à 80 % pour laisser le chiffre dominer :
+                l'encre tombait alors à 4,12 sur l'aplat bleu en thème sombre et
+                à 2,90 sur le corail clair, sous le seuil de 4,5. Pour qu'une
+                atténuation à 90 % passe, il aurait fallu assombrir le corail de
+                18 %, c'est-à-dire changer la couleur de la marque pour
+                préserver un effet décoratif. La hiérarchie est déjà portée par
+                le corps et la graisse.
+              */}
+              <dt className="text-xs font-semibold uppercase">{t(c.libelle, langue)}</dt>
             </div>
           ))}
         </dl>
@@ -138,7 +148,7 @@ export default async function Accueil({ params }: PageProps<"/[langue]">) {
 
         <div>
           {TRAVAUX_TRIES.map((travail, i) => (
-            <CarteTravail key={travail.slug} travail={travail} index={i} langue={langue} />
+            <CarteTravail key={travail.slug} travail={travail} index={i} langue={langue} niveau={3} />
           ))}
         </div>
       </section>
