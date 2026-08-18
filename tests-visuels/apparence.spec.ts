@@ -35,6 +35,8 @@ const PAGES = [
   { nom: "contact", chemin: "/contact", langues: ["fr"] },
   { nom: "bac-a-sable", chemin: "/bac-a-sable", langues: ["fr"] },
   { nom: "labo", chemin: "/labo", langues: ["fr"] },
+  { nom: "notes", chemin: "/notes", langues: ["fr"] },
+  { nom: "note", chemin: "/notes/un-champ-vide-ne-vaut-pas-zero", langues: ["fr", "en"] },
 ] as const;
 
 /**

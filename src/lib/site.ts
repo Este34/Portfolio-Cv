@@ -171,6 +171,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     },
   },
   {
+    href: "/notes",
+    label: { fr: "Notes", en: "Notes" },
+    description: {
+      fr: "Notes techniques sur le portage de modèles et la vérification",
+      en: "Technical notes on model porting and verification",
+    },
+  },
+  {
     href: "/methode",
     label: { fr: "Méthode", en: "Method" },
     description: {

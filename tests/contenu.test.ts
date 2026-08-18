@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import { NOTES, texteDeNote } from "../src/content/notes.ts";
 import { TRAVAUX, stackAgregee, travailParSlug } from "../src/content/travaux.ts";
 import { LANGUES, lien, type Langue } from "../src/lib/langue.ts";
 import { CONTACT, NAV_ITEMS, SITE } from "../src/lib/site.ts";
@@ -71,6 +72,7 @@ describe("travaux", () => {
       "Data scientist · AI engineer",
       // Mots identiques dans les deux langues.
       "Contact",
+      "Notes",
       "2026",
       "4",
       "0",
@@ -216,5 +218,62 @@ describe.each(LANGUES)("tables SQL générées [%s]", (langue: Langue) => {
     const chemin = join(process.cwd(), "public", "data", `portfolio-${langue}.json`);
     const brut = await readFile(chemin, "utf8");
     expect(brut).not.toMatch(/\{"fr":/);
+  });
+});
+
+describe("notes techniques", () => {
+  it("les slugs sont uniques", () => {
+    const slugs = NOTES.map((n) => n.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+
+  it.each(LANGUES)("chaque note a un titre, un chapeau et des blocs [%s]", (langue) => {
+    for (const n of NOTES) {
+      expect(n.titre[langue].length, n.slug).toBeGreaterThan(5);
+      expect(n.chapeau[langue].length, n.slug).toBeGreaterThan(60);
+      expect(n.blocs.length, n.slug).toBeGreaterThan(5);
+      expect(n.sujets.length, n.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it("la date est une date valide, au format ISO", () => {
+    for (const n of NOTES) {
+      expect(n.date, n.slug).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(Number.isNaN(new Date(n.date).getTime()), n.slug).toBe(false);
+    }
+  });
+
+  it.each(LANGUES)("aucun bloc de prose n'est vide [%s]", (langue) => {
+    for (const n of NOTES) {
+      for (const [i, bloc] of n.blocs.entries()) {
+        const reperage = `${n.slug} bloc ${i} (${bloc.type})`;
+        if (bloc.type === "liste") {
+          expect(bloc.items.length, reperage).toBeGreaterThan(0);
+          for (const item of bloc.items) expect(item[langue].trim().length, reperage).toBeGreaterThan(0);
+        } else if (bloc.type === "code") {
+          expect(bloc.code[langue].trim().length, reperage).toBeGreaterThan(0);
+        } else {
+          expect(bloc.texte[langue].trim().length, reperage).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it.each(LANGUES)("le texte extrait pour la recherche exclut le code [%s]", (langue) => {
+    /*
+     * Le code n'aide pas une recherche sémantique : il apporte des identifiants
+     * et de la ponctuation là où le modèle attend des phrases. L'inclure
+     * diluerait le passage, exactement comme les domaines dilués dans un résumé
+     * l'ont fait sur les projets.
+     */
+    for (const n of NOTES) {
+      const texte = texteDeNote(n, langue);
+      expect(texte.length, n.slug).toBeGreaterThan(400);
+      for (const bloc of n.blocs) {
+        if (bloc.type !== "code") continue;
+        const premiereLigne = bloc.code[langue].split("\n")[0];
+        expect(texte.includes(premiereLigne), `${n.slug} : du code dans le corpus`).toBe(false);
+      }
+    }
   });
 });

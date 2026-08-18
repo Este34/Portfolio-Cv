@@ -228,9 +228,9 @@ export const PAGE_MAKING_OF = {
    */
   mesures: [
     {
-      valeur: "26",
+      valeur: "30",
       libelle: { fr: "pages statiques", en: "static pages" },
-      note: { fr: "treize, dans deux langues", en: "thirteen, in two languages" },
+      note: { fr: "quinze, dans deux langues", en: "fifteen, in two languages" },
     },
     {
       valeur: "1",
@@ -238,12 +238,12 @@ export const PAGE_MAKING_OF = {
       note: { fr: "et il est facultatif", en: "and it is optional" },
     },
     {
-      valeur: "59",
+      valeur: "67",
       libelle: { fr: "tests", en: "tests" },
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },
     {
-      valeur: "21",
+      valeur: "25",
       libelle: { fr: "captures comparées", en: "screenshots compared" },
       note: { fr: "à chaque intégration", en: "on every integration run" },
     },
@@ -613,4 +613,28 @@ export const PAGE_BAC_A_SABLE = {
     fr: "mon analyse des flux de minéraux critiques",
     en: "my analysis of critical-mineral flows",
   },
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Notes                                                                       */
+/* -------------------------------------------------------------------------- */
+
+export const PAGE_NOTES = {
+  meta: {
+    titre: { fr: "Notes", en: "Notes" },
+    description: {
+      fr: "Notes techniques : ce que j'ai appris en portant des modèles, en vérifiant des calculs et en construisant des outils qui doivent rester justes.",
+      en: "Technical notes: what I learned porting models, verifying calculations and building tools that have to stay correct.",
+    },
+  } satisfies Meta,
+  titre: { fr: "Notes", en: "Notes" },
+  surTitre: { fr: "Note technique", en: "Technical note" },
+  chapeau: {
+    fr: "Des défauts précis, rencontrés sur des projets réels, et ce qu'il a fallu comprendre pour les corriger. J'écris ici ce que j'aurais voulu lire avant de m'y casser les dents.",
+    en: "Specific defects, met on real projects, and what it took to understand them. I write here what I would have liked to read before running into them.",
+  },
+  suivante: { fr: "Note suivante", en: "Next note" },
+  /* Une fonction plutôt qu'une chaîne : l'accord au pluriel n'est pas le même. */
+  duree: (minutes: number, langue: "fr" | "en") =>
+    langue === "fr" ? `${minutes} minutes de lecture` : `${minutes} min read`,
 } as const;

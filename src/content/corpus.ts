@@ -1,8 +1,9 @@
 // Import relatif volontaire : voir la note dans `travaux.ts`.
 import { lien, t, ts, type Langue } from "../lib/langue.ts";
 import { SITE } from "../lib/site.ts";
-import { PAGE_LABO, PAGE_METHODE } from "./pages.ts";
+import { PAGE_LABO, PAGE_METHODE, PAGE_NOTES } from "./pages.ts";
 import { COMPETENCES, EXPERIENCES, FORMATION } from "./parcours.ts";
+import { NOTES, texteDeNote } from "./notes.ts";
 import { TRAVAUX } from "./travaux.ts";
 
 /**
@@ -216,6 +217,24 @@ export function construireCorpus(langue: Langue): Passage[] {
     t(PAGE_LABO.meta.titre, langue),
     lien("/labo", langue),
   );
+
+  /*
+   * Les notes entrent entières dans le corpus, en un seul passage chacune.
+   *
+   * Les découper par section aurait amélioré le rappel sur une question très
+   * précise, mais une note est un raisonnement suivi : un extrait pris au
+   * milieu se cite mal, parce qu'il suppose ce qui précède. Mieux vaut un
+   * passage long et un lien vers le texte complet.
+   */
+  for (const note of NOTES) {
+    ajouter(
+      `note-${note.slug}`,
+      texteDeNote(note, langue),
+      t(PAGE_NOTES.surTitre, langue),
+      lien(`/notes/${note.slug}`, langue),
+      1.2,
+    );
+  }
 
   return passages;
 }
