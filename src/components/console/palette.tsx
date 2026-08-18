@@ -306,8 +306,8 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
         onClick={ouvrir}
         className="border-trait text-texte-faible hover:border-signal hover:text-signal rounded-instrument flex items-center gap-2 border px-2.5 py-1 transition-colors"
       >
-        <span className="annotation">{mots.console}</span>
-        <kbd className="annotation border-trait rounded-instrument hidden border px-1 py-px sm:block">
+        <span className="annotation whitespace-nowrap">{mots.console}</span>
+        <kbd className="annotation border-trait rounded-instrument hidden border px-1 py-px whitespace-nowrap sm:block">
           Ctrl K
         </kbd>
       </button>

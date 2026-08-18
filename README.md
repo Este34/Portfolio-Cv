@@ -133,6 +133,11 @@ les committer ». Ce job a besoin du droit d'écriture : si le push échoue en 4
 c'est *Settings → Actions → General → Workflow permissions* qui est réglé en
 lecture seule.
 
+Une assertion s'ajoute aux images : l'en-tête ne doit jamais passer à la ligne,
+à quatre largeurs et dans les deux langues. Elle mesure des hauteurs plutôt que
+des pixels, donc elle vaut sur toutes les plateformes — c'est précisément un
+écart entre le rendu Windows et le rendu Linux qui a révélé le défaut.
+
 Le jeu complet pèse une dizaine de méga-octets. C'est la raison pour laquelle la
 matrice n'est pas complète : l'anglais n'est photographié que sur les pages à
 gros titres, le mobile que sur celles dont la mise en page change vraiment, et

@@ -155,3 +155,60 @@ test("console ouverte", async ({ page }, infos) => {
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page).toHaveScreenshot("console.png", options(page));
 });
+
+/**
+ * L'en-tête ne doit jamais passer à la ligne.
+ *
+ * Assertion fonctionnelle, pas une image : c'est la comparaison des références
+ * Windows et Linux qui a révélé le défaut, mais s'en remettre à l'œil pour le
+ * détecter à nouveau serait fragile. Les polices Linux étant un peu plus
+ * larges, « Bac à sable » et « Ctrl K » se coupaient en deux et la barre
+ * dépassait sa hauteur.
+ *
+ * Deux vérifications complémentaires. La hauteur d'abord : `h-14` vaut 56 px,
+ * et tout dépassement signale un retour à la ligne. La largeur de chaque entrée
+ * ensuite : une entrée coupée est plus haute que sa ligne de texte, ce qui se
+ * mesure sans dépendre de la police.
+ */
+/** Largeur à partir de laquelle la navigation complète s'affiche (`xl`). */
+const SEUIL_NAVIGATION = 1280;
+
+for (const largeur of [1120, 1280, 1440, 1600]) {
+  test(`en-tête sur une seule ligne à ${largeur} px`, async ({ page }, infos) => {
+    test.skip(infos.project.name === "mobile", "la navigation complète y est masquée");
+    await page.setViewportSize({ width: largeur, height: 900 });
+
+    for (const langue of ["fr", "en"] as const) {
+      await ouvrir(page, `/${langue}`);
+
+      const hauteur = await page
+        .locator("header > div")
+        .first()
+        .evaluate((e) => e.getBoundingClientRect().height);
+      expect(hauteur, `${langue} : l'en-tête déborde de sa hauteur`).toBeLessThanOrEqual(56);
+
+      const liens = page.locator("header nav a");
+      const nombre = await liens.count();
+
+      /*
+       * En dessous du seuil, la navigation est volontairement absente : la
+       * console la contient. L'affirmer plutôt que de sauter le cas, sinon un
+       * jour où elle disparaîtrait par accident à 1600 px, personne ne le
+       * saurait.
+       */
+      if (largeur < SEUIL_NAVIGATION) {
+        expect(await liens.first().isVisible().catch(() => false)).toBe(false);
+        continue;
+      }
+
+      expect(nombre, `${langue} : la navigation est absente`).toBeGreaterThan(0);
+
+      for (let i = 0; i < nombre; i++) {
+        const boite = await liens.nth(i).boundingBox();
+        const texte = await liens.nth(i).innerText();
+        // Une entrée sur deux lignes fait plus de 40 px de haut ; sur une, ~36.
+        expect(boite?.height ?? 0, `${langue} : « ${texte} » est coupé`).toBeLessThan(40);
+      }
+    }
+  });
+}
