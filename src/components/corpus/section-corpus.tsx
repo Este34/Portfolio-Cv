@@ -67,7 +67,7 @@ const TEXTES = {
     surTitre: "Le moteur de recherche, à nu",
     titre: (n: number) => `Les ${n} passages que ce site sait citer`,
     intro: (n: number) =>
-      `Quand vous posez une question à ce portfolio, il compare votre phrase à ces ${n} passages. Chacun est un vecteur de 384 nombres ; les voici projetés sur un plan, colorés par source.`,
+      `Quand vous posez une question à ce portfolio, il compare votre phrase à ces ${n} passages. Chacun est un vecteur de 384 nombres ; les voici projetés en volume, colorés par source. Faites-les tourner, ou repassez au plan.`,
     methode:
       "La projection est une analyse en composantes principales, pas un t-SNE. C'est moins joli, les amas se chevauchent, mais c'est une ombre fidèle du nuage réel : deux points voisins ici le sont vraiment dans l'espace du modèle. Un t-SNE aurait produit des grappes nettes et des distances qui ne veulent rien dire.",
     variance: (deux: string, trois: string) => (
@@ -85,7 +85,7 @@ const TEXTES = {
     surTitre: "The search engine, laid bare",
     titre: (n: number) => `The ${n} passages this site can quote`,
     intro: (n: number) =>
-      `When you ask this portfolio a question, it compares your sentence against these ${n} passages. Each one is a vector of 384 numbers; here they are projected onto a plane, coloured by source.`,
+      `When you ask this portfolio a question, it compares your sentence against these ${n} passages. Each one is a vector of 384 numbers; here they are projected into a volume, coloured by source. Spin it, or switch back to the plane.`,
     methode:
       "The projection is a principal component analysis, not a t-SNE. It is less pretty, the clusters overlap, but it is a faithful shadow of the real cloud: two points that are neighbours here really are neighbours in the model's space. A t-SNE would have produced crisp clusters and distances that mean nothing.",
     variance: (deux: string, trois: string) => (
@@ -106,7 +106,7 @@ export function SectionCorpus({ langue }: { langue: Langue }) {
   const nombre = (v: number) => v.toLocaleString(locale(langue), { minimumFractionDigits: 1 });
 
   return (
-    <section className="filet-fort">
+    <section id="corpus" className="filet-fort">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
         <div className="flex flex-col justify-center">
           <p className="annotation text-corail">{textes.surTitre}</p>

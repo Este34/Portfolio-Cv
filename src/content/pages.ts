@@ -238,7 +238,7 @@ export const PAGE_MAKING_OF = {
       note: { fr: "et il est facultatif", en: "and it is optional" },
     },
     {
-      valeur: "67",
+      valeur: "72",
       libelle: { fr: "tests", en: "tests" },
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },
@@ -406,16 +406,20 @@ export const PAGE_LABO = {
       },
       corps: [
         {
-          fr: "Deux spirales entrelacées. J'ai mesuré ce qu'obtient le meilleur demi-plan possible sur ces données, par balayage exhaustif des orientations et des seuils : 75 % de justesse, et il ne fera jamais mieux. Le réseau, deux entrées, deux couches cachées de douze neurones, une sortie, les sépare intégralement en quelques secondes, après moins d'un millier de mini-lots. La frontière de décision se forme sous vos yeux, et l'apprentissage repart de zéro peu après avoir convergé : vous voyez donc le cycle complet, quel que soit le moment où vous arrivez.",
-          en: "Two interleaved spirals. I measured what the best possible half-plane achieves on this data, by exhaustively sweeping orientations and thresholds: 75% accuracy, and it will never do better. The network, two inputs, two hidden layers of twelve neurons, one output, separates them completely in a few seconds, after fewer than a thousand mini-batches. The decision boundary forms in front of you, and training restarts from scratch shortly after converging, so you see the full cycle whenever you arrive.",
+          fr: "La forme est tirée au sort à chaque visite, parmi six : deux lunes, des bandes, des spirales, des anneaux, quatre amas en OU exclusif, un damier. Le réseau, lui, ne change pas d'un paramètre — deux entrées, deux couches cachées de douze neurones, une sortie. C'est ce qui rend la démonstration crédible : montrer toujours la même figure ne prouverait que le réglage sur mesure.",
+          en: "The shape is drawn at random on every visit, from six: two moons, stripes, spirals, rings, four exclusive-or clusters, a checkerboard. The network itself does not change by a single parameter — two inputs, two hidden layers of twelve neurons, one output. That is what makes the demo credible: always showing the same figure would only prove it had been tuned for that figure.",
+        },
+        {
+          fr: "Sous le cadre, deux nombres à lire ensemble. Le plafond linéaire est la justesse du meilleur demi-plan possible sur ces points-là, calculée exactement à l'orientation près, pas estimée : il va de 88 % sur deux lunes à 62 % sur un damier. La justesse, c'est celle du réseau. L'écart entre les deux est la seule mesure honnête de ce que le non-linéaire apporte, et il change à chaque forme.",
+          en: "Below the frame, two numbers to read together. The linear ceiling is the accuracy of the best possible half-plane on those exact points, computed exactly up to the orientation step rather than estimated: it runs from 88% on two moons to 62% on a checkerboard. The accuracy is the network's. The gap between the two is the only honest measure of what the non-linear part buys you, and it changes with every shape.",
         },
         {
           fr: "Passe avant, passe arrière, descente de gradient sur mini-lots : tout est écrit à la main, en une centaine de lignes, sans TensorFlow ni PyTorch. C'est le même parti pris que mon projet de recherche augmentée : on ne comprend un mécanisme qu'en l'implémentant, et l'entropie croisée binaire combinée à une sigmoïde donne directement la dérivée de sortie, sans passer par la dérivée de l'activation.",
           en: "Forward pass, backward pass, mini-batch gradient descent: all written by hand, in about a hundred lines, with no TensorFlow and no PyTorch. Same stance as my retrieval-augmented project: you only understand a mechanism by implementing it, and binary cross-entropy combined with a sigmoid gives the output derivative directly, without going through the activation's derivative.",
         },
         {
-          fr: "Basculez sur « Dessiner » et posez vos propres points : vous choisissez la couleur, vous cliquez dans le cadre, et la frontière s'adapte à ce que vous venez de tracer. C'est là qu'on apprend le plus. Un seul point mal placé déforme toute une frontière. Le réseau extrapole n'importe quoi là où vous ne lui avez rien montré. Deux amas bien séparés sont résolus instantanément, deux amas imbriqués lui résistent.",
-          en: "Switch to «Draw» and place your own points: pick a colour, click inside the frame, and the boundary adapts to what you just drew. That is where you learn the most. One badly placed point deforms an entire boundary. The network extrapolates nonsense wherever you showed it nothing. Two well-separated clusters are solved instantly; two interlocking ones fight back.",
+          fr: "Basculez sur « Dessiner » et posez vos propres points : vous choisissez la couleur, vous cliquez dans le cadre, et la frontière s'adapte à ce que vous venez de tracer. Le plafond linéaire se recalcule à chaque point, ce qui rend visible une chose difficile à croire sur parole : deux ou trois points suffisent à faire tomber un problème de séparable à impossible. C'est là qu'on apprend le plus. Un seul point mal placé déforme toute une frontière, et le réseau extrapole n'importe quoi là où vous ne lui avez rien montré.",
+          en: "Switch to «Draw» and place your own points: pick a colour, click inside the frame, and the boundary adapts to what you just drew. The linear ceiling recomputes on every point, which makes visible something hard to take on trust: two or three points are enough to turn a separable problem into an impossible one. That is where you learn the most. One badly placed point deforms an entire boundary, and the network extrapolates nonsense wherever you showed it nothing.",
         },
         {
           fr: "Le bogue qui m'a coûté le plus de temps ici n'était ni dans les gradients ni dans l'architecture : les points étaient générés classe par classe, et un parcours séquentiel produisait des mini-lots presque mono-classe. Le réseau apprenait alternativement « tout est 0 » puis « tout est 1 » et s'effondrait à 50 %. Un mélange de Fisher-Yates a suffi. C'est le genre de défaut qu'aucune relecture ne montre et qu'une mesure trouve en dix minutes.",

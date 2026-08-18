@@ -101,7 +101,24 @@ export const LABO = {
     fr: "Cliquez pour poser des points des deux couleurs",
     en: "Click to place points of both colours",
   },
-  spirales: { fr: "Spirales", en: "Spirals" },
+  autreForme: { fr: "Autre forme", en: "Another shape" },
+  forme: { fr: "Forme", en: "Shape" },
+  plafondLineaire: { fr: "Plafond linéaire", en: "Linear ceiling" },
+  /*
+   * Les noms des six jeux de données.
+   *
+   * Traduits, parce qu'ils sont lus comme une étiquette et non comme un terme
+   * technique : « lunes » et « moons » désignent la même figure dans la
+   * littérature, mais un lecteur français ne reconnaît pas « two moons ».
+   */
+  formes: {
+    lunes: { fr: "Deux lunes", en: "Two moons" },
+    bandes: { fr: "Bandes", en: "Stripes" },
+    spirales: { fr: "Spirales", en: "Spirals" },
+    anneaux: { fr: "Anneaux", en: "Rings" },
+    amas: { fr: "Amas en OU exclusif", en: "Exclusive-or clusters" },
+    damier: { fr: "Damier", en: "Checkerboard" },
+  },
   dessiner: { fr: "Dessiner", en: "Draw" },
   couleurPosee: { fr: "Couleur posée au clic", en: "Colour placed on click" },
   bleu: { fr: "Bleu", en: "Blue" },
@@ -130,4 +147,4 @@ export const LABO = {
     fr: "Déplacez le curseur sur la zone pour jouer.",
     en: "Move the cursor over the area to play.",
   },
-} as const satisfies Record<string, Bilingue>;
+} as const;

@@ -96,21 +96,32 @@ async function ouvrir(page: Page, chemin: string) {
  * titre, l'accroche, les boutons et le portrait. La partie la plus importante
  * du site n'était plus vérifiée du tout.
  *
- * Sont donc masquées uniquement les simulations dont l'état initial est tiré au
- * hasard : nuée, k-moyennes, agar. Les comparer ne testerait qu'un générateur
- * de nombres. Leur cadre reste vérifié — s'il disparaît ou change de taille, le
+ * Sont masquées les figures dont le contenu n'est pas reproductible :
+ *
+ *  - **nuée, k-moyennes, agar** — leur état initial est tiré au hasard, les
+ *    comparer ne testerait qu'un générateur de nombres ;
+ *  - **le réseau** — depuis qu'il tire sa forme au sort à chaque visite, il
+ *    entre dans la même catégorie. C'était sa seule différence avec les
+ *    autres, et elle a disparu le jour où la démonstration a cessé de montrer
+ *    toujours les mêmes spirales ;
+ *  - **la projection du corpus** — elle passe désormais par Three.js dès
+ *    l'hydratation, et un rendu WebGL en trois dimensions dépend du pilote
+ *    graphique bien plus qu'un canvas en deux dimensions.
+ *
+ * Le cadre de chacune reste vérifié : s'il disparaît ou change de taille, le
  * masque bouge et la comparaison échoue.
  *
- * Le fond en shader et la projection du corpus ne sont **pas** masqués. Ils
- * sont reproductibles : le premier calcule une image unique à un temps fixe,
- * avec un bruit à hachage entier identique d'un pilote graphique à l'autre ; la
- * seconde n'a pas de boucle d'animation du tout. Deux exécutions consécutives
+ * Le fond en shader n'est **pas** masqué. Il est reproductible par
+ * construction : image unique à temps fixe en mouvement réduit, et bruit à
+ * hachage entier identique d'un pilote à l'autre. Deux exécutions consécutives
  * ont confirmé la stabilité avant de retenir ce choix.
  */
 function options(page: Page) {
   return {
     fullPage: true,
-    mask: [page.locator("#nuee canvas, #k-moyennes canvas, #agar canvas")],
+    mask: [
+      page.locator("#nuee canvas, #k-moyennes canvas, #agar canvas, #reseau canvas, #corpus canvas"),
+    ],
     maskColor: "#ff00ff",
   };
 }

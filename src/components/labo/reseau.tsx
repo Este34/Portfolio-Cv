@@ -5,14 +5,17 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { LABO } from "@/content/interface";
 import { locale, t, type Langue } from "@/lib/langue";
 import {
+  FORMES,
   LOT,
   apprendre,
   avant,
   creerAlea,
+  fabriquer,
   initialiser,
   justesse,
-  spirales,
+  plafondLineaire,
   type Exemple,
+  type NomForme,
 } from "@/lib/mlp";
 
 import { Toile, type Pilote } from "./toile";
@@ -28,27 +31,42 @@ const GRILLE_Y = 40;
 /** Hauteur réservée à la courbe de perte, en pixels. */
 const H_COURBE = 56;
 
-type Ordre = "spirales" | "effacer" | null;
+type Ordre = "nouvelle" | "effacer" | null;
 
 /**
- * Réseau de neurones en apprentissage, et dessinable.
+ * Réseau de neurones en apprentissage, sur une forme tirée au sort.
  *
- * Deux usages. Par défaut, le réseau sépare deux spirales entrelacées et
- * l'apprentissage se rejoue en boucle. En mode libre, c'est le visiteur qui
- * place les points : il dessine ses propres classes et regarde la frontière
- * s'y adapter en direct.
+ * ## Ce que la forme aléatoire change
  *
- * Le second usage est celui qui apprend quelque chose. On y découvre en
- * quelques clics ce qu'aucun paragraphe n'explique aussi bien : qu'une seule
- * donnée aberrante déforme une frontière, qu'un réseau extrapole n'importe quoi
- * là où il n'a rien vu, et que deux amas bien séparés sont résolus
- * instantanément là où deux amas imbriqués résistent.
+ * La version précédente montrait toujours les mêmes deux spirales. Elle
+ * démontrait donc une seule chose : que ce réseau sait faire *ces* spirales, ce
+ * qu'un lecteur méfiant pouvait attribuer à des réglages taillés sur mesure.
+ *
+ * Six formes tirées au sort à chaque visite, et le même réseau sans un
+ * paramètre changé : c'est ce qui rend la démonstration crédible. Deux lunes,
+ * des bandes, des spirales, des anneaux, quatre amas en OU exclusif, un damier.
+ *
+ * ## Le plafond linéaire, affiché à côté
+ *
+ * « Le réseau atteint 100 % » ne dit rien tant qu'on ignore si le problème
+ * était difficile. La page affiche donc, en face, la justesse du **meilleur
+ * demi-plan possible** sur les mêmes points, calculée exactement à
+ * l'orientation près. L'écart entre les deux nombres est la seule mesure
+ * honnête de ce que le non-linéaire apporte : de douze points sur deux lunes à
+ * près de quarante sur un damier.
  *
  * Les mathématiques vivent dans `lib/mlp.ts`, sans dépendance à React, ce qui
  * permet de vérifier en Node que le réseau apprend réellement.
  */
 export function Reseau({ langue }: { langue: Langue }) {
-  const [etat, setEtat] = useState({ lots: 0, perte: 0.7, justesse: 50, points: 0 });
+  const [etat, setEtat] = useState({
+    lots: 0,
+    perte: 0.7,
+    justesse: 50,
+    points: 0,
+    plafond: 0,
+    forme: null as NomForme | null,
+  });
   const [classe, setClasse] = useState<0 | 1>(1);
   const [libre, setLibre] = useState(false);
 
@@ -59,9 +77,6 @@ export function Reseau({ langue }: { langue: Langue }) {
    *
    * Une référence et non un objet mémoïsé, parce que le compilateur React
    * traite le résultat d'un `useMemo` comme immuable et refuse qu'on y écrive.
-   * `useRef` est exactement le mécanisme prévu pour une valeur mutable qui
-   * survit aux rendus, et l'écriture se fait dans un gestionnaire d'évènement,
-   * jamais pendant le rendu.
    */
   const canal = useRef<{ classe: 0 | 1; ordre: Ordre }>({ classe: 1, ordre: null });
 
@@ -76,10 +91,27 @@ export function Reseau({ langue }: { langue: Langue }) {
   }, []);
 
   const pilote = useMemo<Pilote>(() => {
-    const alea = creerAlea(20260817);
+    /*
+     * Graine tirée au hasard, contrairement à tout le reste du site.
+     *
+     * C'est la seule valeur non reproductible du portfolio, et elle est
+     * délibérée : deux visites doivent montrer deux problèmes différents.
+     *
+     * Le tirage n'a **pas** lieu ici mais à la première image dessinée. Deux
+     * raisons, et la première est une règle : `Math.random()` pendant le
+     * rendu est impur, et le compilateur React le refuse à juste titre — deux
+     * rendus du même composant rendraient deux choses. La seconde est
+     * pratique : la boucle de dessin ne tourne que dans le navigateur, ce qui
+     * écarte d'office toute divergence entre rendu serveur et rendu client.
+     */
+    let alea: (() => number) | null = null;
+    const tirerForme = () => FORMES[Math.floor(alea!() * FORMES.length)];
+
     const sim = {
-      reseau: initialiser(alea),
-      donnees: spirales(alea) as Exemple[],
+      reseau: null as ReturnType<typeof initialiser> | null,
+      donnees: [] as Exemple[],
+      forme: null as NomForme | null,
+      plafond: 0,
       lots: 0,
       perte: 0.7,
       justesse: 50,
@@ -90,9 +122,25 @@ export function Reseau({ langue }: { langue: Langue }) {
       libre: false,
     };
 
-    function repartir(donnees?: Exemple[]) {
-      sim.reseau = initialiser(alea);
+    /** Premier passage : on tire la graine, puis une forme. */
+    function amorcer() {
+      if (alea) return;
+      alea = creerAlea(Math.floor(Math.random() * 2 ** 31));
+      const forme = tirerForme();
+      repartir(fabriquer(forme, alea), forme);
+    }
+
+    function repartir(donnees?: Exemple[], forme?: NomForme | null) {
+      sim.reseau = initialiser(alea!);
       if (donnees) sim.donnees = donnees;
+      if (forme !== undefined) sim.forme = forme;
+      /*
+       * Le plafond est recalculé à chaque changement de jeu. En mode libre, il
+       * l'est aussi à chaque point posé : c'est le seul moyen pour que le
+       * nombre affiché décrive les points réellement à l'écran, et le calcul
+       * reste sous la milliseconde à cette taille.
+       */
+      sim.plafond = plafondLineaire(sim.donnees);
       sim.lots = 0;
       sim.historique = [];
       sim.curseur = 0;
@@ -100,9 +148,9 @@ export function Reseau({ langue }: { langue: Langue }) {
     }
 
     return {
-      /** Un clic dépose un point de la classe choisie, ou réinitialise. */
+      /** Un clic dépose un point de la classe choisie, ou relance. */
       auClic({ largeur, hauteur, souris }) {
-        if (!souris) return;
+        if (!souris || !alea) return;
         const hChamp = hauteur - H_COURBE;
         if (souris.y > hChamp) return; // clic dans la bande de la courbe
 
@@ -115,16 +163,20 @@ export function Reseau({ langue }: { langue: Langue }) {
           y: 1 - (souris.y / hChamp) * 2,
           classe: canal.current.classe,
         });
+        sim.plafond = plafondLineaire(sim.donnees);
       },
 
       dessiner({ ctx, largeur, hauteur, dt }) {
-        if (canal.current.ordre === "spirales") {
+        amorcer();
+
+        if (canal.current.ordre === "nouvelle") {
           sim.libre = false;
-          repartir(spirales(alea));
+          const forme = tirerForme();
+          repartir(fabriquer(forme, alea!), forme);
           canal.current.ordre = null;
         } else if (canal.current.ordre === "effacer") {
           sim.libre = true;
-          repartir([]);
+          repartir([], null);
           canal.current.ordre = null;
         }
 
@@ -147,7 +199,7 @@ export function Reseau({ langue }: { langue: Langue }) {
               lot.push(sim.donnees[sim.curseur % sim.donnees.length]);
               sim.curseur++;
             }
-            sim.perte = apprendre(sim.reseau, lot);
+            sim.perte = apprendre(sim.reseau!, lot);
             sim.lots++;
           }
         }
@@ -158,23 +210,29 @@ export function Reseau({ langue }: { langue: Langue }) {
           if (deuxClasses) {
             sim.historique.push(sim.perte);
             if (sim.historique.length > 200) sim.historique.shift();
-            sim.justesse = Math.round(justesse(sim.reseau, sim.donnees));
+            sim.justesse = Math.round(justesse(sim.reseau!, sim.donnees));
           }
           setEtat({
             lots: sim.lots,
             perte: sim.perte,
             justesse: deuxClasses ? sim.justesse : 0,
             points: sim.donnees.length,
+            plafond: deuxClasses ? sim.plafond : 0,
+            forme: sim.forme,
           });
 
           /*
-           * Redémarrage automatique une fois la séparation tenue quelques
-           * secondes, mais seulement sur les spirales : effacer le dessin du
-           * visiteur sous ses yeux serait insupportable.
+           * Une fois la séparation tenue quelques secondes, on tire une autre
+           * forme plutôt que de rejouer la même : c'est ce qui fait qu'un
+           * visiteur qui reste en voit plusieurs. En mode libre, jamais —
+           * effacer le dessin de quelqu'un sous ses yeux serait insupportable.
            */
           if (!sim.libre && sim.justesse >= 100) {
             sim.convergeDepuis++;
-            if (sim.convergeDepuis > 28) repartir(spirales(alea));
+            if (sim.convergeDepuis > 28) {
+              const forme = tirerForme();
+              repartir(fabriquer(forme, alea!), forme);
+            }
           } else {
             sim.convergeDepuis = 0;
           }
@@ -198,7 +256,7 @@ export function Reseau({ langue }: { langue: Langue }) {
             for (let j = 0; j < GRILLE_Y; j++) {
               const nx = ((i + 0.5) / GRILLE_X) * 2 - 1;
               const ny = 1 - ((j + 0.5) / GRILLE_Y) * 2;
-              const { a3 } = avant(sim.reseau, nx, ny);
+              const { a3 } = avant(sim.reseau!, nx, ny);
               // L'opacité suit la certitude : la frontière apparaît en creux,
               // là où le réseau hésite encore.
               const certitude = Math.abs(a3 - 0.5) * 2;
@@ -252,6 +310,8 @@ export function Reseau({ langue }: { langue: Langue }) {
     // Voir la note dans `agar.tsx` : constante par instance, citée par honnêteté.
   }, [langue]);
 
+  const pourCent = (v: number) => `${v.toLocaleString(locale(langue), { maximumFractionDigits: 0 })}${langue === "fr" ? " %" : "%"}`;
+
   return (
     <div>
       <Toile pilote={pilote} ratio={16 / 11} langue={langue} label={t(LABO.labelReseau, langue)} />
@@ -259,14 +319,14 @@ export function Reseau({ langue }: { langue: Langue }) {
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
-          onClick={() => commander("spirales")}
+          onClick={() => commander("nouvelle")}
           className={`border-2 px-3 py-1.5 text-xs font-bold uppercase transition-colors ${
             libre
               ? "border-trait text-texte-attenue hover:border-trait-fort"
               : "bloc-citron border-citron"
           }`}
         >
-          {t(LABO.spirales, langue)}
+          {t(LABO.autreForme, langue)}
         </button>
         <button
           type="button"
@@ -306,6 +366,12 @@ export function Reseau({ langue }: { langue: Langue }) {
       </div>
 
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+        {etat.forme && (
+          <div className="flex gap-2">
+            <dt className="annotation">{t(LABO.forme, langue)}</dt>
+            <dd className="annotation text-texte">{t(LABO.formes[etat.forme], langue)}</dd>
+          </div>
+        )}
         <div className="flex gap-2">
           <dt className="annotation">{t(LABO.points, langue)}</dt>
           <dd className="annotation text-texte tabulaire">{etat.points}</dd>
@@ -320,14 +386,21 @@ export function Reseau({ langue }: { langue: Langue }) {
           <dt className="annotation">{t(LABO.perte, langue)}</dt>
           <dd className="annotation text-texte tabulaire">{etat.perte.toFixed(3)}</dd>
         </div>
+        {/*
+          Le plafond linéaire est posé juste avant la justesse du réseau, et pas
+          ailleurs : c'est l'écart entre les deux qu'il faut pouvoir lire d'un
+          seul mouvement de l'œil.
+        */}
+        <div className="flex gap-2">
+          <dt className="annotation">{t(LABO.plafondLineaire, langue)}</dt>
+          <dd className="annotation text-texte-attenue tabulaire">{pourCent(etat.plafond)}</dd>
+        </div>
         <div className="flex gap-2">
           <dt className="annotation">{t(LABO.justesse, langue)}</dt>
           <dd
             className={`annotation tabulaire ${etat.justesse >= 95 ? "text-citron" : "text-texte"}`}
           >
-            {/* L'anglais ne met pas d'espace avant le signe pour cent. */}
-            {etat.justesse}
-            {langue === "fr" ? " %" : "%"}
+            {pourCent(etat.justesse)}
           </dd>
         </div>
       </dl>

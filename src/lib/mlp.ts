@@ -212,3 +212,216 @@ export function justesse(r: Reseau, donnees: readonly Exemple[]): number {
   }
   return (bons / donnees.length) * 100;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Formes                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Les jeux de données proposés, et pourquoi il y en a six.
+ *
+ * Une seule forme, toujours la même, ne montre qu'une chose : que le réseau
+ * sait faire *celle-là*. Six formes tirées au sort à chaque visite montrent ce
+ * qui compte vraiment — qu'un même réseau, sans rien changer à son architecture
+ * ni à ses réglages, résout des problèmes de difficultés très différentes, et
+ * qu'il lui arrive de peiner.
+ *
+ * Elles sont rangées ici par difficulté croissante pour un demi-plan, ce que la
+ * page affiche : deux lunes se séparent presque à la règle, un damier pas du
+ * tout.
+ */
+export type NomForme = "lunes" | "bandes" | "spirales" | "anneaux" | "amas" | "damier";
+
+export const FORMES: readonly NomForme[] = [
+  "lunes",
+  "bandes",
+  "spirales",
+  "anneaux",
+  "amas",
+  "damier",
+];
+
+/**
+ * Mélange de Fisher-Yates, et il n'est pas cosmétique.
+ *
+ * Les points sont générés classe par classe. Sans mélange, un parcours
+ * séquentiel produit des mini-lots presque mono-classe : le réseau apprend
+ * alternativement « tout est 0 » puis « tout est 1 », oscille, et s'effondre à
+ * 50 % de justesse. C'est le défaut qui m'a coûté le plus de temps sur cette
+ * démonstration, et il n'était ni dans les gradients ni dans l'architecture.
+ */
+function melanger(points: Exemple[], alea: () => number): Exemple[] {
+  for (let i = points.length - 1; i > 0; i--) {
+    const j = Math.floor(alea() * (i + 1));
+    [points[i], points[j]] = [points[j], points[i]];
+  }
+  return points;
+}
+
+/** Bruit gaussien approché par somme de trois tirages uniformes. */
+function gauss(alea: () => number, ecart: number): number {
+  return ((alea() + alea() + alea()) / 1.5 - 1) * ecart;
+}
+
+/** Deux croissants emboîtés. La forme la plus facile du lot. */
+function lunes(alea: () => number, parClasse: number): Exemple[] {
+  const points: Exemple[] = [];
+  for (const classe of [0, 1] as const) {
+    for (let i = 0; i < parClasse; i++) {
+      const angle = (i / parClasse) * Math.PI;
+      const sens = classe === 0 ? 1 : -1;
+      points.push({
+        x: Math.cos(angle) * 0.62 * sens + 0.28 * -sens + gauss(alea, 0.07),
+        y: Math.sin(angle) * 0.62 * sens + 0.18 * -sens + gauss(alea, 0.07),
+        classe,
+      });
+    }
+  }
+  return melanger(points, alea);
+}
+
+/** Bandes alternées, inclinées. Un demi-plan n'en attrape qu'une sur deux. */
+function bandes(alea: () => number, parClasse: number): Exemple[] {
+  const points: Exemple[] = [];
+  const angle = Math.PI / 5;
+  const ca = Math.cos(angle);
+  const sa = Math.sin(angle);
+  for (let i = 0; i < parClasse * 2; i++) {
+    const x = alea() * 2 - 1;
+    const y = alea() * 2 - 1;
+    const bande = Math.floor((x * ca + y * sa + 1) * 1.6);
+    points.push({ x, y, classe: (bande % 2 === 0 ? 0 : 1) as 0 | 1 });
+  }
+  return melanger(points, alea);
+}
+
+/** Un disque central, une couronne autour. Aucune droite ne les sépare. */
+function anneaux(alea: () => number, parClasse: number): Exemple[] {
+  const points: Exemple[] = [];
+  for (const classe of [0, 1] as const) {
+    for (let i = 0; i < parClasse; i++) {
+      const angle = alea() * Math.PI * 2;
+      const rayon = classe === 0 ? alea() * 0.36 : 0.62 + alea() * 0.3;
+      points.push({
+        x: Math.cos(angle) * rayon + gauss(alea, 0.03),
+        y: Math.sin(angle) * rayon + gauss(alea, 0.03),
+        classe,
+      });
+    }
+  }
+  return melanger(points, alea);
+}
+
+/** Quatre amas gaussiens, appariés en diagonale : le OU exclusif classique. */
+function amas(alea: () => number, parClasse: number): Exemple[] {
+  const centres: [number, number, 0 | 1][] = [
+    [-0.5, 0.5, 0],
+    [0.5, -0.5, 0],
+    [0.5, 0.5, 1],
+    [-0.5, -0.5, 1],
+  ];
+  const points: Exemple[] = [];
+  for (const [cx, cy, classe] of centres) {
+    for (let i = 0; i < parClasse / 2; i++) {
+      points.push({ x: cx + gauss(alea, 0.19), y: cy + gauss(alea, 0.19), classe });
+    }
+  }
+  return melanger(points, alea);
+}
+
+/** Damier trois par trois. La forme la plus dure : le demi-plan y est au hasard. */
+function damier(alea: () => number, parClasse: number): Exemple[] {
+  const points: Exemple[] = [];
+  for (let i = 0; i < parClasse * 2; i++) {
+    const x = alea() * 2 - 1;
+    const y = alea() * 2 - 1;
+    // Quatre cases par axe, pas trois : un damier impair compte cinq cases
+    // dune couleur pour quatre de lautre, et la classe majoritaire donne
+    // 55 % de justesse a qui repond toujours la meme chose.
+    const cx = Math.floor((x + 1) * 2);
+    const cy = Math.floor((y + 1) * 2);
+    points.push({ x, y, classe: ((cx + cy) % 2 === 0 ? 0 : 1) as 0 | 1 });
+  }
+  return melanger(points, alea);
+}
+
+/** Fabrique une forme par son nom. */
+export function fabriquer(nom: NomForme, alea: () => number, parClasse = 90): Exemple[] {
+  switch (nom) {
+    case "lunes":
+      return lunes(alea, parClasse);
+    case "bandes":
+      return bandes(alea, parClasse);
+    case "spirales":
+      return spirales(alea, parClasse);
+    case "anneaux":
+      return anneaux(alea, parClasse);
+    case "amas":
+      return amas(alea, parClasse);
+    case "damier":
+      return damier(alea, parClasse);
+  }
+}
+
+/**
+ * Justesse du meilleur demi-plan possible sur ces données.
+ *
+ * C'est la mesure qui donne son sens à la démonstration : sans elle, « le
+ * réseau atteint 98 % » ne dit rien, puisqu'on ignore si le problème était
+ * difficile. Avec elle, on lit d'un coup d'œil ce que le non-linéaire apporte.
+ *
+ * ## Pourquoi ce n'est pas un balayage à deux boucles
+ *
+ * La version naïve balaie orientations × seuils, ce qui coûte le produit des
+ * deux résolutions et reste approximatif : le meilleur seuil peut tomber entre
+ * deux pas. Ici, pour chaque orientation, les points sont projetés puis triés,
+ * et l'on ne teste que les coupures situées **entre deux projections
+ * consécutives** — les seules qui changent quoi que ce soit au classement. Le
+ * résultat est exact à l'orientation près, et le coût passe de O(A · S · N) à
+ * O(A · N log N).
+ *
+ * Les deux polarités sont évaluées, sans quoi le résultat serait faux dès que
+ * la meilleure droite met la classe 1 du mauvais côté.
+ */
+export function plafondLineaire(donnees: readonly Exemple[], orientations = 180): number {
+  if (donnees.length === 0) return 0;
+
+  const zerosTotal = donnees.reduce((n, p) => n + (p.classe === 0 ? 1 : 0), 0);
+  const unsTotal = donnees.length - zerosTotal;
+
+  let meilleur = 0;
+  const projections: { valeur: number; classe: 0 | 1 }[] = new Array(donnees.length);
+
+  for (let a = 0; a < orientations; a++) {
+    const angle = (a / orientations) * Math.PI;
+    const ca = Math.cos(angle);
+    const sa = Math.sin(angle);
+
+    for (let i = 0; i < donnees.length; i++) {
+      const p = donnees[i];
+      projections[i] = { valeur: p.x * ca + p.y * sa, classe: p.classe };
+    }
+    projections.sort((u, v) => u.valeur - v.valeur);
+
+    /*
+     * Le seuil glisse de la gauche vers la droite en tenant les comptes plutôt
+     * qu'en recomptant à chaque coupure : c'est ce qui rend la boucle linéaire.
+     */
+    let zerosAGauche = 0;
+    let unsAGauche = 0;
+
+    for (let i = 0; i <= projections.length; i++) {
+      const justesA = zerosAGauche + (unsTotal - unsAGauche);
+      const justesB = unsAGauche + (zerosTotal - zerosAGauche);
+      const ici = Math.max(justesA, justesB) / donnees.length;
+      if (ici > meilleur) meilleur = ici;
+
+      if (i < projections.length) {
+        if (projections[i].classe === 0) zerosAGauche++;
+        else unsAGauche++;
+      }
+    }
+  }
+
+  return meilleur * 100;
+}

@@ -1,12 +1,9 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 
+import { useHydrate } from "@/lib/hydrate";
 import type { Langue } from "@/lib/langue";
-
-/** Ne notifie jamais : l'hydratation n'arrive qu'une fois. */
-const jamais = () => () => {};
 
 const MOTS: Record<Langue, Record<string, string>> = {
   fr: {
@@ -24,20 +21,6 @@ const MOTS: Record<Langue, Record<string, string>> = {
     clair: "light",
   },
 };
-
-/**
- * `false` au rendu serveur, `true` une fois hydraté.
- *
- * Préféré à `useState` + `useEffect` : c'est le mécanisme prévu par React pour
- * distinguer les deux rendus, et il ne déclenche pas de rendu en cascade.
- */
-function useHydrate() {
-  return useSyncExternalStore(
-    jamais,
-    () => true,
-    () => false,
-  );
-}
 
 /**
  * Bascule sombre / clair.

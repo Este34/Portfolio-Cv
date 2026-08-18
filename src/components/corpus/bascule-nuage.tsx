@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
+import { useHydrate } from "@/lib/hydrate";
 import { locale, type Langue } from "@/lib/langue";
 
 import { NuageCorpus, type PointCorpus } from "./nuage";
@@ -14,14 +15,23 @@ const MOTS = {
 } as const;
 
 /**
- * Trois dimensions chargées à la demande.
+ * La vue en volume, par défaut, sans sacrifier la dégradation.
  *
- * La vue plane est en canvas : quelques kilo-octets, aucune dépendance, et elle
- * fonctionne partout. La vue orbitale demande Three.js, plusieurs centaines de
- * kilo-octets — elle ne descend donc que si le visiteur la réclame, et la vue
- * plane reste le défaut.
+ * ## L'arbitrage, et comment il est tenu
  *
- * C'est aussi ce qui garantit que la section reste lisible sans WebGL.
+ * La vue orbitale demande Three.js, plusieurs centaines de kilo-octets. C'est
+ * le morceau le plus lourd du site après les deux moteurs, et il descend
+ * désormais à chaque visite de l'accueil au lieu d'attendre un clic.
+ *
+ * Ce que ça ne change pas : il reste **hors du premier lot**. Le rendu serveur
+ * produit la vue plane, en canvas, quelques kilo-octets et aucune dépendance ;
+ * le volume ne la remplace qu'une fois la page hydratée. Un visiteur sans
+ * JavaScript, sans WebGL, ou dont la connexion lâche en route garde donc une
+ * figure complète et lisible plutôt qu'un cadre vide.
+ *
+ * C'est aussi pour ça que le défaut n'est pas écrit `useState(true)` : à
+ * `true`, le serveur rendrait l'écran d'attente, et ce serait lui la version
+ * dégradée.
  */
 const Nuage3D = dynamic(() => import("./nuage-3d"), {
   ssr: false,
@@ -45,7 +55,15 @@ export function BasculeNuage({
   variance3d: number;
   langue: Langue;
 }) {
-  const [en3d, setEn3d] = useState(false);
+  /*
+   * `null` tant que le visiteur n'a rien choisi : la vue suit alors
+   * l'hydratation — plane au rendu serveur, en volume dès que le navigateur a
+   * pris la main. Un clic fige le choix et l'hydratation cesse de décider.
+   */
+  const [choix, setChoix] = useState<boolean | null>(null);
+  const hydrate = useHydrate();
+  const en3d = choix ?? hydrate;
+
   const sources = [...new Set(points.map((p) => p.source))];
   const mots = MOTS[langue];
 
@@ -61,7 +79,7 @@ export function BasculeNuage({
           <button
             key={libelle}
             type="button"
-            onClick={() => setEn3d(valeur)}
+            onClick={() => setChoix(valeur)}
             aria-pressed={en3d === valeur}
             className={`flex-1 border-2 px-3 py-2 text-xs font-bold uppercase transition-colors ${
               en3d === valeur

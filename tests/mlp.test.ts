@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  FORMES,
   H,
   LOT,
   apprendre,
   avant,
   creerAlea,
+  fabriquer,
   initialiser,
   justesse,
+  plafondLineaire,
   spirales,
   type Exemple,
 } from "../src/lib/mlp.ts";
@@ -141,5 +144,76 @@ describe("apprentissage", () => {
 
   it("reste reproductible d'une exécution à l'autre", () => {
     expect(entrainer(600).perte).toBe(entrainer(600).perte);
+  });
+});
+
+describe("formes du jeu de démonstration", () => {
+  it("chaque forme produit deux classes en proportions raisonnables", () => {
+    for (const nom of FORMES) {
+      const d = fabriquer(nom, creerAlea(20260818));
+      const zeros = d.filter((p) => p.classe === 0).length;
+      const part = zeros / d.length;
+      expect(d.length, nom).toBeGreaterThan(100);
+      /*
+       * Un jeu trop déséquilibré rendrait la démonstration muette : à 80/20,
+       * répondre toujours la classe majoritaire donne déjà 80 % de justesse, et
+       * le plafond linéaire ne mesure plus rien. C'est le défaut qu'avait le
+       * damier en trois cases par axe — cinq cases d'une couleur pour quatre.
+       */
+      expect(part, `${nom} : classes déséquilibrées`).toBeGreaterThan(0.4);
+      expect(part, `${nom} : classes déséquilibrées`).toBeLessThan(0.6);
+    }
+  });
+
+  it("chaque forme reste dans le cadre", () => {
+    for (const nom of FORMES) {
+      for (const p of fabriquer(nom, creerAlea(7))) {
+        expect(Math.abs(p.x), nom).toBeLessThan(1.3);
+        expect(Math.abs(p.y), nom).toBeLessThan(1.3);
+      }
+    }
+  });
+
+  it("aucune forme n'est séparable par une droite", () => {
+    /*
+     * C'est la condition d'existence de la démonstration : si un demi-plan
+     * suffisait, le réseau ne montrerait rien que la régression logistique ne
+     * fasse. Le seuil est haut à dessein — deux lunes plafonnent à 88 %, ce qui
+     * est déjà beaucoup, et c'est justement pour ça qu'elles sont dans le lot.
+     */
+    for (const nom of FORMES) {
+      const plafond = plafondLineaire(fabriquer(nom, creerAlea(20260818)));
+      expect(plafond, `${nom} : trop facile pour une droite`).toBeLessThan(92);
+      expect(plafond, `${nom} : plafond sous le hasard`).toBeGreaterThan(50);
+    }
+  });
+
+  it("le réseau dépasse le plafond linéaire sur chacune", () => {
+    // La promesse affichée à l'écran, vérifiée forme par forme.
+    for (const nom of FORMES) {
+      const alea = creerAlea(20260818);
+      const donnees = fabriquer(nom, alea);
+      const r = initialiser(alea);
+      let curseur = 0;
+      for (let n = 0; n < 20_000; n++) {
+        const lot = [];
+        for (let i = 0; i < LOT; i++) lot.push(donnees[curseur++ % donnees.length]);
+        apprendre(r, lot);
+      }
+      const atteint = justesse(r, donnees);
+      const plafond = plafondLineaire(donnees);
+      expect(atteint, `${nom} : ${atteint} % contre ${plafond} % pour une droite`).toBeGreaterThan(
+        plafond + 5,
+      );
+    }
+  }, 60_000);
+
+  it("le plafond d'un jeu réellement linéaire vaut 100 %", () => {
+    // Contrôle du calculateur lui-même : deux amas franchement séparés.
+    const droit = [
+      ...Array.from({ length: 40 }, (_, i) => ({ x: -0.6, y: i / 40 - 0.5, classe: 0 as const })),
+      ...Array.from({ length: 40 }, (_, i) => ({ x: 0.6, y: i / 40 - 0.5, classe: 1 as const })),
+    ];
+    expect(plafondLineaire(droit)).toBe(100);
   });
 });
