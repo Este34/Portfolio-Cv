@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps<"/[langue]/contact">) {
   return (
     <div className="relative isolate min-h-[70vh] overflow-hidden">
       {/* Page courte : le fond y a la place de respirer, donc un peu plus dense. */}
-      <FondAnime intensite={0.5} lignes={19} />
+      <FondAnime motif="interference" intensite={0.46} lignes={17} />
 
       <div className="relative mx-auto max-w-6xl px-5">
         <div className="grid gap-12 py-16 lg:grid-cols-[1.3fr_1fr] lg:gap-20 lg:py-24">

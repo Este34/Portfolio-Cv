@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { UI } from "@/content/interface";
 import { TRAVAUX, TRAVAUX_TRIES, travailParSlug } from "@/content/travaux";
 import { LANGUES, estLangue, lien, t, ts } from "@/lib/langue";
@@ -38,7 +39,9 @@ export default async function PageTravail({ params }: PageProps<"/[langue]/trava
   return (
     <article className="mx-auto max-w-6xl px-5">
       {/* ---- Titre ---------------------------------------------------- */}
-      <header className="grid gap-10 py-16 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:py-20">
+      <header className="relative isolate grid gap-10 py-16 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:py-20">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="trame" intensite={0.28} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <div>
           <h1 className="font-display text-titre text-texte uppercase">{t(travail.titre, langue)}</h1>
           <p className="text-texte-attenue mt-3 text-lg">{t(travail.sousTitre, langue)}</p>

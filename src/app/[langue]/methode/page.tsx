@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { PAGE_METHODE } from "@/content/pages";
 import { estLangue, t } from "@/lib/langue";
 import { metadonnees } from "@/lib/metadonnees";
@@ -30,7 +31,9 @@ export default async function Methode({ params }: PageProps<"/[langue]/methode">
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="py-16 lg:py-20">
+      <header className="relative isolate py-16 lg:py-20">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="trame" intensite={0.3} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_METHODE.titre, langue)}
         </h1>

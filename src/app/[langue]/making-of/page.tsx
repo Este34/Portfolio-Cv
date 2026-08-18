@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { UI } from "@/content/interface";
 import { PAGE_MAKING_OF } from "@/content/pages";
 import { estLangue, lien, t } from "@/lib/langue";
@@ -30,7 +31,9 @@ export default async function MakingOf({ params }: PageProps<"/[langue]/making-o
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="py-16 lg:py-20">
+      <header className="relative isolate py-16 lg:py-20">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="flux" intensite={0.3} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_MAKING_OF.titre, langue)}
         </h1>

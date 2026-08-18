@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { Atelier } from "@/components/bac-a-sable/atelier";
 import { PAGE_BAC_A_SABLE } from "@/content/pages";
 import { estLangue, lien, t } from "@/lib/langue";
@@ -26,7 +27,9 @@ export default async function BacASable({ params }: PageProps<"/[langue]/bac-a-s
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="grid gap-8 py-14 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
+      <header className="relative isolate grid gap-8 py-14 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="trame" intensite={0.34} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <div>
           <p className="annotation text-corail">{t(PAGE_BAC_A_SABLE.surTitre, langue)}</p>
           <h1 className="text-titre text-texte mt-2 uppercase">

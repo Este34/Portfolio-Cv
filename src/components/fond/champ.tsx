@@ -3,35 +3,50 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Fond animé : un champ scalaire, dessiné par ses courbes de niveau.
+ * Fond animé : un champ scalaire, lu de quatre façons.
  *
- * ## Pourquoi celui-ci et pas un autre
+ * ## Le principe, et pourquoi il tient
+ *
+ * Il n'y a **qu'un seul champ** et **qu'un seul programme**. Les quatre motifs
+ * ne changent pas le calcul, seulement la manière d'en faire de l'encre :
+ * courbes de niveau, trame de points, bandes d'interférence, lignes de flux.
+ * C'est ce qui permet d'en poser sur toutes les pages sans que le site parte
+ * dans quatre directions : les fonds sont visiblement parents, comme quatre
+ * représentations d'une même donnée.
  *
  * Un portfolio dont le sujet est la prospective chiffrée peut difficilement
- * poser derrière son titre un dégradé décoratif choisi au hasard. Ce fond
- * dessine littéralement ce que font les quatre simulateurs : un champ continu
- * qui évolue, lu par ses lignes d'iso-valeur. C'est la carte topographique d'un
- * modèle, et elle bouge parce que les modèles bougent.
+ * poser derrière ses titres un dégradé décoratif choisi au hasard. Ces motifs
+ * dessinent ce que font les quatre simulateurs : un champ continu qui évolue,
+ * lu par ses iso-valeurs, sa densité, ses battements ou ses gradients.
  *
- * ## Pourquoi du GLSL écrit à la main
+ * ## D'où vient la profondeur
  *
- * Il n'y a ni scène, ni caméra, ni maillage, ni chargeur : un seul triangle
- * couvrant l'écran et un fragment shader. Importer une bibliothèque 3D pour ça
- * coûterait quelques centaines de kilo-octets afin d'obtenir exactement le même
- * pixel. C'est le raisonnement tenu sur la plateforme de l'institut, et il
- * serait malhonnête de le raconter dans une étude de cas sans l'appliquer ici.
+ * Deux couches, pas une. La lointaine est plus large, plus pâle, et se déplace
+ * au tiers de la vitesse ; la proche est plus fine et suit le défilement. C'est
+ * de la parallaxe, le seul procédé qui donne une vraie sensation de plan sans
+ * rien simuler en trois dimensions.
+ *
+ * Le curseur déforme légèrement le domaine autour de lui. L'effet est faible
+ * par construction : il doit se remarquer en bougeant la souris, jamais en
+ * lisant.
  *
  * ## Ce qui est prévu pour que ça ne nuise jamais
  *
  *  - Sans WebGL 2, le composant ne rend rien et la page reste identique : le
  *    fond n'est jamais porteur d'information.
- *  - `prefers-reduced-motion` calcule une image, puis arrête la boucle.
- *  - La boucle s'arrête aussi hors champ et en onglet masqué.
- *  - Densité de pixels plafonnée à 1,5 : au-delà, on quadruple le coût de
- *    remplissage pour un motif dont les traits font un pixel de large.
+ *  - `prefers-reduced-motion` calcule une image, puis arrête tout, y compris
+ *    l'écoute du défilement et du curseur.
+ *  - La boucle s'arrête hors champ et en onglet masqué.
+ *  - Densité de pixels plafonnée : le motif ne fait qu'un pixel d'épaisseur, il
+ *    y a deux couches par pixel, et le coût de remplissage croît avec le carré
+ *    de la densité.
  */
 
-/** Trame du champ. Extraite pour être lisible : c'est le cœur du composant. */
+export type Motif = "niveaux" | "trame" | "interference" | "flux";
+
+/** L'ordre fait foi : il est repris tel quel par l'uniforme `uMotif`. */
+const MOTIFS: Motif[] = ["niveaux", "trame", "interference", "flux"];
+
 const FRAGMENT = /* glsl */ `#version 300 es
 precision highp float;
 
@@ -41,14 +56,17 @@ uniform vec3  uEncre;
 uniform vec3  uAccent;
 uniform float uIntensite;
 uniform float uLignes;
+uniform int   uMotif;
+uniform float uDefilement;
+uniform vec2  uSouris;
 
 out vec4 sortie;
 
 /*
- * Hachage entier plutôt que la recette classique à base de sin(dot(p, k)).
- * Le sin() en haute précision ne donne pas le même résultat d'un pilote
- * graphique à l'autre : le motif change entre deux machines, et une capture de
- * référence ne vaut plus rien. Sur des entiers, le résultat est identique
+ * Hachage entier plutot que la recette classique a base de sin(dot(p, k)).
+ * Le sin() en haute precision ne donne pas le meme resultat d'un pilote
+ * graphique a l'autre : le motif change entre deux machines, et une capture de
+ * reference ne vaut plus rien. Sur des entiers, le resultat est identique
  * partout.
  */
 float hachage(vec2 p) {
@@ -65,12 +83,12 @@ float bruit(vec2 p) {
              mix(hachage(i + vec2(0.0, 1.0)), hachage(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
-/* Somme d'octaves, chaque octave tournée pour éviter les alignements en grille. */
+/* Quatre octaves, chacune tournee pour eviter les alignements en grille. */
 float octaves(vec2 p) {
   const mat2 rot = mat2(0.80, 0.60, -0.60, 0.80);
   float somme = 0.0;
   float amplitude = 0.5;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 4; i++) {
     somme += amplitude * bruit(p);
     p = rot * p * 2.02;
     amplitude *= 0.5;
@@ -78,56 +96,88 @@ float octaves(vec2 p) {
   return somme;
 }
 
-/*
- * Déformation du domaine : le champ n'est pas évalué en p mais en p déplacé
- * par un autre champ de bruit. C'est ce qui produit des lignes qui s'enroulent
- * et se pincent, au lieu des taches molles d'un bruit fractal nu.
- */
+/* Deformation du domaine : le champ est evalue en p deplace par un autre champ. */
 float champ(vec2 p, float t) {
   vec2 q = vec2(octaves(p + vec2(0.0, t * 0.06)), octaves(p + vec2(5.2, 1.3)));
-  vec2 r = vec2(octaves(p + 3.4 * q + vec2(1.7, 9.2) + t * 0.04),
-                octaves(p + 3.4 * q + vec2(8.3, 2.8)));
-  return octaves(p + 3.2 * r);
+  return octaves(p + 2.8 * q + vec2(t * 0.03, 0.0));
+}
+
+/* Distance a un trait, exprimee en pixels d'ecran. */
+float traitDe(float bandes) {
+  float d = abs(fract(bandes) - 0.5);
+  return d / max(fwidth(bandes), 1e-5);
+}
+
+/*
+ * Les quatre lectures d'un meme champ.
+ *
+ * Aucune ne recalcule le champ : c'est la condition pour que les motifs
+ * restent parents entre eux, et pour que le cout soit le meme quel que soit
+ * celui qu'on affiche.
+ */
+float encre(int motif, float v, vec2 p, float lignes) {
+  if (motif == 0) {
+    /* Courbes de niveau : les iso-valeurs du champ. */
+    return 1.0 - smoothstep(0.55, 1.55, traitDe(v * lignes));
+  }
+  if (motif == 1) {
+    /* Trame : une grille de points dont le rayon suit la valeur du champ. */
+    float pas = lignes * 0.55;
+    vec2 cellule = fract(p * pas) - 0.5;
+    float rayon = 0.08 + smoothstep(0.25, 0.75, v) * 0.30;
+    float bord = fwidth(length(cellule)) * 1.5;
+    return 1.0 - smoothstep(rayon - bord, rayon + bord, length(cellule));
+  }
+  if (motif == 2) {
+    /* Interference : le champ bat contre un reseau regulier, d'ou un moire. */
+    float a = traitDe(v * lignes * 0.7);
+    float b = traitDe(p.x * lignes * 0.22 + v * 2.0);
+    return max(1.0 - smoothstep(0.6, 1.8, a), 1.0 - smoothstep(0.6, 1.8, b)) * 0.75;
+  }
+  /* Flux : les memes iso-valeurs, eteintes la ou le champ est plat. */
+  float pente = smoothstep(0.004, 0.030, fwidth(v));
+  return (1.0 - smoothstep(0.55, 1.70, traitDe(v * lignes * 1.4))) * pente;
 }
 
 void main() {
   vec2 uv = gl_FragCoord.xy / uTaille;
-  /* Repère isotrope : sans cette correction, les lignes s'étirent sur un écran large. */
+  /* Repere isotrope : sans cette correction, le motif s'etire sur un ecran large. */
   vec2 p = (gl_FragCoord.xy - 0.5 * uTaille) / uTaille.y;
 
-  float v = champ(p * 2.6, uTemps);
-  float bandes = v * uLignes;
+  /* Poussee radiale autour du curseur, faible et a decroissance rapide. */
+  vec2 versSouris = p - uSouris;
+  p += normalize(versSouris + 1e-6) * 0.045 * exp(-4.0 * dot(versSouris, versSouris));
 
-  /*
-   * Distance au trait, convertie en pixels par la dérivée à l'écran. Sans
-   * cette division, les traits s'épaississent en bouillie là où le champ est
-   * plat et disparaissent là où il est raide.
-   */
-  float d = abs(fract(bandes) - 0.5);
-  float pixels = d / max(fwidth(bandes), 1e-5);
-  float trait = 1.0 - smoothstep(0.55, 1.55, pixels);
+  /* Deux couches : la lointaine defile au tiers de la vitesse de la proche. */
+  vec2 loin = p * 1.55 + vec2(0.0, uDefilement * 0.30);
+  vec2 pres = p * 2.90 + vec2(0.0, uDefilement * 0.95);
 
-  /*
-   * Deux atténuations, l'une et l'autre décidées en regardant des captures.
-   *
-   * Vers le bas : le fond doit avoir disparu là où commencent les aplats de
-   * couleur, sinon deux motifs forts se disputent la même bande.
-   *
-   * Vers la gauche : c'est la colonne du texte. À pleine densité, les courbes
-   * passaient derrière le titre et la ligne d'orientation en petit corps, qui
-   * devenait pénible à lire en thème clair. Le champ n'y est pas supprimé —
-   * il resterait un rectangle vide bien visible — mais réduit de moitié.
-   */
+  float vLoin = champ(loin, uTemps * 0.6);
+  float vPres = champ(pres, uTemps);
+
+  float aLoin = encre(uMotif, vLoin, loin, uLignes * 0.7) * 0.45;
+  float aPres = encre(uMotif, vPres, pres, uLignes);
+
+  /* Fondu vers le bas : le fond a disparu la ou commence le contenu dense. */
   float fondu = smoothstep(0.02, 0.62, uv.y);
+  /* Attenuation a gauche : c'est la colonne du texte. */
   float colonne = mix(0.45, 1.0, smoothstep(0.05, 0.55, uv.x));
 
-  vec3 couleur = mix(uEncre, uAccent, smoothstep(0.34, 0.72, v));
-  sortie = vec4(couleur, trait * fondu * colonne * uIntensite);
+  float a = clamp(aLoin + aPres, 0.0, 1.0) * fondu * colonne * uIntensite;
+
+  /*
+   * La couche lointaine tire vers l'encre, la proche vers l'accent : c'est ce
+   * decalage de teinte qui separe les deux plans a l'oeil.
+   */
+  float part = aPres / max(aLoin + aPres, 1e-3);
+  vec3 couleur = mix(uEncre, uAccent, smoothstep(0.30, 0.75, vPres) * part);
+
+  sortie = vec4(couleur, a);
 }
 `;
 
 const SOMMET = /* glsl */ `#version 300 es
-/* Un seul triangle couvrant l'écran : trois sommets, aucun tampon. */
+/* Un seul triangle couvrant l'ecran : trois sommets, aucun tampon. */
 void main() {
   vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
   gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
@@ -156,13 +206,15 @@ function compiler(gl: WebGL2RenderingContext, type: number, source: string) {
   return shader;
 }
 
-export function ChampDeNiveaux({
+export function Champ({
+  motif = "niveaux",
   className = "",
-  /** Opacité maximale des traits. Volontairement basse : c'est un fond. */
+  /** Opacité maximale de l'encre. Volontairement basse : c'est un fond. */
   intensite = 0.42,
-  /** Nombre de courbes de niveau sur l'amplitude du champ. */
+  /** Densité du motif sur l'amplitude du champ. */
   lignes = 15,
 }: {
+  motif?: Motif;
   className?: string;
   intensite?: number;
   lignes?: number;
@@ -187,8 +239,6 @@ export function ChampDeNiveaux({
      * Alias non nuls. TypeScript ne conserve pas l'affinage d'un `if (!x)
      * return` à l'intérieur d'une fonction *déclarée* : celle-ci étant hoistée,
      * le compilateur doit supposer qu'elle peut être appelée avant le garde.
-     * Deux constantes déjà typées non nulles évitent d'avoir à répéter le
-     * garde dans chacune des cinq fonctions ci-dessous.
      */
     const toile: HTMLCanvasElement = canevas;
     const gl: WebGL2RenderingContext = contexte;
@@ -212,7 +262,10 @@ export function ChampDeNiveaux({
     const uEncre = gl.getUniformLocation(programme, "uEncre");
     const uAccent = gl.getUniformLocation(programme, "uAccent");
     const uIntensite = gl.getUniformLocation(programme, "uIntensite");
+    const uDefilement = gl.getUniformLocation(programme, "uDefilement");
+    const uSouris = gl.getUniformLocation(programme, "uSouris");
     gl.uniform1f(gl.getUniformLocation(programme, "uLignes"), lignes);
+    gl.uniform1i(gl.getUniformLocation(programme, "uMotif"), Math.max(0, MOTIFS.indexOf(motif)));
 
     /* Les couleurs viennent des jetons CSS : le fond suit le thème sans le connaître. */
     function relireCouleurs() {
@@ -243,17 +296,25 @@ export function ChampDeNiveaux({
        le motif saute d'un bond au retour dans le champ. */
     let horloge = 0;
     let precedent = performance.now();
+    let defilement = 0;
+    let souris: [number, number] = [0, 0];
+
+    function peindre() {
+      gl.uniform1f(uTemps, horloge);
+      gl.uniform1f(uDefilement, defilement);
+      gl.uniform2f(uSouris, souris[0], souris[1]);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
 
     function dessiner(maintenant: number) {
       horloge += Math.min((maintenant - precedent) / 1000, 0.1);
       precedent = maintenant;
-      gl.uniform1f(uTemps, horloge);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      peindre();
       if (actif && !reduit) brut = requestAnimationFrame(dessiner);
     }
 
     function demarrer() {
-      if (actif) return;
+      if (actif || reduit) return;
       actif = true;
       precedent = performance.now();
       brut = requestAnimationFrame(dessiner);
@@ -264,9 +325,7 @@ export function ChampDeNiveaux({
     }
 
     function redimensionner() {
-      // 1,5 plutôt que 2 ou 3 : le motif ne fait qu'un pixel d'épaisseur, et le
-      // coût de remplissage croît avec le carré de la densité.
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
       const l = Math.max(1, Math.round(toile.clientWidth * dpr));
       const h = Math.max(1, Math.round(toile.clientHeight * dpr));
       if (toile.width === l && toile.height === h) return;
@@ -275,8 +334,7 @@ export function ChampDeNiveaux({
       gl.viewport(0, 0, l, h);
       gl.uniform2f(uTaille, l, h);
       // Redessiner tout de suite : en mouvement réduit, aucune frame ne viendra.
-      gl.uniform1f(uTemps, horloge);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      peindre();
     }
 
     const observateurTaille = new ResizeObserver(redimensionner);
@@ -288,19 +346,45 @@ export function ChampDeNiveaux({
     );
     observateurVue.observe(toile);
 
+    /*
+     * Défilement et curseur ne sont écoutés qu'en mouvement autorisé.
+     *
+     * Deux raisons, et la seconde compte autant que la première. D'abord, une
+     * personne qui demande à réduire les animations ne veut pas d'un fond qui
+     * suit sa souris. Ensuite, les captures de référence sont prises dans ce
+     * mode : sans ce garde, elles dépendraient de la position de défilement au
+     * moment du déclenchement, et ne seraient plus comparables.
+     */
+    function surDefilement() {
+      // Normalisé par la hauteur de fenêtre : le fond parallaxe à la même
+      // vitesse apparente quel que soit l'écran.
+      defilement = window.scrollY / Math.max(window.innerHeight, 1);
+    }
+    function surSouris(e: PointerEvent) {
+      const r = toile.getBoundingClientRect();
+      if (r.height <= 0) return;
+      souris = [
+        (e.clientX - r.left - r.width / 2) / r.height,
+        (r.height / 2 - (e.clientY - r.top)) / r.height,
+      ];
+    }
+
+    if (!reduit) {
+      window.addEventListener("scroll", surDefilement, { passive: true });
+      window.addEventListener("pointermove", surSouris, { passive: true });
+      surDefilement();
+    }
+
     function surVisibilite() {
       if (document.hidden) arreter();
-      else if (!document.hidden) demarrer();
+      else demarrer();
     }
     document.addEventListener("visibilitychange", surVisibilite);
 
     /* Le thème bascule par une classe sur <html> : on relit et on redessine. */
     const observateurTheme = new MutationObserver(() => {
       relireCouleurs();
-      if (reduit || !actif) {
-        gl.uniform1f(uTemps, horloge);
-        gl.drawArrays(gl.TRIANGLES, 0, 3);
-      }
+      if (reduit || !actif) peindre();
     });
     observateurTheme.observe(document.documentElement, {
       attributes: true,
@@ -309,8 +393,8 @@ export function ChampDeNiveaux({
 
     redimensionner();
     if (reduit) {
-      gl.uniform1f(uTemps, 4.2); // une image figée, mais pas la moins intéressante
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      horloge = 4.2; // une image figée, mais pas la moins intéressante
+      peindre();
     }
 
     return () => {
@@ -319,6 +403,8 @@ export function ChampDeNiveaux({
       observateurVue.disconnect();
       observateurTheme.disconnect();
       document.removeEventListener("visibilitychange", surVisibilite);
+      window.removeEventListener("scroll", surDefilement);
+      window.removeEventListener("pointermove", surSouris);
       gl.deleteProgram(programme);
       gl.deleteShader(vs);
       gl.deleteShader(fs);
@@ -326,7 +412,7 @@ export function ChampDeNiveaux({
       // un navigateur n'accorde qu'une quinzaine de contextes WebGL par onglet.
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [intensite, lignes]);
+  }, [intensite, lignes, motif]);
 
   return (
     <canvas

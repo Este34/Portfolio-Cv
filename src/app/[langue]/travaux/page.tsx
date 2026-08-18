@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { CarteTravail } from "@/components/carte-travail";
 import { UI } from "@/content/interface";
 import { PAGE_TRAVAUX } from "@/content/pages";
@@ -29,7 +30,9 @@ export default async function Travaux({ params }: PageProps<"/[langue]/travaux">
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="py-16 lg:py-20">
+      <header className="relative isolate py-16 lg:py-20">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="flux" intensite={0.34} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_TRAVAUX.titre, langue)}
         </h1>

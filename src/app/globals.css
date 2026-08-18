@@ -177,7 +177,16 @@
     scrollbar-gutter: stable;
   }
 
+  /*
+   * Les fonds en shader débordent de leur section en pleine largeur, par un
+   * `w-screen` recentré. Or `100vw` compte la barre de défilement, que
+   * `scrollbar-gutter: stable` réserve par ailleurs : sans découpe, l'écart
+   * d'une quinzaine de pixels ferait apparaître une barre horizontale sur tout
+   * le site. `clip` plutôt que `hidden` — ce dernier créerait un conteneur de
+   * défilement et casserait le `position: sticky` de l'en-tête.
+   */
   body {
+    overflow-x: clip;
     background-color: var(--fond);
     color: var(--texte);
     font-family: var(--font-sans);

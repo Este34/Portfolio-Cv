@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { FondAnime } from "@/components/fond/fond-anime";
 import { UI } from "@/content/interface";
 import { PAGE_PARCOURS } from "@/content/pages";
 import { COMPETENCES, EXPERIENCES, FORMATION, type Etape } from "@/content/parcours";
@@ -26,7 +27,9 @@ export default async function Parcours({ params }: PageProps<"/[langue]/parcours
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="py-16 lg:py-20">
+      <header className="relative isolate py-16 lg:py-20">
+        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
+        <FondAnime motif="niveaux" intensite={0.34} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_PARCOURS.titre, langue)}
         </h1>
