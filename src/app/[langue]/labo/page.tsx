@@ -38,9 +38,8 @@ export default async function Labo({ params }: PageProps<"/[langue]/labo">) {
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="relative isolate py-16 lg:py-20">
-        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
-        <FondAnime motif="interference" intensite={0.34} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
+      <FondAnime motif="interference" intensite={0.34} />
+      <header className="py-16 lg:py-20">
         <h1 className="font-display text-titre text-texte uppercase">{t(PAGE_LABO.titre, langue)}</h1>
         <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
           {t(PAGE_LABO.chapeau, langue)}

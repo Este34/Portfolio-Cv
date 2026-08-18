@@ -31,9 +31,8 @@ export default async function Notes({ params }: PageProps<"/[langue]/notes">) {
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="relative isolate py-16 lg:py-20">
-        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
-        <FondAnime motif="trame" intensite={0.32} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
+      <FondAnime motif="trame" intensite={0.32} />
+      <header className="py-16 lg:py-20">
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_NOTES.titre, langue)}
         </h1>

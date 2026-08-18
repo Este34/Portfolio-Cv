@@ -25,18 +25,18 @@ export default async function Accueil({ params }: PageProps<"/[langue]">) {
 
   return (
     <>
-      {/* ---- Bandeau d'accueil -------------------------------------------- */}
-      <section className="relative isolate overflow-hidden">
-        {/*
-          Le fond dessine un champ scalaire par ses courbes de niveau : c'est la
-          figure du métier plutôt qu'un ornement. Il est décoratif au sens
-          strict — aucune information ne s'y trouve — donc il disparaît sans
-          WebGL, se fige en mouvement réduit, et s'éteint dès qu'il sort du
-          champ.
-        */}
-        <FondAnime />
+      {/*
+        Le fond dessine un champ scalaire par ses courbes de niveau : c'est la
+        figure du métier plutôt qu'un ornement. Fixé à la fenêtre, il couvre
+        toute la page et dérive au défilement au lieu de s'en aller avec le
+        bandeau. Décoratif au sens strict — aucune information ne s'y trouve —
+        donc il disparaît sans WebGL et se fige en mouvement réduit.
+      */}
+      <FondAnime />
 
-        <div className="relative mx-auto max-w-6xl px-5">
+      {/* ---- Bandeau d'accueil -------------------------------------------- */}
+      <section>
+        <div className="mx-auto max-w-6xl px-5">
           <div className="grid gap-10 py-14 lg:grid-cols-[1.5fr_1fr] lg:gap-14 lg:py-20">
             <div className="flex flex-col justify-center">
               <p className="annotation text-corail">{t(SITE.surTitre, langue)}</p>

@@ -214,3 +214,58 @@ for (const largeur of [1120, 1280, 1440, 1600]) {
     }
   });
 }
+
+/**
+ * Aucun titre collant ne doit en recouvrir un autre.
+ *
+ * Plusieurs pages posent leur titre de section en `sticky` dans la colonne de
+ * gauche. La zone dans laquelle un élément collant reste coincé est le bloc de
+ * son **parent** : tant que ce parent était la grille entière, les quatre
+ * titres se collaient à la même hauteur et s'empilaient les uns sur les autres.
+ *
+ * Ce défaut n'existe qu'entre deux positions de défilement. Il n'apparaît sur
+ * aucune capture de page prise en haut, il ne lève aucune erreur, et il ne se
+ * lit pas dans le code — la contrainte de confinement n'y est écrite nulle
+ * part. D'où ce test, qui descend dans la page et mesure.
+ */
+const PAGES_A_TITRES_COLLANTS = [
+  "/fr/methode",
+  "/fr/making-of",
+  "/fr/parcours",
+  "/fr/travaux/pipeline-comtrade",
+];
+
+for (const chemin of PAGES_A_TITRES_COLLANTS) {
+  test(`titres collants disjoints sur ${chemin}`, async ({ page }, infos) => {
+    test.skip(infos.project.name === "mobile", "la colonne collante n'existe qu'à partir de lg");
+
+    await page.goto(chemin);
+    await page.waitForLoadState("networkidle");
+
+    /* Trois positions : le défaut n'apparaît qu'une fois la première rangée dépassée. */
+    for (const y of [800, 1400, 2200]) {
+      await page.evaluate((v) => window.scrollTo(0, v), y);
+      await page.waitForTimeout(150);
+
+      const chevauchements = await page.evaluate(() => {
+        const boites = [...document.querySelectorAll("main h2")].map((h) => {
+          const r = h.getBoundingClientRect();
+          return { r, texte: h.textContent?.trim().slice(0, 40) ?? "" };
+        });
+        const paires: string[] = [];
+        for (let i = 0; i < boites.length; i++) {
+          for (let j = i + 1; j < boites.length; j++) {
+            const a = boites[i].r;
+            const b = boites[j].r;
+            const seCroisent =
+              a.bottom > b.top && b.bottom > a.top && a.right > b.left && b.right > a.left;
+            if (seCroisent) paires.push(`« ${boites[i].texte} » et « ${boites[j].texte} »`);
+          }
+        }
+        return paires;
+      });
+
+      expect(chevauchements, `à ${y} px de défilement`).toEqual([]);
+    }
+  });
+}

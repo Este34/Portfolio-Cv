@@ -27,9 +27,8 @@ export default async function Parcours({ params }: PageProps<"/[langue]/parcours
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="relative isolate py-16 lg:py-20">
-        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
-        <FondAnime motif="niveaux" intensite={0.34} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
+      <FondAnime motif="niveaux" intensite={0.34} />
+      <header className="py-16 lg:py-20">
         <h1 className="font-display text-titre text-texte uppercase">
           {t(PAGE_PARCOURS.titre, langue)}
         </h1>
@@ -96,9 +95,24 @@ function Chronologie({ etapes, langue }: { etapes: readonly Etape[]; langue: Lan
 function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <>
-      <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
-        {titre}
-      </h2>
+      {/*
+        Le titre est enveloppé, et ce n'est pas de la décoration de balisage.
+
+        La zone dans laquelle un élément collant reste coincé est le bloc de son
+        **parent**. Sans cette enveloppe, le parent est la grille entière : les
+        quatre titres se collaient alors tous à la même hauteur et finissaient
+        empilés les uns sur les autres au défilement. Avec elle, chaque titre est
+        borné par sa propre rangée, ce qui est le comportement qu'on lisait dans
+        le code sans qu'il soit écrit.
+
+        Le défaut a été trouvé en photographiant une page à mi-course, pas en
+        relisant : il n'existe qu'entre deux positions de défilement.
+      */}
+      <div>
+        <h2 className="font-display text-texte h-fit text-sm font-black tracking-tight uppercase lg:sticky lg:top-20">
+          {titre}
+        </h2>
+      </div>
       <div className="lg:pb-4">{children}</div>
     </>
   );

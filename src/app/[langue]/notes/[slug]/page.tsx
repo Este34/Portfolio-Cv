@@ -49,9 +49,8 @@ export default async function PageNote({ params }: PageProps<"/[langue]/notes/[s
 
   return (
     <article className="mx-auto max-w-6xl px-5">
-      <header className="relative isolate py-16 lg:py-20">
-        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
-        <FondAnime motif="trame" intensite={0.3} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
+      <FondAnime motif="trame" intensite={0.3} />
+      <header className="py-16 lg:py-20">
         <p className="annotation text-corail">{t(PAGE_NOTES.surTitre, langue)}</p>
         <h1 className="font-display text-titre text-texte mt-2 max-w-4xl uppercase">
           {t(note.titre, langue)}

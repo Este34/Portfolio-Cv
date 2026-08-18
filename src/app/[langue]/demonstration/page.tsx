@@ -29,9 +29,8 @@ export default async function Demonstration({ params }: PageProps<"/[langue]/dem
 
   return (
     <div className="mx-auto max-w-6xl px-5">
-      <header className="relative isolate grid gap-8 py-14 lg:grid-cols-[1.25fr_1fr] lg:gap-14">
-        {/* Débordement en pleine largeur : voir la découpe horizontale dans globals.css. */}
-        <FondAnime motif="interference" intensite={0.32} className="left-1/2 -z-10 w-screen -translate-x-1/2" />
+      <FondAnime motif="interference" intensite={0.32} />
+      <header className="grid gap-8 py-14 lg:grid-cols-[1.25fr_1fr] lg:gap-14">
         <div>
           <p className="annotation text-corail">{t(PAGE_DEMONSTRATION.surTitre, langue)}</p>
           <h1 className="text-titre text-texte mt-2 uppercase">

@@ -26,11 +26,11 @@ export default async function Page({ params }: PageProps<"/[langue]/contact">) {
   if (!estLangue(langue)) notFound();
 
   return (
-    <div className="relative isolate min-h-[70vh] overflow-hidden">
+    <div className="min-h-[70vh]">
       {/* Page courte : le fond y a la place de respirer, donc un peu plus dense. */}
       <FondAnime motif="interference" intensite={0.46} lignes={17} />
 
-      <div className="relative mx-auto max-w-6xl px-5">
+      <div className="mx-auto max-w-6xl px-5">
         <div className="grid gap-12 py-16 lg:grid-cols-[1.3fr_1fr] lg:gap-20 lg:py-24">
           <div>
             <h1 className="font-display text-titre text-texte uppercase">

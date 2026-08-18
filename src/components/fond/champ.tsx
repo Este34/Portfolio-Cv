@@ -158,12 +158,20 @@ void main() {
   float aLoin = encre(uMotif, vLoin, loin, uLignes * 0.7) * 0.45;
   float aPres = encre(uMotif, vPres, pres, uLignes);
 
-  /* Fondu vers le bas : le fond a disparu la ou commence le contenu dense. */
-  float fondu = smoothstep(0.02, 0.62, uv.y);
-  /* Attenuation a gauche : c'est la colonne du texte. */
-  float colonne = mix(0.45, 1.0, smoothstep(0.05, 0.55, uv.x));
+  /*
+   * Attenuation par le defilement.
+   *
+   * Le fond est fixe a la fenetre : il n'y a plus de bande dont on estomperait
+   * le bas. Ce qui le calme, c'est la descente dans la page. Pleine force sur
+   * le premier ecran, ou il n'y a qu'un titre ; un peu plus du tiers des la
+   * deuxieme hauteur de fenetre, la ou commence le texte suivi.
+   */
+  float profondeur = mix(1.0, 0.38, smoothstep(0.0, 1.4, uDefilement));
 
-  float a = clamp(aLoin + aPres, 0.0, 1.0) * fondu * colonne * uIntensite;
+  /* Legere asymetrie horizontale : plus vivant qu'un aplat uniforme. */
+  float colonne = mix(0.62, 1.0, smoothstep(0.05, 0.60, uv.x));
+
+  float a = clamp(aLoin + aPres, 0.0, 1.0) * profondeur * colonne * uIntensite;
 
   /*
    * La couche lointaine tire vers l'encre, la proche vers l'accent : c'est ce
@@ -210,7 +218,7 @@ export function Champ({
   motif = "niveaux",
   className = "",
   /** Opacité maximale de l'encre. Volontairement basse : c'est un fond. */
-  intensite = 0.42,
+  intensite = 0.32,
   /** Densité du motif sur l'amplitude du champ. */
   lignes = 15,
 }: {
