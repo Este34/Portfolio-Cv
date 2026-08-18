@@ -25,29 +25,34 @@ jobs:
 
       - run: npm ci
 
-      # Le modèle de vectorisation pèse plusieurs dizaines de méga-octets et ne
-      # change qu'avec la constante qui le nomme : le mettre en cache évite de
-      # le retélécharger à chaque exécution.
-      - name: Cache du modèle de vectorisation
-        uses: actions/cache@v4
-        with:
-          path: node_modules/@huggingface/transformers/.cache
-          key: modele-${{ hashFiles('src/lib/rag-types.ts') }}
-
       # Placé en premier : c'est la vérification dont l'échec doit interrompre
       # tout le reste. Publier un nom d'organisme ne se rattrape pas.
       - name: Anonymisation
         run: npm run verifier:anonymat
 
+      # Les tables SQL sont régénérées ici, puis comparées à ce qui est versionné
+      # (voir la dernière étape). C'est de la manipulation de chaînes, donc
+      # reproductible au bit près d'une machine à l'autre.
+      #
+      # Les **vecteurs**, eux, ne sont pas régénérés, et c'est délibéré. Ils
+      # coûteraient le téléchargement du modèle à chaque exécution pour un
+      # résultat qui n'a aucune raison d'être identique au bit près entre deux
+      # architectures : comparer les octets produirait des échecs qui ne
+      # signalent rien. C'est `verifier:embeddings`, lancé avant chaque build,
+      # qui garantit qu'ils collent au contenu — il compare les identifiants et
+      # les textes, pas les flottants.
       - name: Génération des données
         run: npm run generer:donnees
-
-      - name: Génération des vecteurs
-        run: npm run generer:embeddings
 
       - name: Lint
         run: npm run lint
 
+      # `npm run typecheck` commence par `next typegen`. Sans lui, le type
+      # global `PageProps` n'existe pas encore — il est produit par Next dans
+      # .next/types — et les dix-huit pages échouent sur « Cannot find name
+      # PageProps ». En local le dossier traîne d'un build précédent, ce qui
+      # masquait entièrement le problème : cette étape n'est jamais passée en
+      # intégration depuis l'introduction des routes typées.
       - name: Types
         run: npm run typecheck
 

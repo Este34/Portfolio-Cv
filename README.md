@@ -38,7 +38,7 @@ vectorisation (quelques dizaines de méga-octets, une seule fois).
 | `npm test`                          | tests Vitest                                              |
 | `npm run test:visuel`               | régression visuelle (construit le site et le sert)        |
 | `npm run test:visuel:references`    | régénère les images de référence de la plateforme courante |
-| `npm run typecheck`                 | `tsc --noEmit`                                            |
+| `npm run typecheck`                 | types de routes puis `tsc --noEmit`                        |
 | `npm run lint`                      | ESLint                                                    |
 | `npm run generer:donnees`           | régénère `public/data/portfolio-{fr,en}.json`             |
 | `npm run generer:embeddings`        | régénère `public/data/embeddings-{fr,en}.{bin,json}`      |
@@ -142,6 +142,22 @@ Le jeu complet pèse une dizaine de méga-octets. C'est la raison pour laquelle 
 matrice n'est pas complète : l'anglais n'est photographié que sur les pages à
 gros titres, le mobile que sur celles dont la mise en page change vraiment, et
 le thème clair que sur l'accueil.
+
+## Intégration continue
+
+Deux workflows, et deux pièges qui ont mis du temps à se voir.
+
+**`npm run typecheck` commence par `next typegen`.** Le type global `PageProps`
+n'existe pas dans les sources : Next le produit dans `.next/types`. En local le
+dossier traîne d'un build précédent, si bien que `tsc --noEmit` passe ; sur une
+machine neuve qui vérifie les types avant de construire, les dix-huit pages
+échouent sur « Cannot find name PageProps ».
+
+**Les vecteurs ne sont pas régénérés en intégration.** Ils coûteraient le
+téléchargement du modèle à chaque exécution pour un résultat qui n'a aucune
+raison d'être identique au bit près entre deux architectures. C'est
+`verifier:embeddings`, lancé avant chaque build, qui garantit qu'ils collent au
+contenu : il compare les identifiants et les textes, pas les flottants.
 
 ## Variables d'environnement
 
