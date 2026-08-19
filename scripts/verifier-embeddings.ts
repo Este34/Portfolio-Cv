@@ -20,8 +20,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import { EVALUATIONS } from "../src/content/evaluations.ts";
 import { LANGUES } from "../src/lib/langue.ts";
-import { DIMENSIONS_EMBEDDING, MODELE_EMBEDDING } from "../src/lib/rag-types.ts";
+import { DIMENSIONS_EMBEDDING, MODELE_EMBEDDING, SEUIL_PERTINENCE } from "../src/lib/rag-types.ts";
 
 const racine = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dossier = join(racine, "public", "data");
@@ -79,4 +80,58 @@ for (const langue of LANGUES) {
   }
 
   console.log(`✓ Vecteurs ${langue} à jour — ${corpus.length} passages, ${MODELE_EMBEDDING}`);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Le banc d'évaluation                                                        */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Même principe que ci-dessus, appliqué aux résultats d'évaluation.
+ *
+ * Le fichier `evaluation-*.json` est un artefact versionné, produit par
+ * `npm run evaluer:rag`, qui a besoin du modèle. Le rejouer à chaque build
+ * coûterait plusieurs dizaines de méga-octets de téléchargement pour un
+ * résultat identique. Le build se contente donc de refuser de partir si les
+ * chiffres publiés ne décrivent plus le corpus ou le jeu de questions actuels.
+ *
+ * Sans ce contrôle, une question ajoutée sans réexécution afficherait un
+ * rappel calculé sur l'ancien jeu, présenté comme celui du nouveau. C'est le
+ * genre d'erreur qui ne casse rien et qui rend la page mensongère.
+ */
+
+for (const langue of LANGUES) {
+  const chemin = join(dossier, `evaluation-${langue}.json`);
+  let evaluation: { passages: number; seuil: number; cas: { id: string }[] };
+  try {
+    evaluation = JSON.parse(await readFile(chemin, "utf8"));
+  } catch {
+    echouerEvaluation(`evaluation-${langue}.json est absent ou illisible.`);
+  }
+
+  const corpus = construireCorpus(langue);
+  if (evaluation.passages !== corpus.length) {
+    echouerEvaluation(
+      `[${langue}] évaluation calculée sur ${evaluation.passages} passages, le corpus en compte ${corpus.length}.`,
+    );
+  }
+  if (evaluation.seuil !== SEUIL_PERTINENCE) {
+    echouerEvaluation(
+      `[${langue}] évaluation calculée au seuil ${evaluation.seuil}, le site utilise ${SEUIL_PERTINENCE}.`,
+    );
+  }
+
+  const publies = evaluation.cas.map((c) => c.id).join("|");
+  const attendus = EVALUATIONS.map((c) => c.id).join("|");
+  if (publies !== attendus) {
+    echouerEvaluation(`[${langue}] le jeu de questions a changé depuis la dernière évaluation.`);
+  }
+
+  console.log(`✓ Évaluation ${langue} à jour — ${evaluation.cas.length} cas`);
+}
+
+function echouerEvaluation(message: string): never {
+  console.error(`\n✗ ${message}`);
+  console.error("  Lancer : npm run evaluer:rag\n");
+  process.exit(1);
 }

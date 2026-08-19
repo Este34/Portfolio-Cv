@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { TRAVAUX_TRIES } from "@/content/travaux";
-import { lien, t, type Langue } from "@/lib/langue";
-import { NAV_DISCRETE, NAV_ITEMS } from "@/lib/site";
+import { lien, type Langue } from "@/lib/langue";
+import { cibles } from "@/lib/cibles";
 /*
  * Types et libellés seulement. `lib/duckdb.ts` et `lib/rag.ts` ne sont JAMAIS
  * importés statiquement ici : il suffirait d'un import de type mal placé pour
@@ -15,6 +14,7 @@ import { NAV_DISCRETE, NAV_ITEMS } from "@/lib/site";
  */
 import {
   LIBELLE_ETAPE,
+  NOMS_TABLES,
   REQUETES_TYPES,
   type EtapeChargement,
   type ResultatRequete,
@@ -25,24 +25,11 @@ import {
   type EtapeRag,
   type Reponse,
 } from "@/lib/rag-types";
+import type { Etape, EtatAgent, Resultat as ResultatAgent } from "@/lib/agent-types";
 
-type Mode = "navigation" | "sql" | "demander";
+import { PanneauAgent } from "./panneau-agent";
 
-function cibles(langue: Langue) {
-  return [
-    ...NAV_ITEMS.map((n) => ({
-      href: lien(n.href, langue),
-      label: t(n.label, langue),
-      detail: t(n.description, langue),
-    })),
-    ...NAV_DISCRETE.map((n) => ({ href: lien(n.href, langue), label: t(n.label, langue), detail: "" })),
-    ...TRAVAUX_TRIES.map((tr) => ({
-      href: lien(`/travaux/${tr.slug}`, langue),
-      label: t(tr.titre, langue),
-      detail: t(tr.sousTitre, langue),
-    })),
-  ];
-}
+type Mode = "navigation" | "sql" | "demander" | "agent";
 
 const MOTS = {
   fr: {
@@ -66,18 +53,22 @@ const MOTS = {
     rienDansCorpus:
       "Rien dans le corpus ne répond à cette question. Plutôt que de vous présenter le passage le moins hors sujet, je préfère le dire.",
     tables: "Sept tables décrivent ce portfolio :",
+    // Le nombre reste écrit en toutes lettres et la liste est dérivée : une
+    // table de plus se verrait dans la liste, et la phrase serait à corriger.
     ecrivezRequete: ". Écrivez votre requête, ou partez d'une de celles-ci.",
     ligne: (n: number) => `${n} ligne${n > 1 ? "s" : ""}`,
     passages: (n: number) => `${n} passage${n > 1 ? "s" : ""} pertinent${n > 1 ? "s" : ""}`,
     ragIntro: (n: number) =>
       `La recherche s'exécute dans votre navigateur, sur ${n} passages vectorisés du site. Chaque réponse cite ses sources. C'est le portage web de `,
     ragFin: ", avec le même modèle.",
+    lancer: "Lancer",
     placeholder: {
-      navigation: "Chercher une page…   « > » pour du SQL, « ? » pour une question",
+      navigation: "Chercher une page…   « > » SQL, « ? » question, « ! » agent",
       sql: "SELECT titre, annee FROM travaux ORDER BY rang",
       demander: "A-t-il déjà travaillé sur de l'IA ?",
+      agent: "Quel projet a le plus de technologies, et ouvre-le",
     },
-    etiquette: { navigation: "ALLER À", sql: "SQL", demander: "QUESTION" },
+    etiquette: { navigation: "ALLER À", sql: "SQL", demander: "QUESTION", agent: "AGENT" },
   },
   en: {
     console: "Console",
@@ -106,12 +97,14 @@ const MOTS = {
     ragIntro: (n: number) =>
       `The search runs in your browser, over ${n} embedded passages from this site. Every answer cites its sources. It is the web port of `,
     ragFin: ", using the same model.",
+    lancer: "Run",
     placeholder: {
-      navigation: "Search for a page…   « > » for SQL, « ? » for a question",
+      navigation: "Search for a page…   « > » SQL, « ? » question, « ! » agent",
       sql: "SELECT titre, annee FROM travaux ORDER BY rang",
       demander: "Has he worked on AI?",
+      agent: "Which project uses the most technologies, and open it",
     },
-    etiquette: { navigation: "GO TO", sql: "SQL", demander: "QUESTION" },
+    etiquette: { navigation: "GO TO", sql: "SQL", demander: "QUESTION", agent: "AGENT" },
   },
 } as const;
 
@@ -146,6 +139,11 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
   const [cherche, setCherche] = useState(false);
   const [redigeEnCours, setRedigeEnCours] = useState(false);
   const ragLance = useRef(false);
+
+  // --- État de l'agent -----------------------------------------------------
+  const [etatAgent, setEtatAgent] = useState<EtatAgent>("inactif");
+  const [etapesAgent, setEtapesAgent] = useState<readonly Etape[]>([]);
+  const [resultatAgent, setResultatAgent] = useState<ResultatAgent | null>(null);
 
   const fermer = useCallback(() => {
     dialogue.current?.close();
@@ -214,10 +212,29 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
     })();
   }, [langue, mots]);
 
+  /*
+   * L'agent n'amorce aucun moteur en passant en mode.
+   *
+   * Contrairement à la console SQL et à la recherche, qui téléchargent ce
+   * qu'il leur faut dès qu'on bascule, l'agent ne charge que les outils qu'il
+   * décide d'appeler. Une tâche qui se résout par une navigation ne fait
+   * descendre ni DuckDB ni le modèle de vectorisation, ce qui est la
+   * conséquence directe de la boucle : on ne sait qu'au premier tour de quoi
+   * on aura besoin.
+   */
+  const passerEnAgent = useCallback(() => {
+    setMode("agent");
+    setSaisie("");
+    setEtatAgent("inactif");
+    setEtapesAgent([]);
+    setResultatAgent(null);
+  }, []);
+
   function onChangeSaisie(valeur: string) {
     if (mode === "navigation") {
       if (valeur.startsWith(">")) return passerEnSql();
       if (valeur.startsWith("?")) return passerEnRag();
+      if (valeur.startsWith("!")) return passerEnAgent();
     }
     setSaisie(valeur);
     setSelection(0);
@@ -259,6 +276,60 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
     }
   }
 
+  /**
+   * Une tâche d'agent, du premier tour à la réponse.
+   *
+   * Les outils sont construits ici et injectés dans la boucle, qui ne connaît
+   * ni React ni le routeur. Chacun amorce son moteur au premier appel et
+   * réutilise ensuite celui de la console : quelqu'un qui a déjà ouvert le SQL
+   * à la main ne le retélécharge pas.
+   */
+  async function lancerAgent(tache: string) {
+    const q = tache.trim();
+    if (!q) return;
+
+    setEtatAgent("reflexion");
+    setEtapesAgent([]);
+    setResultatAgent(null);
+
+    const { decideurAvecRepli, executerAgent } = await import("@/lib/agent");
+    const { decider, bilan } = decideurAvecRepli();
+
+    const outillage = {
+      async chercher(question: string) {
+        const { chercher, moteurRag } = await import("@/lib/rag");
+        await moteurRag(langue, setEtapeRag);
+        ragLance.current = true;
+        return (await chercher(question, langue)).extraits;
+      },
+      async sql(requete: string) {
+        const { connexionDuckDB, executer } = await import("@/lib/duckdb");
+        await connexionDuckDB(langue, setEtapeSql);
+        sqlLance.current = true;
+        return executer(requete, langue);
+      },
+      async naviguer(cible: { href: string }) {
+        // La page change vraiment, sous le panneau resté ouvert. C'est le seul
+        // outil de l'agent qui agisse en dehors de la console.
+        router.push(cible.href);
+      },
+    };
+
+    const resultat = await executerAgent({
+      question: q,
+      langue,
+      outillage,
+      decider,
+      regime: "deterministe",
+      surEtat: (etat, etapes) => {
+        setEtatAgent(etat);
+        setEtapesAgent([...etapes]);
+      },
+    });
+
+    setResultatAgent({ ...resultat, ...bilan() });
+  }
+
   async function demanderRedaction() {
     if (!reponse || reponse.extraits.length === 0) return;
     setRedigeEnCours(true);
@@ -295,6 +366,7 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       if (mode === "sql") void lancerSql(saisie);
+      else if (mode === "agent") void lancerAgent(saisie);
       else void lancerQuestion(saisie);
     }
   }
@@ -345,6 +417,16 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
               >
                 / QUESTION
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  passerEnAgent();
+                  champ.current?.focus();
+                }}
+                className="annotation text-texte-faible hover:text-signal transition-colors"
+              >
+                / AGENT
+              </button>
             </div>
           ) : (
             <span className="annotation text-signal shrink-0">{mots.etiquette[mode]}</span>
@@ -363,13 +445,27 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
           {mode !== "navigation" && (
             <button
               type="button"
-              onClick={() => (mode === "sql" ? void lancerSql(saisie) : void lancerQuestion(saisie))}
+              onClick={() => {
+                if (mode === "sql") void lancerSql(saisie);
+                else if (mode === "agent") void lancerAgent(saisie);
+                else void lancerQuestion(saisie);
+              }}
               disabled={
-                mode === "sql" ? enCours || etapeSql !== "pret" : cherche || etapeRag !== "pret"
+                mode === "sql"
+                  ? enCours || etapeSql !== "pret"
+                  : mode === "agent"
+                    ? etatAgent === "reflexion" || etatAgent === "outil"
+                    : cherche || etapeRag !== "pret"
               }
               className="bg-signal text-fond rounded-instrument shrink-0 px-3 py-1 text-xs font-medium disabled:opacity-40"
             >
-              {enCours || cherche ? "…" : mode === "sql" ? mots.executer : mots.demander}
+              {enCours || cherche
+                ? "…"
+                : mode === "sql"
+                  ? mots.executer
+                  : mode === "agent"
+                    ? mots.lancer
+                    : mots.demander}
             </button>
           )}
 
@@ -415,6 +511,21 @@ export function Palette({ langue, nbPassages }: { langue: Langue; nbPassages: nu
                 setSaisie(sql);
                 void lancerSql(sql);
               }}
+            />
+          )}
+
+          {mode === "agent" && (
+            <PanneauAgent
+              langue={langue}
+              etat={etatAgent}
+              etapes={etapesAgent}
+              resultat={resultatAgent}
+              onChoisir={(tache) => {
+                setSaisie(tache);
+                void lancerAgent(tache);
+              }}
+              onNaviguer={(href) => router.push(href)}
+              onFermer={fermer}
             />
           )}
 
@@ -519,9 +630,7 @@ function PanneauSql({
       {!resultat && !erreur && (
         <p className="text-texte-faible mb-3 px-1 text-xs leading-relaxed">
           {mots.tables}{" "}
-          <span className="text-texte-attenue font-mono">
-            travaux, stack, domaines, chiffres, decisions, competences, parcours
-          </span>
+          <span className="text-texte-attenue font-mono">{NOMS_TABLES.join(", ")}</span>
           {mots.ecrivezRequete}
         </p>
       )}

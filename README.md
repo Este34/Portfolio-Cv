@@ -44,6 +44,8 @@ vectorisation (quelques dizaines de méga-octets, une seule fois).
 | `npm run generer:embeddings`        | régénère `public/data/embeddings-{fr,en}.{bin,json}`      |
 | `npm run verifier:anonymat`         | vérifie qu'aucun terme sous anonymat n'a fuité            |
 | `npm run capturer`                  | captures d'inspection, pour juger un rendu                |
+| `npm run evaluer:rag`               | note le moteur de recherche, écrit `evaluation-{fr,en}.json` |
+| `npm run mesurer:renforcement`      | banc de la politique apprise : étalons, courbe, ablation  |
 
 ## Bilinguisme
 
@@ -68,12 +70,16 @@ anglaise n'est pas une réponse.
 src/
   app/
     [langue]/       routes, une arborescence pour les deux langues
-    api/rediger/    seul point serveur, facultatif
+    api/rediger/    rédaction d’une réponse, facultative
+    api/agent/      décision d’un tour d’agent, facultative aussi
   components/
-    console/        palette Ctrl+K : navigation, SQL, questions
-    corpus/         projection du corpus vectorisé, en plan et en volume
+    console/        palette Ctrl+K : navigation, SQL, questions, agent
+    corpus/         projection du corpus vectorisé, en plan et en volume,
+                    et son partitionnement en direct
     fond/           champ de niveaux en GLSL, fond des bandeaux
-    labo/           simulations canvas (réseau, nuée, k-moyennes, agar)
+    labo/           simulations canvas (réseau, nuée, k-moyennes, agar,
+                    politique apprise par renforcement)
+    evaluation/     rejoue le banc d’évaluation dans le navigateur
     layout/         en-tête, pied de page
   content/          SOURCE DE VÉRITÉ — travaux, parcours, pages, corpus
   lib/
@@ -81,6 +87,13 @@ src/
     site.ts         identité du site, anonymisation
     duckdb.ts       chargement paresseux de la base analytique
     rag.ts          recherche augmentée côté navigateur
+    agent.ts        boucle décision/outil/observation, deux régimes
+    cibles.ts       destinations atteignables, liste blanche de navigation
+    evaluation.ts   métriques du banc : rappel, MRR, précision, silence
+    partition.ts    k-moyennes sphériques sur les vecteurs du corpus
+    mlp.ts          perceptron multicouche, rétropropagation à la main
+    renforcement.ts gradient de politique, environnement et étalons
+    agar-regles.ts  règles du monde, partagées par le jeu et l’agent
 scripts/            génération des artefacts et vérifications
 tests/              Vitest
 tests-visuels/      Playwright, et les images de référence versionnées
@@ -113,16 +126,17 @@ porte de préfixe.
 
 ## Régression visuelle
 
-`npm run test:visuel` construit le site, le sert, et compare vingt et une
+`npm run test:visuel` construit le site, le sert, et compare vingt-trois
 captures à des images de référence versionnées dans
 `tests-visuels/apparence.spec.ts-snapshots/`. C'est le seul filet qui attrape ce
 qu'aucun test unitaire ne voit : une couleur qui change, un titre qui déborde,
 une grille qui s'effondre.
 
-Les canvas des trois simulations à état initial aléatoire sont masqués. Le fond
-en shader et la projection du corpus ne le sont pas : ils sont reproductibles,
-le premier parce qu'il calcule une image unique à temps fixe en mouvement
-réduit, la seconde parce qu'elle n'a pas de boucle d'animation.
+Les canvas dont l'état initial est tiré au sort sont masqués, ainsi que la
+projection du corpus, qui passe par WebGL et dépend donc du pilote graphique.
+Le fond en shader ne l'est pas : il est reproductible par construction, parce
+qu'il calcule une image unique à temps fixe en mouvement réduit et que son bruit
+à hachage entier est identique d'un pilote à l'autre.
 
 **Les références dépendent de la plateforme.** Windows et Linux ne rastérisent
 pas le texte de la même façon, et Playwright suffixe donc les images par

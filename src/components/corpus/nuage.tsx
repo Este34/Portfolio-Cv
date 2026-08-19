@@ -44,10 +44,18 @@ export function NuageCorpus({
   points,
   variance,
   langue,
+  etiquettes,
 }: {
   points: PointCorpus[];
   variance: number;
   langue: Langue;
+  /**
+   * Étiquette de groupe de chaque point, si la coloration ne suit pas la
+   * source. Elle sert à la couleur et à la légende ; l'infobulle continue
+   * d'afficher la vraie source, qui reste l'information dont le lecteur a
+   * besoin pour aller vérifier.
+   */
+  etiquettes?: readonly string[];
 }) {
   const mots = MOTS[langue];
   const router = useRouter();
@@ -63,7 +71,11 @@ export function NuageCorpus({
    * l'observateur de taille. Le survol d'un point suffisait alors à
    * reconstruire tout le harnais.
    */
-  const sources = useMemo(() => [...new Set(points.map((p) => p.source))], [points]);
+  const groupes = useMemo(
+    () => (etiquettes && etiquettes.length === points.length ? etiquettes : points.map((p) => p.source)),
+    [etiquettes, points],
+  );
+  const legende = useMemo(() => [...new Set(groupes)], [groupes]);
 
   const dessiner = useCallback(() => {
     const toile = canvas.current;
@@ -117,7 +129,7 @@ export function NuageCorpus({
        * La forme a en outre l'avantage de rester lisible sans percevoir la
        * teinte.
        */
-      const rang = sources.indexOf(p.source);
+      const rang = legende.indexOf(groupes[i]);
       const couleur = palette[rang % palette.length];
       const creux = rang >= palette.length;
 
@@ -145,7 +157,7 @@ export function NuageCorpus({
       }
     });
     ctx.globalAlpha = 1;
-  }, [points, sources, survol]);
+  }, [points, groupes, legende, survol]);
 
   useEffect(() => {
     dessiner();
@@ -238,7 +250,7 @@ export function NuageCorpus({
 
       {/* Légende — sans elle, la couleur ne veut rien dire. */}
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
-        {sources.map((s, i) => {
+        {legende.map((s, i) => {
           const couleur = `var(--serie-${(i % 5) + 1})`;
           const creux = i >= 5;
           return (

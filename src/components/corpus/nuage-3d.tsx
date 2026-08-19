@@ -44,13 +44,15 @@ const REPLIS = ["#2b4cf2", "#ff5a3c", "#e8ff54", "#3ce0c0", "#c07cff"];
 
 function Scene({
   points,
-  sources,
+  groupes,
+  legende,
   palette,
   trait,
   onSurvol,
 }: {
   points: Point3D[];
-  sources: string[];
+  groupes: readonly string[];
+  legende: readonly string[];
   palette: string[];
   trait: string;
   onSurvol: (i: number | null) => void;
@@ -76,7 +78,7 @@ function Scene({
       </lineSegments>
 
       {points.map((p, i) => {
-        const rang = sources.indexOf(p.source);
+        const rang = legende.indexOf(groupes[i]);
         return (
           <mesh
             key={i}
@@ -109,13 +111,14 @@ function Scene({
 export default function Nuage3D({
   points,
   variance,
-  sources,
   langue,
+  etiquettes,
 }: {
   points: Point3D[];
   variance: number;
-  sources: string[];
   langue: Langue;
+  /** Voir la note de même nom dans `nuage.tsx`. */
+  etiquettes?: readonly string[];
 }) {
   const mots = MOTS[langue];
   const [survol, setSurvol] = useState<number | null>(null);
@@ -130,6 +133,10 @@ export default function Nuage3D({
     };
   }, []);
 
+  const groupes =
+    etiquettes && etiquettes.length === points.length ? etiquettes : points.map((p) => p.source);
+  const legende = [...new Set(groupes)];
+
   const actif = survol !== null ? points[survol] : null;
 
   return (
@@ -143,7 +150,8 @@ export default function Nuage3D({
         >
           <Scene
             points={points}
-            sources={sources}
+            groupes={groupes}
+            legende={legende}
             palette={palette}
             trait={trait}
             onSurvol={setSurvol}

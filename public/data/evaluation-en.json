@@ -1,0 +1,632 @@
+{
+  "langue": "en",
+  "modele": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+  "passages": 55,
+  "seuil": 0.22,
+  "bilan": {
+    "k": 4,
+    "avecReponse": 14,
+    "sansReponse": 4,
+    "rappel": 0.7857142857142857,
+    "mrr": 0.5773809523809524,
+    "precision": 0.3090909090909091,
+    "silence": 0.75
+  },
+  "courbe": [
+    {
+      "seuil": 0.14,
+      "rappel": 0.7857,
+      "silence": 0.5,
+      "precision": 0.3036
+    },
+    {
+      "seuil": 0.18,
+      "rappel": 0.7857,
+      "silence": 0.5,
+      "precision": 0.3036
+    },
+    {
+      "seuil": 0.22,
+      "rappel": 0.7857,
+      "silence": 0.75,
+      "precision": 0.3091
+    },
+    {
+      "seuil": 0.26,
+      "rappel": 0.7857,
+      "silence": 0.75,
+      "precision": 0.3333
+    },
+    {
+      "seuil": 0.3,
+      "rappel": 0.7857,
+      "silence": 0.75,
+      "precision": 0.3182
+    },
+    {
+      "seuil": 0.34,
+      "rappel": 0.5714,
+      "silence": 0.75,
+      "precision": 0.2895
+    },
+    {
+      "seuil": 0.38,
+      "rappel": 0.5,
+      "silence": 0.75,
+      "precision": 0.25
+    },
+    {
+      "seuil": 0.42,
+      "rappel": 0.2857,
+      "silence": 0.75,
+      "precision": 0.2632
+    }
+  ],
+  "cas": [
+    {
+      "id": "competences-donnees",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.5128,
+          "attendu": true
+        },
+        {
+          "id": "competences-Données",
+          "source": "Background",
+          "score": 0.4202,
+          "attendu": true
+        },
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Method",
+          "score": 0.3807,
+          "attendu": false
+        },
+        {
+          "id": "parcours-Data & AI engineering, e",
+          "source": "Background",
+          "score": 0.3461,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Données",
+        "identite"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "deja-ia",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.5267,
+          "attendu": false
+        },
+        {
+          "id": "parcours-Master 1 · AI Engineer",
+          "source": "Background",
+          "score": 0.4849,
+          "attendu": false
+        },
+        {
+          "id": "parcours-Data & AI engineering, e",
+          "source": "Background",
+          "score": 0.4404,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-domaines",
+          "source": "A RAG system written by hand",
+          "score": 0.3694,
+          "attendu": true
+        }
+      ],
+      "attendus": [
+        "mon-rag-resume",
+        "competences-Intelligence artificielle",
+        "mon-rag-domaines"
+      ],
+      "manques": [
+        "mon-rag-resume",
+        "competences-Intelligence artificielle"
+      ],
+      "rang": 4
+    },
+    {
+      "id": "verification",
+      "rendus": [
+        {
+          "id": "methode-verification",
+          "source": "Method",
+          "score": 0.3246,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-1",
+          "source": "A suite of foresight simulators",
+          "score": 0.2739,
+          "attendu": true
+        },
+        {
+          "id": "methode-garde",
+          "source": "Method",
+          "score": 0.2531,
+          "attendu": true
+        },
+        {
+          "id": "competences-Pratiques",
+          "source": "Background",
+          "score": 0.2515,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "methode-verification",
+        "methode-garde",
+        "suite-simulateurs-prospective-decision-1"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "formation",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.4178,
+          "attendu": false
+        },
+        {
+          "id": "parcours-Licence MIASHS, parcours",
+          "source": "Background",
+          "score": 0.3394,
+          "attendu": true
+        },
+        {
+          "id": "parcours-Data & AI engineering, e",
+          "source": "Background",
+          "score": 0.2758,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-role",
+          "source": "Global flows of critical minerals",
+          "score": 0.2454,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "parcours-Master 1 · AI Engineer",
+        "parcours-Licence MIASHS, parcours"
+      ],
+      "manques": [
+        "parcours-Master 1 · AI Engineer"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "agents-de-code",
+      "rendus": [
+        {
+          "id": "methode-verification",
+          "source": "Method",
+          "score": 0.3918,
+          "attendu": false
+        },
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.3378,
+          "attendu": false
+        },
+        {
+          "id": "competences-Intelligence artificielle",
+          "source": "Background",
+          "score": 0.3002,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-resultats",
+          "source": "A suite of foresight simulators",
+          "score": 0.2953,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "methode-Ce que je délègue",
+        "methode-garde",
+        "competences-Intelligence artificielle"
+      ],
+      "manques": [
+        "methode-Ce que je délègue",
+        "methode-garde"
+      ],
+      "rang": 3
+    },
+    {
+      "id": "reprise-interruption",
+      "rendus": [
+        {
+          "id": "pipeline-comtrade-decision-0",
+          "source": "Global flows of critical minerals",
+          "score": 0.4185,
+          "attendu": true
+        },
+        {
+          "id": "methode-verification",
+          "source": "Method",
+          "score": 0.3755,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-contraintes",
+          "source": "Global flows of critical minerals",
+          "score": 0.3517,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-resume",
+          "source": "A RAG system written by hand",
+          "score": 0.3213,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "pipeline-comtrade-decision-0",
+        "pipeline-comtrade-contraintes"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "hors-ligne",
+      "rendus": [
+        {
+          "id": "plateforme-simulateurs-domaines",
+          "source": "The platform that hosts them",
+          "score": 0.5301,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-contraintes",
+          "source": "A suite of foresight simulators",
+          "score": 0.4876,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-resume",
+          "source": "The platform that hosts them",
+          "score": 0.471,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-role",
+          "source": "Global flows of critical minerals",
+          "score": 0.4446,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "pipeline-comtrade-decision-1",
+        "pipeline-comtrade-chiffres",
+        "pipeline-comtrade-contraintes"
+      ],
+      "manques": [
+        "pipeline-comtrade-decision-1",
+        "pipeline-comtrade-chiffres",
+        "pipeline-comtrade-contraintes"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "champ-vide",
+      "rendus": [
+        {
+          "id": "methode-garde",
+          "source": "Method",
+          "score": 0.41,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-3",
+          "source": "A suite of foresight simulators",
+          "score": 0.4097,
+          "attendu": true
+        },
+        {
+          "id": "note-un-champ-vide-ne-vaut-pas-zero",
+          "source": "Technical note",
+          "score": 0.2981,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-chiffres",
+          "source": "A RAG system written by hand",
+          "score": 0.2474,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "note-un-champ-vide-ne-vaut-pas-zero",
+        "suite-simulateurs-prospective-decision-3"
+      ],
+      "manques": [],
+      "rang": 2
+    },
+    {
+      "id": "portage-tableur",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.4668,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-0",
+          "source": "A suite of foresight simulators",
+          "score": 0.4119,
+          "attendu": true
+        },
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Method",
+          "score": 0.3835,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-contexte",
+          "source": "A suite of foresight simulators",
+          "score": 0.3515,
+          "attendu": true
+        }
+      ],
+      "attendus": [
+        "suite-simulateurs-prospective-resume",
+        "suite-simulateurs-prospective-decision-0",
+        "suite-simulateurs-prospective-contexte",
+        "note-un-champ-vide-ne-vaut-pas-zero"
+      ],
+      "manques": [
+        "suite-simulateurs-prospective-resume",
+        "note-un-champ-vide-ne-vaut-pas-zero"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "front-end",
+      "rendus": [
+        {
+          "id": "plateforme-simulateurs-role",
+          "source": "The platform that hosts them",
+          "score": 0.4548,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-domaines",
+          "source": "The platform that hosts them",
+          "score": 0.444,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-role",
+          "source": "Global flows of critical minerals",
+          "score": 0.4175,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-role",
+          "source": "A suite of foresight simulators",
+          "score": 0.4116,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Web",
+        "plateforme-simulateurs-resume"
+      ],
+      "manques": [
+        "competences-Web",
+        "plateforme-simulateurs-resume"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "sans-bibliotheque",
+      "rendus": [
+        {
+          "id": "suite-simulateurs-prospective-decision-2",
+          "source": "A suite of foresight simulators",
+          "score": 0.4593,
+          "attendu": true
+        },
+        {
+          "id": "competences-Web",
+          "source": "Background",
+          "score": 0.3824,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-role",
+          "source": "A suite of foresight simulators",
+          "score": 0.3786,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-contexte",
+          "source": "The platform that hosts them",
+          "score": 0.3345,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "suite-simulateurs-prospective-decision-2",
+        "suite-simulateurs-prospective-contraintes"
+      ],
+      "manques": [
+        "suite-simulateurs-prospective-contraintes"
+      ],
+      "rang": 1
+    },
+    {
+      "id": "base-vectorielle",
+      "rendus": [
+        {
+          "id": "mon-rag-decision-0",
+          "source": "A RAG system written by hand",
+          "score": 0.4869,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-chiffres",
+          "source": "A RAG system written by hand",
+          "score": 0.4295,
+          "attendu": false
+        },
+        {
+          "id": "competences-Données",
+          "source": "Background",
+          "score": 0.4201,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-decision-1",
+          "source": "Global flows of critical minerals",
+          "score": 0.3871,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "mon-rag-decision-0",
+        "mon-rag-contexte"
+      ],
+      "manques": [
+        "mon-rag-contexte"
+      ],
+      "rang": 1
+    },
+    {
+      "id": "ou-travaille",
+      "rendus": [
+        {
+          "id": "methode-verification",
+          "source": "Method",
+          "score": 0.233,
+          "attendu": false
+        },
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.2322,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-resultats",
+          "source": "The platform that hosts them",
+          "score": 0.2273,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "parcours-Data & AI engineering, e"
+      ],
+      "manques": [
+        "parcours-Data & AI engineering, e"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "tests-outils",
+      "rendus": [
+        {
+          "id": "competences-Pratiques",
+          "source": "Background",
+          "score": 0.4972,
+          "attendu": true
+        },
+        {
+          "id": "identite",
+          "source": "About",
+          "score": 0.4464,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-role",
+          "source": "A RAG system written by hand",
+          "score": 0.4338,
+          "attendu": false
+        },
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Method",
+          "score": 0.3858,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Pratiques"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "hors-plat",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-meteo",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-salaire",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-kubernetes",
+      "rendus": [
+        {
+          "id": "plateforme-simulateurs-resultats",
+          "source": "The platform that hosts them",
+          "score": 0.4374,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-chiffres",
+          "source": "The platform that hosts them",
+          "score": 0.4062,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-role",
+          "source": "Global flows of critical minerals",
+          "score": 0.3721,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-chiffres",
+          "source": "A RAG system written by hand",
+          "score": 0.3642,
+          "attendu": false
+        }
+      ],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    }
+  ]
+}

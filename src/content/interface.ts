@@ -147,4 +147,22 @@ export const LABO = {
     fr: "Déplacez le curseur sur la zone pour jouer.",
     en: "Move the cursor over the area to play.",
   },
+
+  /* Politique apprise. */
+  labelPolitique: {
+    fr: "Agent apprenant à survivre par renforcement, avec sa rose des vents de décision et sa courbe d'évaluation",
+    en: "Agent learning to survive by reinforcement, with its decision compass and evaluation curve",
+  },
+  politiqueHasard: { fr: "Hasard", en: "Random" },
+  politiqueHeuristique: { fr: "Règle écrite", en: "Hand-written rule" },
+  politiqueApprise: { fr: "Apprise", en: "Learned" },
+  politiqueEpisodes: { fr: "Épisodes joués", en: "Episodes played" },
+  politiqueMeilleure: { fr: "Meilleure", en: "Best" },
+  politiqueRelance: { fr: "Repartir de zéro", en: "Start over" },
+  politiqueEntrainement: { fr: "en entraînement", en: "training" },
+  politiqueEnEvaluation: { fr: "en évaluation", en: "evaluating" },
+  politiqueProtocole: {
+    fr: "Les deux étalons sont mesurés hors ligne sur {etalons} mondes et vérifiés par un test. La politique apprise est évaluée en direct sur les {eval} premiers de ces mêmes mondes, ce qui est plus bruité : elle bouge d'une seconde ou deux d'un relevé à l'autre sans que rien n'ait changé.",
+    en: "Both baselines are measured offline over {etalons} worlds and checked by a test. The learned policy is evaluated live on the first {eval} of those same worlds, which is noisier: it moves by a second or two between readings without anything having changed.",
+  },
 } as const;

@@ -211,6 +211,7 @@ export function construireCorpus(langue: Langue): Passage[] {
       PAGE_LABO.demos.nuee,
       PAGE_LABO.demos.kmoyennes,
       PAGE_LABO.demos.agar,
+      PAGE_LABO.demos.politique,
     ]
       .map((d) => `${t(d.titre, langue)} : ${t(d.sousTitre, langue)}.`)
       .join(" ")}`,

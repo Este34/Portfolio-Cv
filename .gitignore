@@ -55,3 +55,7 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Rapports Lighthouse CI, produits localement par `npx @lhci/cli autorun`.
+# Les seuils, eux, sont versionnés dans `lighthouserc.json`.
+/.lighthouseci/

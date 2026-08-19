@@ -228,9 +228,9 @@ export const PAGE_MAKING_OF = {
    */
   mesures: [
     {
-      valeur: "30",
+      valeur: "32",
       libelle: { fr: "pages statiques", en: "static pages" },
-      note: { fr: "quinze, dans deux langues", en: "fifteen, in two languages" },
+      note: { fr: "seize, dans deux langues", en: "sixteen, in two languages" },
     },
     {
       valeur: "1",
@@ -238,12 +238,12 @@ export const PAGE_MAKING_OF = {
       note: { fr: "et il est facultatif", en: "and it is optional" },
     },
     {
-      valeur: "96",
+      valeur: "150",
       libelle: { fr: "tests", en: "tests" },
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },
     {
-      valeur: "36",
+      valeur: "37",
       libelle: { fr: "vérifications visuelles", en: "visual checks" },
       note: { fr: "captures, géométrie et densité", en: "screenshots, geometry and density" },
     },
@@ -292,6 +292,26 @@ export const PAGE_MAKING_OF = {
     ],
   },
   arbitrages: [
+    {
+      titre: {
+        fr: "L'agent tourne sans modèle par défaut",
+        en: "The agent runs without a model by default",
+      },
+      corps: {
+        fr: "La console offrait trois outils actionnés à la main : aller à une page, écrire du SQL, interroger le corpus. L'agent n'en reçoit pas un quatrième, il reçoit une boucle. Il pouvait n'exister qu'en appelant un modèle, et il aurait alors disparu le jour où la clé manque, où le quota tombe ou où le fournisseur a une mauvaise heure. Il tourne donc par défaut sur un planificateur déterministe, entièrement dans le navigateur : une grammaire d'intentions figée, quatre plans possibles, aucun coût. Le modèle s'ajoute quand une clé est présente et comprend des tournures que la grammaire ignore. En cas de panne au troisième tour, le déterministe reprend la trace en cours sans la perdre, parce qu'il lit les observations au lieu de tenir son propre état. Le panneau affiche lequel a servi.",
+        en: "The console offered three tools driven by hand: go to a page, write SQL, query the corpus. The agent gets no fourth one, it gets a loop. It could have existed only by calling a model, and would then have vanished the day the key is missing, the quota runs out, or the provider has a bad hour. So it runs by default on a deterministic planner, entirely in the browser: a fixed grammar of intents, four possible plans, no cost. The model is added when a key is present and understands phrasings the grammar ignores. If it fails on the third turn, the deterministic planner picks the running trace back up without losing it, because it reads the observations rather than holding its own state. The panel shows which one served.",
+      },
+    },
+    {
+      titre: {
+        fr: "Le modèle décide, le navigateur agit",
+        en: "The model decides, the browser acts",
+      },
+      corps: {
+        fr: "Même en régime modèle, aucun outil ne s'exécute sur le serveur. DuckDB interroge une base locale, le corpus est vectorisé sur la machine du visiteur, la navigation est un changement de route côté client. La route serveur reçoit la question et le résumé des observations déjà faites, et renvoie un seul choix d'outil. Ce partage a une conséquence pratique qui vaut plus que son élégance : les deux régimes exécutent exactement le même code d'outil, donc une trace obtenue avec le modèle et une trace obtenue sans se comparent ligne à ligne. Et ce qu'un modèle propose n'est jamais exécuté sans validation : une cible de navigation est comparée à la liste des pages construite depuis le contenu, une requête non lecture est refusée, et un nom d'outil hors des quatre fait basculer sur le repli.",
+        en: "Even in model mode, no tool runs on the server. DuckDB queries a local database, the corpus is embedded on the visitor's machine, navigation is a client-side route change. The server route receives the question and a summary of the observations already made, and returns a single tool choice. That split has a practical consequence worth more than its elegance: both modes run exactly the same tool code, so a trace obtained with the model and one obtained without compare line by line. And nothing a model proposes is executed unchecked: a navigation target is matched against the page list built from the content, a non-read query is refused, and a tool name outside the four triggers the fallback.",
+      },
+    },
     {
       titre: {
         fr: "Toute la direction artistique refaite après coup",
@@ -482,6 +502,43 @@ export const PAGE_LABO = {
         },
       ],
     },
+    politique: {
+      titre: { fr: "Une politique qui apprend à jouer", en: "A policy that learns to play" },
+      sousTitre: {
+        fr: "Gradient de politique, contre la règle écrite juste au-dessus",
+        en: "Policy gradient, against the rule written just above",
+      },
+      corps: [
+        {
+          fr: "Le réseau du haut de page apprend une frontière : on lui montre la bonne réponse pour chaque point, il ajuste. Ici, personne ne connaît la bonne réponse. Il n'existe qu'une récompense qui arrive après coup, et tout le problème est d'attribuer le mérite d'un gain à une décision prise trois secondes plus tôt. C'est la différence entre apprendre à classer et apprendre à agir.",
+          en: "The network at the top of this page learns a boundary: you show it the right answer for each point, it adjusts. Here, nobody knows the right answer. There is only a reward that arrives afterwards, and the whole problem is crediting a gain to a decision taken three seconds earlier. That is the difference between learning to classify and learning to act.",
+        },
+        {
+          fr: "L'agent joue dans le monde du jeu ci-dessus, sous les mêmes règles, importées du même fichier. Autour de lui, la rose des vents affiche sa distribution sur les huit directions : c'est sa décision, pas son résultat. Au premier épisode les huit branches sont égales, il titube et se fait absorber en deux secondes. En dessous, invisible, l'entraînement joue quelques centaines d'épisodes par seconde.",
+          en: "The agent plays in the world of the game above, under the same rules, imported from the same file. Around it, the compass shows its distribution over the eight directions: that is its decision, not its outcome. On the first episode the eight spokes are equal, it staggers and gets absorbed in two seconds. Underneath, invisible, training plays a few hundred episodes per second.",
+        },
+        {
+          fr: "Les trois barres sont la raison d'être de la démonstration, comme le plafond linéaire l'est pour le réseau. « L'agent survit onze secondes » ne dit rien tant qu'on ignore ce que valent le hasard et une bonne règle écrite à la main sur le même problème. Le hasard tient 1,9 s. L'heuristique qui pilote les rivaux du jeu, contrainte aux mêmes huit directions, tient 7,6 s. Mesurée sur huit graines après 4 000 épisodes, la politique apprise atteint 11,0 s de médiane, et dépasse l'heuristique sur six graines sur huit.",
+          en: "The three bars are the point of the whole demo, the way the linear ceiling is for the network. «The agent survives eleven seconds» says nothing until you know what random play and a good hand-written rule are worth on the same problem. Random lasts 1.9 s. The heuristic that drives the game's rivals, constrained to the same eight directions, lasts 7.6 s. Measured over eight seeds after 4,000 episodes, the learned policy reaches a median of 11.0 s, and beats the heuristic on six seeds out of eight.",
+        },
+        {
+          fr: "Deux graines sur huit, donc, où elle reste en dessous. C'est la propriété la plus honnête de cette famille d'algorithmes et la plus souvent tue : le résultat dépend du tirage initial, et rapporter la meilleure exécution plutôt que la médiane est le péché ordinaire du domaine. Le bouton « Repartir de zéro » tire une nouvelle graine, et il arrive que la courbe stagne.",
+          en: "So two seeds out of eight where it stays below. That is the most honest property of this family of algorithms, and the one most often left unsaid: the result depends on the initial draw, and reporting the best run rather than the median is the field's ordinary sin. The «Start over» button draws a new seed, and sometimes the curve just stalls.",
+        },
+        {
+          fr: "Ce qu'elle finit par trouver et que la règle écrite ignore, c'est le mur. Sur 300 parties, 51 % des morts de l'heuristique surviennent à moins de 40 pixels d'un bord, contre 30 % attendus si la position n'y était pour rien : fuir en ligne droite devant une menace revient à se laisser acculer. La position dans le cadre fait partie des douze nombres que l'agent perçoit, et il apprend à s'en servir sans qu'on lui ait dit à quoi ils correspondent.",
+          en: "What it eventually finds, and the written rule ignores, is the wall. Over 300 games, 51% of the heuristic's deaths happen within 40 pixels of an edge, against 30% expected if position had nothing to do with it: fleeing in a straight line from a threat means letting yourself be cornered. Position within the frame is among the twelve numbers the agent perceives, and it learns to use them without ever being told what they mean.",
+        },
+        {
+          fr: "Le réglage qui décide de tout est la prime d'entropie, qui paie la politique pour rester indécise. Sans elle, mesurée après 4 000 épisodes, l'entropie de la distribution tombe à 0,002 sur un maximum de 2,08 : l'agent devient certain de son choix partout, cesse d'explorer et se fige sur ce qu'il avait trouvé au millier d'épisodes. À 0,08 la courbe monte et tient. À 0,20 la prime domine la récompense et il ne se décide jamais.",
+          en: "The setting that decides everything is the entropy bonus, which pays the policy to stay undecided. Without it, measured after 4,000 episodes, the distribution's entropy falls to 0.002 out of a maximum of 2.08: the agent becomes certain of its choice everywhere, stops exploring, and freezes on whatever it had found by a thousand episodes. At 0.08 the curve climbs and holds. At 0.20 the bonus dominates the reward and it never makes up its mind.",
+        },
+        {
+          fr: "Six cent seize paramètres, la passe avant et la passe arrière écrites à la main comme pour le réseau du haut, et l'entraînement étalé sur les images plutôt qu'exécuté en bloc : un épisode coûte d'autant plus cher que l'agent joue bien, ce qui ferait sauter l'affichage exactement au moment où ça devient intéressant. L'environnement, lui, pesait 85 % du coût d'un pas. Comparer les distances au carré et sortir les rayons des boucles l'a divisé par deux et demi, sans changer un seul résultat.",
+          en: "Six hundred and sixteen parameters, forward and backward passes written by hand as for the network above, and training spread across frames rather than run in blocks: an episode costs more the better the agent plays, which would stall the display exactly when it gets interesting. The environment itself accounted for 85% of a step's cost. Comparing squared distances and hoisting the radii out of the loops divided that by two and a half, without changing a single result.",
+        },
+      ],
+    },
   },
 } as const;
 
@@ -641,4 +698,97 @@ export const PAGE_NOTES = {
   /* Une fonction plutôt qu'une chaîne : l'accord au pluriel n'est pas le même. */
   duree: (minutes: number, langue: "fr" | "en") =>
     langue === "fr" ? `${minutes} minutes de lecture` : `${minutes} min read`,
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Évaluations                                                                 */
+/* -------------------------------------------------------------------------- */
+
+export const PAGE_EVALUATIONS = {
+  meta: {
+    titre: { fr: "Évaluations", en: "Evaluations" },
+    description: {
+      fr: "Le moteur de recherche du site, noté sur un jeu de questions figé : rappel, rang réciproque moyen, précision, silence, et les échecs montrés.",
+      en: "This site's search engine, graded on a fixed question set: recall, mean reciprocal rank, precision, silence, and the failures shown.",
+    },
+  } satisfies Meta,
+  titre: { fr: "Évaluations", en: "Evaluations" },
+  chapeau: {
+    fr: "Un moteur de recherche sémantique donne toujours une réponse. Elle est plausible, elle cite une source, elle a l'air juste, et personne ne va vérifier. Voici les chiffres, le jeu de questions qui les produit, et les cas où ça rate.",
+    en: "A semantic search engine always gives an answer. It is plausible, it cites a source, it looks right, and nobody goes and checks. Here are the numbers, the question set that produces them, and the cases where it fails.",
+  },
+  pourquoi: {
+    titre: { fr: "Pourquoi cette page", en: "Why this page" },
+    paragraphes: [
+      {
+        fr: "C'est le mode d'échec propre à cette famille d'outils : on ne distingue pas à l'œil un système qui trouve d'un système qui devine, parce que les deux produisent le même objet à l'écran. Un extrait, une source, un score. La seule façon de trancher est de fixer d'avance ce qui répond, puis de mesurer.",
+        en: "This is the failure mode peculiar to this family of tools: you cannot tell by eye a system that finds from a system that guesses, because both produce the same object on screen. A passage, a source, a score. The only way to settle it is to fix in advance what counts as an answer, then measure.",
+      },
+      {
+        fr: "Le jeu compte dix-huit questions, dont quatre n'attendent aucune réponse. Ces quatre-là ne sont pas du remplissage : un moteur qui répond à tout est un moteur qui ment, et un système qui obtiendrait un rappel parfait en citant toujours quelque chose doit échouer ici. C'est la mesure qu'on omet le plus souvent, parce qu'elle fait baisser la moyenne.",
+        en: "The set holds eighteen questions, four of which expect no answer at all. Those four are not filler: an engine that answers everything is an engine that lies, and a system scoring perfect recall by always citing something has to fail here. It is the measure most often left out, because it drags the average down.",
+      },
+      {
+        fr: "La vérité terrain est écrite à la main, en lisant les passages, et pas en regardant ce que le moteur renvoie. L'ordre inverse est le biais le plus courant de l'exercice : on ajuste l'étiquetage jusqu'à ce que le score plaise, et on mesure alors sa propre complaisance. Cela reste le jugement d'une seule personne sur un corpus qu'elle a écrit. Le dire est plus utile que de prétendre le contraire.",
+        en: "The ground truth is written by hand, by reading the passages, not by looking at what the engine returns. The reverse order is the commonest bias in this exercise: you adjust the labelling until the score pleases you, and then you are measuring your own indulgence. It remains one person's judgement on a corpus they wrote. Saying so is more useful than pretending otherwise.",
+      },
+    ],
+  },
+  mesures: {
+    titre: { fr: "Ce que chaque nombre cache", en: "What each number hides" },
+    chapeau: {
+      fr: "Aucun ne suffit seul, et c'est pour cela qu'ils sont quatre.",
+      en: "None of them is enough on its own, which is why there are four.",
+    },
+    etages: [
+      {
+        titre: { fr: "Rappel@4", en: "Recall@4" },
+        corps: {
+          fr: "La part des questions où au moins un bon passage remonte. Il ignore le rang : trouver la bonne réponse en quatrième position compte autant que la trouver en première, alors que personne ne lit la quatrième.",
+          en: "The share of questions where at least one good passage comes back. It ignores rank: finding the right answer in fourth place counts as much as first, and nobody reads the fourth.",
+        },
+      },
+      {
+        titre: { fr: "Rang réciproque moyen", en: "Mean reciprocal rank" },
+        corps: {
+          fr: "La moyenne de 1/rang du premier bon passage. Il corrige le précédent, mais ne dit rien de ce qui accompagne la bonne réponse : un moteur qui la place première et remplit le reste de bruit obtient 1,00.",
+          en: "The average of 1/rank of the first good passage. It corrects the previous one, but says nothing about what accompanies the right answer: an engine that puts it first and fills the rest with noise scores 1.00.",
+        },
+      },
+      {
+        titre: { fr: "Précision@4", en: "Precision@4" },
+        corps: {
+          fr: "La part de bons passages parmi tout ce qui est rendu. Elle attrape ce bruit, et elle est plafonnée par construction : quand une question n'a que deux bonnes réponses et que le moteur en rend quatre, elle ne peut pas dépasser 0,50 même en étant parfaite. La lire comme une note serait une erreur.",
+          en: "The share of good passages among everything returned. It catches that noise, and it is capped by construction: when a question has only two right answers and the engine returns four, it cannot exceed 0.50 even when perfect. Reading it as a grade would be a mistake.",
+        },
+      },
+      {
+        titre: { fr: "Silence", en: "Silence" },
+        corps: {
+          fr: "La part des questions hors corpus où le moteur ne cite rien. C'est le seul des quatre qui punisse un système trop bavard.",
+          en: "The share of out-of-corpus questions where the engine cites nothing. It is the only one of the four that punishes an over-talkative system.",
+        },
+      },
+    ],
+  },
+  seuil: {
+    titre: { fr: "Le seuil, et ce qu'il ne règle pas", en: "The threshold, and what it cannot fix" },
+    paragraphes: [
+      {
+        fr: "Le seuil de pertinence décide de ce qui mérite d'être cité. Il arbitre entre deux erreurs opposées : trop bas, le moteur répond à une question hors sujet parce qu'un passage flotte au-dessus ; trop haut, il se tait sur une question à laquelle le corpus répond. La valeur retenue, 0,22, est le plus petit seuil qui atteigne le silence maximal. En dessous, deux questions hors corpus reçoivent une réponse. Au-dessus, rien ne s'améliore jusqu'à ce que le rappel s'effondre.",
+        en: "The relevance threshold decides what deserves quoting. It arbitrates between two opposite errors: too low and the engine answers an off-topic question because some passage floats above it; too high and it stays silent on a question the corpus answers. The value kept, 0.22, is the smallest threshold that reaches maximum silence. Below it, two out-of-corpus questions get an answer. Above it, nothing improves until recall collapses.",
+      },
+      {
+        fr: "La courbe dit surtout ce que le seuil ne peut pas régler. La question sur la configuration d'un cluster Kubernetes reçoit une réponse à tous les seuils balayés, y compris au plus sévère : le champ lexical de l'infrastructure est assez proche de celui du corpus pour que des passages sans rapport marquent haut. Ce n'est pas un problème de réglage, c'est une limite de la similarité cosinus sur un corpus étroit, et aucune valeur ne la fera disparaître.",
+        en: "What the curve mostly says is what the threshold cannot fix. The question about configuring a Kubernetes cluster gets an answer at every threshold swept, including the harshest: the lexical field of infrastructure is close enough to the corpus for unrelated passages to score high. That is not a tuning problem, it is a limit of cosine similarity on a narrow corpus, and no value will make it go away.",
+      },
+    ],
+  },
+  refaire: {
+    titre: { fr: "Refaites le calcul", en: "Run it yourself" },
+    corps: {
+      fr: "Les chiffres ci-dessus sont produits au build et versionnés avec le site : la page s'affiche sans une ligne de JavaScript. Le bouton rejoue l'évaluation entière dans votre navigateur, avec le même modèle et les mêmes vecteurs, et affiche ce qu'il trouve. C'est la seule forme de publication de résultats qui vaille quelque chose : un chiffre qu'on peut refaire tomber soi-même.",
+      en: "The figures above are produced at build time and versioned with the site: the page renders without a line of JavaScript. The button replays the whole evaluation inside your browser, with the same model and the same vectors, and shows what it finds. It is the only form of published result worth anything: a number you can make fall out again yourself.",
+    },
+  },
 } as const;

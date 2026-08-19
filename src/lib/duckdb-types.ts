@@ -106,3 +106,45 @@ export const REQUETES_TYPES: Record<Langue, { libelle: string; sql: string }[]> 
     },
   ],
 };
+
+/**
+ * Le schéma des tables, source unique.
+ *
+ * Il était décrit à trois endroits : la liste des tables affichée dans la
+ * console, les consignes envoyées au modèle de l'agent, et la tête du
+ * générateur. Trois copies d'une même vérité, dont deux finissent toujours par
+ * dater. Ici il n'y en a qu'une, et un test unitaire la confronte au JSON
+ * réellement produit par `scripts/generer-donnees.ts`.
+ *
+ * Ce qui se produirait sans ce test mérite d'être nommé : une colonne ajoutée
+ * au générateur et pas ici ferait écrire au modèle des requêtes qui échouent,
+ * et l'échec ressemblerait à une hallucination alors que ce serait une dérive
+ * de documentation.
+ */
+export const SCHEMA_TABLES = {
+  travaux: [
+    "slug",
+    "titre",
+    "sous_titre",
+    "resume",
+    "annee",
+    "role",
+    "diffusion",
+    "rang",
+    "nb_technos",
+    "nb_decisions",
+  ],
+  stack: ["slug", "techno", "annee"],
+  domaines: ["slug", "domaine"],
+  chiffres: ["slug", "valeur", "libelle", "note"],
+  decisions: ["slug", "rang", "choix", "raison"],
+  competences: ["famille", "competence"],
+  parcours: ["periode", "titre", "lieu", "description"],
+} as const satisfies Record<string, readonly string[]>;
+
+export const NOMS_TABLES = Object.keys(SCHEMA_TABLES);
+
+/** Le schéma en une ligne par table, tel qu'il est donné au modèle. */
+export const SCHEMA_TEXTE = Object.entries(SCHEMA_TABLES)
+  .map(([table, colonnes]) => `${table}(${colonnes.join(", ")})`)
+  .join("\n");

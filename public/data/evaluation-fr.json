@@ -1,0 +1,623 @@
+{
+  "langue": "fr",
+  "modele": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+  "passages": 55,
+  "seuil": 0.22,
+  "bilan": {
+    "k": 4,
+    "avecReponse": 14,
+    "sansReponse": 4,
+    "rappel": 0.7142857142857143,
+    "mrr": 0.5238095238095238,
+    "precision": 0.3018867924528302,
+    "silence": 0.75
+  },
+  "courbe": [
+    {
+      "seuil": 0.14,
+      "rappel": 0.7143,
+      "silence": 0.5,
+      "precision": 0.2857
+    },
+    {
+      "seuil": 0.18,
+      "rappel": 0.7143,
+      "silence": 0.5,
+      "precision": 0.2963
+    },
+    {
+      "seuil": 0.22,
+      "rappel": 0.7143,
+      "silence": 0.75,
+      "precision": 0.3019
+    },
+    {
+      "seuil": 0.26,
+      "rappel": 0.7143,
+      "silence": 0.75,
+      "precision": 0.3137
+    },
+    {
+      "seuil": 0.3,
+      "rappel": 0.7143,
+      "silence": 0.75,
+      "precision": 0.32
+    },
+    {
+      "seuil": 0.34,
+      "rappel": 0.7143,
+      "silence": 0.75,
+      "precision": 0.3111
+    },
+    {
+      "seuil": 0.38,
+      "rappel": 0.5714,
+      "silence": 0.75,
+      "precision": 0.2941
+    },
+    {
+      "seuil": 0.42,
+      "rappel": 0.5,
+      "silence": 0.75,
+      "precision": 0.3
+    }
+  ],
+  "cas": [
+    {
+      "id": "competences-donnees",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.6359,
+          "attendu": true
+        },
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Méthode",
+          "score": 0.5203,
+          "attendu": false
+        },
+        {
+          "id": "competences-Données",
+          "source": "Parcours",
+          "score": 0.4753,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-domaines",
+          "source": "Un RAG écrit à la main",
+          "score": 0.4342,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Données",
+        "identite"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "deja-ia",
+      "rendus": [
+        {
+          "id": "parcours-Master 1 · AI Engineer",
+          "source": "Parcours",
+          "score": 0.6182,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-domaines",
+          "source": "Un RAG écrit à la main",
+          "score": 0.5592,
+          "attendu": true
+        },
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.4928,
+          "attendu": false
+        },
+        {
+          "id": "competences-Intelligence artificielle",
+          "source": "Parcours",
+          "score": 0.4749,
+          "attendu": true
+        }
+      ],
+      "attendus": [
+        "mon-rag-resume",
+        "competences-Intelligence artificielle",
+        "mon-rag-domaines"
+      ],
+      "manques": [
+        "mon-rag-resume"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "verification",
+      "rendus": [
+        {
+          "id": "methode-garde",
+          "source": "Méthode",
+          "score": 0.3921,
+          "attendu": true
+        },
+        {
+          "id": "methode-verification",
+          "source": "Méthode",
+          "score": 0.3688,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-1",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.3122,
+          "attendu": true
+        },
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.2499,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "methode-verification",
+        "methode-garde",
+        "suite-simulateurs-prospective-decision-1"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "formation",
+      "rendus": [
+        {
+          "id": "competences-Pratiques",
+          "source": "Parcours",
+          "score": 0.3759,
+          "attendu": false
+        },
+        {
+          "id": "parcours-Licence MIASHS, parcours",
+          "source": "Parcours",
+          "score": 0.3633,
+          "attendu": true
+        },
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.3574,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-role",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.3183,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "parcours-Master 1 · AI Engineer",
+        "parcours-Licence MIASHS, parcours"
+      ],
+      "manques": [
+        "parcours-Master 1 · AI Engineer"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "agents-de-code",
+      "rendus": [
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Méthode",
+          "score": 0.35,
+          "attendu": true
+        },
+        {
+          "id": "methode-verification",
+          "source": "Méthode",
+          "score": 0.3349,
+          "attendu": false
+        },
+        {
+          "id": "competences-Intelligence artificielle",
+          "source": "Parcours",
+          "score": 0.3223,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-contraintes",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.2956,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "methode-Ce que je délègue",
+        "methode-garde",
+        "competences-Intelligence artificielle"
+      ],
+      "manques": [
+        "methode-garde"
+      ],
+      "rang": 1
+    },
+    {
+      "id": "reprise-interruption",
+      "rendus": [
+        {
+          "id": "pipeline-comtrade-contexte",
+          "source": "Les flux mondiaux de minéraux critiques",
+          "score": 0.3911,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-resume",
+          "source": "Les flux mondiaux de minéraux critiques",
+          "score": 0.3812,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-1",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.3624,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-resultats",
+          "source": "La plateforme qui les héberge",
+          "score": 0.3268,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "pipeline-comtrade-decision-0",
+        "pipeline-comtrade-contraintes"
+      ],
+      "manques": [
+        "pipeline-comtrade-decision-0",
+        "pipeline-comtrade-contraintes"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "hors-ligne",
+      "rendus": [
+        {
+          "id": "suite-simulateurs-prospective-contraintes",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.5964,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-resume",
+          "source": "La plateforme qui les héberge",
+          "score": 0.582,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-contraintes",
+          "source": "Un RAG écrit à la main",
+          "score": 0.5644,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-resultats",
+          "source": "Un RAG écrit à la main",
+          "score": 0.5493,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "pipeline-comtrade-decision-1",
+        "pipeline-comtrade-chiffres",
+        "pipeline-comtrade-contraintes"
+      ],
+      "manques": [
+        "pipeline-comtrade-decision-1",
+        "pipeline-comtrade-chiffres",
+        "pipeline-comtrade-contraintes"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "champ-vide",
+      "rendus": [
+        {
+          "id": "methode-garde",
+          "source": "Méthode",
+          "score": 0.4879,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-3",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.4419,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-resume",
+          "source": "Un RAG écrit à la main",
+          "score": 0.3688,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-decision-0",
+          "source": "Un RAG écrit à la main",
+          "score": 0.3535,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "note-un-champ-vide-ne-vaut-pas-zero",
+        "suite-simulateurs-prospective-decision-3"
+      ],
+      "manques": [
+        "note-un-champ-vide-ne-vaut-pas-zero"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "portage-tableur",
+      "rendus": [
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Méthode",
+          "score": 0.5058,
+          "attendu": false
+        },
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.5027,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-0",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.4319,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-1",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.4283,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "suite-simulateurs-prospective-resume",
+        "suite-simulateurs-prospective-decision-0",
+        "suite-simulateurs-prospective-contexte",
+        "note-un-champ-vide-ne-vaut-pas-zero"
+      ],
+      "manques": [
+        "suite-simulateurs-prospective-resume",
+        "suite-simulateurs-prospective-contexte",
+        "note-un-champ-vide-ne-vaut-pas-zero"
+      ],
+      "rang": 3
+    },
+    {
+      "id": "front-end",
+      "rendus": [
+        {
+          "id": "plateforme-simulateurs-domaines",
+          "source": "La plateforme qui les héberge",
+          "score": 0.6892,
+          "attendu": false
+        },
+        {
+          "id": "plateforme-simulateurs-resume",
+          "source": "La plateforme qui les héberge",
+          "score": 0.5844,
+          "attendu": true
+        },
+        {
+          "id": "suite-simulateurs-prospective-resume",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.5529,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-role",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.5109,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Web",
+        "plateforme-simulateurs-resume"
+      ],
+      "manques": [
+        "competences-Web"
+      ],
+      "rang": 2
+    },
+    {
+      "id": "sans-bibliotheque",
+      "rendus": [
+        {
+          "id": "suite-simulateurs-prospective-decision-2",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.4935,
+          "attendu": true
+        },
+        {
+          "id": "competences-Web",
+          "source": "Parcours",
+          "score": 0.4439,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-contraintes",
+          "source": "Une suite de simulateurs de prospective",
+          "score": 0.3714,
+          "attendu": true
+        },
+        {
+          "id": "methode-verification",
+          "source": "Méthode",
+          "score": 0.3627,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "suite-simulateurs-prospective-decision-2",
+        "suite-simulateurs-prospective-contraintes"
+      ],
+      "manques": [],
+      "rang": 1
+    },
+    {
+      "id": "base-vectorielle",
+      "rendus": [
+        {
+          "id": "mon-rag-decision-0",
+          "source": "Un RAG écrit à la main",
+          "score": 0.6296,
+          "attendu": true
+        },
+        {
+          "id": "mon-rag-chiffres",
+          "source": "Un RAG écrit à la main",
+          "score": 0.5087,
+          "attendu": false
+        },
+        {
+          "id": "methode-garde",
+          "source": "Méthode",
+          "score": 0.4595,
+          "attendu": false
+        },
+        {
+          "id": "methode-verification",
+          "source": "Méthode",
+          "score": 0.3529,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "mon-rag-decision-0",
+        "mon-rag-contexte"
+      ],
+      "manques": [
+        "mon-rag-contexte"
+      ],
+      "rang": 1
+    },
+    {
+      "id": "ou-travaille",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.2278,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "parcours-Data & AI engineering, e"
+      ],
+      "manques": [
+        "parcours-Data & AI engineering, e"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "tests-outils",
+      "rendus": [
+        {
+          "id": "identite",
+          "source": "Présentation",
+          "score": 0.545,
+          "attendu": false
+        },
+        {
+          "id": "methode-Ce que je délègue",
+          "source": "Méthode",
+          "score": 0.4914,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-role",
+          "source": "Un RAG écrit à la main",
+          "score": 0.4373,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-domaines",
+          "source": "Un RAG écrit à la main",
+          "score": 0.4001,
+          "attendu": false
+        }
+      ],
+      "attendus": [
+        "competences-Pratiques"
+      ],
+      "manques": [
+        "competences-Pratiques"
+      ],
+      "rang": 0
+    },
+    {
+      "id": "hors-plat",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-meteo",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-salaire",
+      "rendus": [],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    },
+    {
+      "id": "hors-kubernetes",
+      "rendus": [
+        {
+          "id": "plateforme-simulateurs-resultats",
+          "source": "La plateforme qui les héberge",
+          "score": 0.4651,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-chiffres",
+          "source": "Un RAG écrit à la main",
+          "score": 0.3953,
+          "attendu": false
+        },
+        {
+          "id": "pipeline-comtrade-decision-1",
+          "source": "Les flux mondiaux de minéraux critiques",
+          "score": 0.3939,
+          "attendu": false
+        },
+        {
+          "id": "mon-rag-decision-0",
+          "source": "Un RAG écrit à la main",
+          "score": 0.3878,
+          "attendu": false
+        }
+      ],
+      "attendus": [],
+      "manques": [],
+      "rang": 0
+    }
+  ]
+}

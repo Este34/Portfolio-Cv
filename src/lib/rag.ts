@@ -18,9 +18,9 @@
  * réponse rédigée.
  */
 
-import type { Langue } from "./langue";
-import type { Extrait, EtapeRag, Reponse } from "./rag-types";
-import { MODELE_EMBEDDING, SEUIL_PERTINENCE } from "./rag-types";
+import type { Langue } from "./langue.ts";
+import type { Extrait, EtapeRag, Reponse } from "./rag-types.ts";
+import { MODELE_EMBEDDING, SEUIL_PERTINENCE } from "./rag-types.ts";
 
 type Meta = {
   langue: Langue;
@@ -112,7 +112,13 @@ async function amorcer(langue: Langue, surEtape?: (e: EtapeRag) => void): Promis
 const MAX_PAR_SOURCE = 2;
 
 /** Métadonnée minimale nécessaire au classement. */
-export type PassageIndexe = { texte: string; source: string; href: string; poids: number };
+export type PassageIndexe = {
+  id: string;
+  texte: string;
+  source: string;
+  href: string;
+  poids: number;
+};
 
 /**
  * Classe les passages par proximité à un vecteur de question.
@@ -127,6 +133,16 @@ export function classer(
   passages: PassageIndexe[],
   dimensions: number,
   k = 4,
+  /*
+   * Le seuil est un paramètre, et pas seulement une constante lue ici.
+   *
+   * Il vaut `SEUIL_PERTINENCE` partout dans le site. Mais le choix de cette
+   * valeur est un compromis entre trouver et se taire, et un compromis qu'on
+   * ne peut pas balayer est un compromis qu'on a deviné. Le banc d'évaluation
+   * fait varier ce paramètre pour tracer la courbe, ce qui est la seule façon
+   * de justifier le point retenu.
+   */
+  seuil = SEUIL_PERTINENCE,
 ): Extrait[] {
   const scores: Extrait[] = passages.map((p, i) => {
     // Vecteurs normalisés des deux côtés : le produit scalaire EST le cosinus.
@@ -141,6 +157,7 @@ export function classer(
      * pas réécrire le classement.
      */
     return {
+      id: p.id,
       texte: p.texte,
       source: p.source,
       href: p.href,
@@ -163,7 +180,7 @@ export function classer(
   const retenus: Extrait[] = [];
 
   for (const s of scores) {
-    if (s.score < SEUIL_PERTINENCE) break; // La liste est triée : inutile d'aller plus loin.
+    if (s.score < seuil) break; // La liste est triée : inutile d'aller plus loin.
     const n = parSource.get(s.source) ?? 0;
     if (n >= MAX_PAR_SOURCE) continue;
     parSource.set(s.source, n + 1);

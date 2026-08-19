@@ -3,6 +3,18 @@
 import { useMemo, useState } from "react";
 
 import { LABO } from "@/content/interface";
+import {
+  GAIN_CELLULE,
+  GAIN_GRANULE,
+  GRANULES,
+  MARGE,
+  MASSE_DEPART,
+  PORTEE_CHASSE,
+  PORTEE_FUITE,
+  RIVAUX,
+  rayon,
+  vitesse,
+} from "@/lib/agar-regles";
 import { t, type Langue } from "@/lib/langue";
 
 import { Toile, type Pilote } from "./toile";
@@ -10,17 +22,10 @@ import { Toile, type Pilote } from "./toile";
 type Cellule = { x: number; y: number; masse: number; vx: number; vy: number; teinte: number };
 type Granule = { x: number; y: number; teinte: number };
 
-const MASSE_DEPART = 26;
-const GRANULES = 130;
-const RIVAUX = 9;
-
 function jeton(nom: string, repli: string) {
   if (typeof window === "undefined") return repli;
   return getComputedStyle(document.documentElement).getPropertyValue(nom).trim() || repli;
 }
-
-/** Le rayon suit la racine de la masse : doubler l'aire, pas le diamètre. */
-const rayon = (masse: number) => Math.sqrt(masse) * 1.9;
 
 /**
  * Agar — jouable.
@@ -80,9 +85,9 @@ export function Agar({ langue }: { langue: Langue }) {
       const dx = cx - c.x;
       const dy = cy - c.y;
       const d = Math.hypot(dx, dy) || 1;
-      const vitesse = 210 / (1 + c.masse * 0.022);
-      c.x += (dx / d) * vitesse * dt;
-      c.y += (dy / d) * vitesse * dt;
+      const v = vitesse(c.masse);
+      c.x += (dx / d) * v * dt;
+      c.y += (dy / d) * v * dt;
       c.x = Math.min(sim.largeurJeu, Math.max(0, c.x));
       c.y = Math.min(sim.hauteurJeu, Math.max(0, c.y));
     }
@@ -116,9 +121,9 @@ export function Agar({ langue }: { langue: Langue }) {
           for (const r of sim.rivaux) {
             // IA élémentaire : fuir plus gros, chasser plus petit, sinon errer.
             const dj = Math.hypot(sim.joueur.x - r.x, sim.joueur.y - r.y);
-            if (dj < 190 && sim.joueur.masse > r.masse * 1.1) {
+            if (dj < PORTEE_FUITE && sim.joueur.masse > r.masse * MARGE) {
               vers(r, r.x * 2 - sim.joueur.x, r.y * 2 - sim.joueur.y, dt);
-            } else if (dj < 240 && r.masse > sim.joueur.masse * 1.1) {
+            } else if (dj < PORTEE_CHASSE && r.masse > sim.joueur.masse * MARGE) {
               vers(r, sim.joueur.x, sim.joueur.y, dt);
             } else {
               let proche: Granule | null = null;
@@ -140,7 +145,7 @@ export function Agar({ langue }: { langue: Langue }) {
             const g = sim.granules[i];
             for (const c of mangeurs) {
               if (Math.hypot(g.x - c.x, g.y - c.y) < rayon(c.masse)) {
-                c.masse += 1.1;
+                c.masse += GAIN_GRANULE;
                 sim.granules[i] = { x: alea(largeur), y: alea(hauteur), teinte: Math.random() };
                 break;
               }
@@ -155,10 +160,10 @@ export function Agar({ langue }: { langue: Langue }) {
             const d = Math.hypot(r.x - sim.joueur.x, r.y - sim.joueur.y);
             if (d > Math.max(rayon(r.masse), rayon(sim.joueur.masse))) continue;
 
-            if (sim.joueur.masse > r.masse * 1.1) {
-              sim.joueur.masse += r.masse * 0.8;
+            if (sim.joueur.masse > r.masse * MARGE) {
+              sim.joueur.masse += r.masse * GAIN_CELLULE;
               sim.rivaux[i] = nouvelleCellule(12 + alea(30));
-            } else if (r.masse > sim.joueur.masse * 1.1) {
+            } else if (r.masse > sim.joueur.masse * MARGE) {
               sim.perdu = true;
               setFini(true);
             }

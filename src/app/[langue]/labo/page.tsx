@@ -5,6 +5,7 @@ import { FondAnime } from "@/components/fond/fond-anime";
 import { Agar } from "@/components/labo/agar";
 import { Boids } from "@/components/labo/boids";
 import { KMeans } from "@/components/labo/kmeans";
+import { Politique } from "@/components/labo/politique";
 import { Reseau } from "@/components/labo/reseau";
 import { UI } from "@/content/interface";
 import { PAGE_LABO } from "@/content/pages";
@@ -29,6 +30,7 @@ function demonstrations(langue: Langue) {
     { id: "nuee", texte: PAGE_LABO.demos.nuee, composant: <Boids langue={langue} /> },
     { id: "k-moyennes", texte: PAGE_LABO.demos.kmoyennes, composant: <KMeans langue={langue} /> },
     { id: "agar", texte: PAGE_LABO.demos.agar, composant: <Agar langue={langue} /> },
+    { id: "politique", texte: PAGE_LABO.demos.politique, composant: <Politique langue={langue} /> },
   ];
 }
 

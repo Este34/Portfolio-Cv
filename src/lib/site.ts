@@ -201,6 +201,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 /** Sections hors navigation principale — atteignables, non affichées. */
 export const NAV_DISCRETE = [
   { href: "/making-of", label: { fr: "Making-of", en: "Making-of" } },
+  { href: "/evaluations", label: { fr: "Évaluations", en: "Evaluations" } },
 ] as const;
 
 /**

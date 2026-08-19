@@ -67,7 +67,9 @@ const TEXTES = {
     surTitre: "Le moteur de recherche, à nu",
     titre: (n: number) => `Les ${n} passages que ce site sait citer`,
     intro: (n: number) =>
-      `Quand vous posez une question à ce portfolio, il compare votre phrase à ces ${n} passages. Chacun est un vecteur de 384 nombres ; les voici projetés en volume, colorés par source. Faites-les tourner, ou repassez au plan.`,
+      `Quand vous posez une question à ce portfolio, il compare votre phrase à ces ${n} passages. Chacun est un vecteur de 384 nombres ; les voici projetés en volume. Faites-les tourner, ou repassez au plan.`,
+    groupes:
+      "La couleur suit la source de chaque passage, c'est-à-dire ce que j'ai écrit. Basculez sur « groupes trouvés » et elle suit un partitionnement en k-moyennes calculé en direct sur les 384 dimensions, que personne n'a déclaré. Là où les deux coïncident, mon découpage du corpus correspond à sa géométrie ; là où ils divergent, l'un des deux se trompe.",
     methode:
       "La projection est une analyse en composantes principales, pas un t-SNE. C'est moins joli, les amas se chevauchent, mais c'est une ombre fidèle du nuage réel : deux points voisins ici le sont vraiment dans l'espace du modèle. Un t-SNE aurait produit des grappes nettes et des distances qui ne veulent rien dire.",
     variance: (deux: string, trois: string) => (
@@ -85,7 +87,9 @@ const TEXTES = {
     surTitre: "The search engine, laid bare",
     titre: (n: number) => `The ${n} passages this site can quote`,
     intro: (n: number) =>
-      `When you ask this portfolio a question, it compares your sentence against these ${n} passages. Each one is a vector of 384 numbers; here they are projected into a volume, coloured by source. Spin it, or switch back to the plane.`,
+      `When you ask this portfolio a question, it compares your sentence against these ${n} passages. Each one is a vector of 384 numbers; here they are projected into a volume. Spin it, or switch back to the plane.`,
+    groupes:
+      "Colour follows each passage's source, which is to say what I wrote. Switch to «groups found» and it follows a k-means partition computed live over all 384 dimensions, which nobody declared. Where the two agree, my chunking of the corpus matches its geometry; where they diverge, one of the two is wrong.",
     methode:
       "The projection is a principal component analysis, not a t-SNE. It is less pretty, the clusters overlap, but it is a faithful shadow of the real cloud: two points that are neighbours here really are neighbours in the model's space. A t-SNE would have produced crisp clusters and distances that mean nothing.",
     variance: (deux: string, trois: string) => (
@@ -114,6 +118,7 @@ export function SectionCorpus({ langue }: { langue: Langue }) {
 
           <p className="text-texte-attenue mt-5 leading-relaxed">{textes.intro(points.length)}</p>
           <p className="text-texte-attenue mt-4 leading-relaxed">{textes.methode}</p>
+          <p className="text-texte-attenue mt-4 leading-relaxed">{textes.groupes}</p>
           <p className="text-texte-attenue mt-4 leading-relaxed">
             {textes.variance(nombre(variance), nombre(variance3d))}
           </p>

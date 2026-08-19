@@ -32,6 +32,7 @@ const PAGES = [
   { nom: "parcours", chemin: "/parcours", langues: ["fr"] },
   { nom: "methode", chemin: "/methode", langues: ["fr"] },
   { nom: "making-of", chemin: "/making-of", langues: ["fr"] },
+  { nom: "evaluations", chemin: "/evaluations", langues: ["fr"] },
   { nom: "contact", chemin: "/contact", langues: ["fr"] },
   { nom: "bac-a-sable", chemin: "/bac-a-sable", langues: ["fr"] },
   { nom: "labo", chemin: "/labo", langues: ["fr"] },
@@ -104,6 +105,8 @@ async function ouvrir(page: Page, chemin: string) {
  *    entre dans la même catégorie. C'était sa seule différence avec les
  *    autres, et elle a disparu le jour où la démonstration a cessé de montrer
  *    toujours les mêmes spirales ;
+ *  - **la politique apprise** — sa graine est tirée à chaque visite, comme
+ *    celle du réseau, et l'agent montré à l'écran joue un monde tiré au sort ;
  *  - **la projection du corpus** — elle passe désormais par Three.js dès
  *    l'hydratation, et un rendu WebGL en trois dimensions dépend du pilote
  *    graphique bien plus qu'un canvas en deux dimensions.
@@ -120,7 +123,9 @@ function options(page: Page) {
   return {
     fullPage: true,
     mask: [
-      page.locator("#nuee canvas, #k-moyennes canvas, #agar canvas, #reseau canvas, #corpus canvas"),
+      page.locator(
+        "#nuee canvas, #k-moyennes canvas, #agar canvas, #reseau canvas, #politique canvas, #corpus canvas",
+      ),
     ],
     maskColor: "#ff00ff",
   };
