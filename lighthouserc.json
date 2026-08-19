@@ -9,6 +9,7 @@
         "http://localhost:3000/fr/travaux/pipeline-comtrade",
         "http://localhost:3000/fr/parcours",
         "http://localhost:3000/fr/evaluations",
+        "http://localhost:3000/fr/cv",
         "http://localhost:3000/fr/notes/un-champ-vide-ne-vaut-pas-zero"
       ],
       "numberOfRuns": 2,

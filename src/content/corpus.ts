@@ -1,7 +1,7 @@
 // Import relatif volontaire : voir la note dans `travaux.ts`.
 import { lien, t, ts, type Langue } from "../lib/langue.ts";
 import { SITE } from "../lib/site.ts";
-import { PAGE_LABO, PAGE_METHODE, PAGE_NOTES } from "./pages.ts";
+import { PAGE_CV, PAGE_LABO, PAGE_METHODE, PAGE_NOTES } from "./pages.ts";
 import { COMPETENCES, EXPERIENCES, FORMATION } from "./parcours.ts";
 import { NOTES, texteDeNote } from "./notes.ts";
 import { TRAVAUX } from "./travaux.ts";
@@ -53,6 +53,7 @@ const LIENS = {
   /* Étiquettes de source, affichées sous chaque extrait cité. */
   sourcePresentation: { fr: "Présentation", en: "About" },
   sourceParcours: { fr: "Parcours", en: "Background" },
+  outils: { fr: "Outils :", en: "Tools:" },
 } as const;
 
 export function construireCorpus(langue: Langue): Passage[] {
@@ -69,6 +70,29 @@ export function construireCorpus(langue: Langue): Passage[] {
     lien("/", langue),
     1.3,
   );
+
+  /*
+   * Le profil du CV, en un passage par paragraphe.
+   *
+   * Le corpus décrivait des projets bien plus que la personne : treize
+   * passages sur cinquante-six, et onze pour cent du texte. Cela se voyait
+   * dans le banc d'évaluation, où « où travaille-t-il ? » ne trouvait pas sa
+   * réponse alors qu'elle existe.
+   *
+   * Un passage par paragraphe et non un seul bloc : deux paragraphes qui
+   * disent deux choses différentes se retrouvent séparément, un bloc qui dit
+   * les deux se retrouve pour aucune des deux. C'est la leçon de la note « Le
+   * cosinus n'est pas une note », appliquée en écrivant plutôt qu'après coup.
+   */
+  PAGE_CV.profil.paragraphes.forEach((paragraphe, i) => {
+    ajouter(
+      `cv-profil-${i}`,
+      t(paragraphe, langue),
+      L("sourceParcours"),
+      lien("/cv", langue),
+      1.2,
+    );
+  });
 
   for (const travail of TRAVAUX) {
     const href = lien(`/travaux/${travail.slug}`, langue);
@@ -168,7 +192,10 @@ export function construireCorpus(langue: Langue): Passage[] {
   for (const g of COMPETENCES) {
     ajouter(
       `competences-${g.famille.fr}`,
-      `${L("competencesEn")} ${t(g.famille, langue).toLowerCase()} : ${ts(g.items, langue).join(", ")}.`,
+      // Le corps précède la liste : un passage qui commence par une phrase
+      // se retrouve, un passage qui commence par une énumération se dilue.
+      // Voir la note « Le cosinus n'est pas une note ».
+      `${L("competencesEn")} ${t(g.famille, langue).toLowerCase()}. ${t(g.corps, langue)} ${L("outils")} ${ts(g.items, langue).join(", ")}.`,
       sourceParcours,
       lien("/parcours", langue),
     );

@@ -47,7 +47,7 @@ export const NOTES: readonly Note[] = [
       en: "I built an evaluation bench for my own search engine, expecting to confirm it worked. It does: 71% recall. It is the remaining 29% that taught me something, and one right answer scoring lower than one piece of nonsense.",
     },
     date: "2026-08-19",
-    minutes: 11,
+    minutes: 13,
     sujets: [
       { fr: "Recherche augmentée", en: "Retrieval-augmented search" },
       { fr: "Évaluation", en: "Evaluation" },
@@ -57,8 +57,8 @@ export const NOTES: readonly Note[] = [
       {
         type: "paragraphe",
         texte: {
-          fr: "La console de ce site répond aux questions en comparant votre phrase à cinquante-cinq passages vectorisés. Elle marchait, au sens où je lui posais des questions et où les réponses avaient l'air bonnes. C'est le mode d'échec propre à cette famille d'outils : on ne distingue pas à l'œil un système qui trouve d'un système qui devine, parce que les deux produisent le même objet à l'écran. Un extrait, une source, un score.",
-          en: "This site's console answers questions by comparing your sentence to fifty-five embedded passages. It worked, in the sense that I asked it questions and the answers looked right. That is the failure mode peculiar to this family of tools: you cannot tell by eye a system that finds from a system that guesses, because both produce the same object on screen. A passage, a source, a score.",
+          fr: "La console de ce site répond aux questions en comparant votre phrase aux passages vectorisés du site ; ils étaient cinquante-six le jour de cette mesure, et tous les chiffres qui suivent décrivent ce corpus-là. Elle marchait, au sens où je lui posais des questions et où les réponses avaient l'air bonnes. C'est le mode d'échec propre à cette famille d'outils : on ne distingue pas à l'œil un système qui trouve d'un système qui devine, parce que les deux produisent le même objet à l'écran. Un extrait, une source, un score.",
+          en: "This site's console answers questions by comparing your sentence to the site's embedded passages; there were fifty-six of them on the day of this measurement, and every figure below describes that corpus. It worked, in the sense that I asked it questions and the answers looked right. That is the failure mode peculiar to this family of tools: you cannot tell by eye a system that finds from a system that guesses, because both produce the same object on screen. A passage, a source, a score.",
         },
       },
       {
@@ -295,8 +295,8 @@ export const NOTES: readonly Note[] = [
       {
         type: "paragraphe",
         texte: {
-          fr: "Ce que je changerai, en revanche, c'est le découpage du corpus, puisque c'est là que sont trois échecs sur cinq. Découper les énumérations de compétences en passages d'un sujet chacun devrait suffire pour deux d'entre eux. Je le mesurerai avant de l'affirmer.",
-          en: "What I will change, on the other hand, is the chunking of the corpus, since that is where three failures out of five live. Splitting the skill enumerations into one-subject passages should be enough for two of them. I will measure it before claiming it.",
+          fr: "Ce que je changerai, en revanche, c'est le corpus, puisque c'est là que sont trois échecs sur cinq. Je le mesurerai avant de l'affirmer, ce qui est la seule partie de cette phrase dont je sois sûr.",
+          en: "What I will change, on the other hand, is the corpus, since that is where three failures out of five live. I will measure it before claiming it, which is the only part of this sentence I am sure about.",
         },
       },
 
@@ -331,8 +331,37 @@ export const NOTES: readonly Note[] = [
       {
         type: "paragraphe",
         texte: {
-          fr: "Le banc est consultable, chaque cas y est détaillé avec les passages rendus et leurs scores, et un bouton rejoue l'évaluation entière dans votre navigateur, sur les mêmes vecteurs. Si vos chiffres diffèrent des miens, c'est moi qui ai un problème.",
-          en: "The bench is public, every case is detailed there with the passages returned and their scores, and a button replays the whole evaluation in your browser, on the same vectors. If your figures differ from mine, the problem is mine.",
+          fr: "Le banc est consultable, chaque cas y est détaillé avec les passages rendus et leurs scores, et un bouton rejoue l'évaluation entière dans votre navigateur, sur les vecteurs du jour. Si vos chiffres diffèrent de ceux affichés là-bas, c'est moi qui ai un problème.",
+          en: "The bench is public, every case is detailed there with the passages returned and their scores, and a button replays the whole evaluation in your browser, on the current vectors. If your figures differ from the ones shown there, the problem is mine.",
+        },
+      },
+
+      {
+        type: "titre",
+        texte: {
+          fr: "Suite immédiate : ce que j'ai essayé le jour même",
+          en: "Immediate follow-up: what I tried the same day",
+        },
+      },
+      {
+        type: "paragraphe",
+        texte: {
+          fr: "Deux échecs de cette liste portaient sur moi plutôt que sur mes projets, et une remarque me l'a fait voir sous un autre angle : ce corpus parle très peu de la personne. Compté, c'était treize passages sur cinquante-six, et onze pour cent du texte. Le reste décrit des projets. Une page de CV, générée depuis les mêmes fichiers que le site, était de toute façon à écrire ; elle a fait passer la part à seize pour cent.",
+          en: "Two failures in that list were about me rather than about my projects, and a remark made me see it from another angle: this corpus says very little about the person. Counted, that was thirteen passages out of fifty-six, and eleven percent of the text. The rest describes projects. A résumé page, generated from the same files as the site, was due to be written anyway; it took the share to sixteen percent.",
+        },
+      },
+      {
+        type: "paragraphe",
+        texte: {
+          fr: "Le résultat est instructif dans les deux sens. « Où travaille-t-il ? » trouve désormais sa réponse, et le rappel passe de 71 % à 79 %. Mais « avec quels outils écrit-il ses tests ? » échoue toujours, alors que j'ai enrichi le passage fautif d'une phrase entière sur Vitest et Playwright : ajouter du contexte à une énumération ne suffit pas, il faudrait la découper, ce que je n'ai pas fait et que je ne prétendrai donc pas savoir. Et la précision a baissé de deux points, parce que trois passages de plus, ce sont trois concurrents de plus à chaque question.",
+          en: "The result is instructive in both directions. «Where does he work?» now finds its answer, and recall goes from 71% to 79%. But «which tools does he write his tests with?» still fails, even though I enriched the offending passage with a whole sentence about Vitest and Playwright: adding context to an enumeration is not enough, it would have to be split, which I did not do and will therefore not claim to know. And precision dropped two points, because three more passages means three more competitors on every question.",
+        },
+      },
+      {
+        type: "paragraphe",
+        texte: {
+          fr: "Un dernier point, sur l'honnêteté de l'exercice plutôt que sur le moteur. Le paragraphe de CV qui répond à « où travaille-t-il ? » n'était pas dans ma vérité terrain, puisqu'il n'existait pas quand je l'ai écrite. Je l'y ai ajouté, et il faut dire dans quel ordre : le paragraphe a été écrit parce qu'un CV doit dire ce qu'on fait, puis j'ai lu qu'il répondait à la question, puis je l'ai étiqueté. L'ordre inverse — voir ce que le moteur rend, décider après coup que c'est juste — est précisément le biais que ce jeu existe pour éviter, et il ne laisse aucune trace.",
+          en: "One last point, about the honesty of the exercise rather than the engine. The résumé paragraph that answers «where does he work?» was not in my ground truth, since it did not exist when I wrote it. I added it, and the order matters: the paragraph was written because a résumé has to say what you do, then I read that it answered the question, then I labelled it. The reverse order — see what the engine returns, decide afterwards that it is right — is exactly the bias this set exists to avoid, and it leaves no trace.",
         },
       },
     ],

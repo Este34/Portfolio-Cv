@@ -201,10 +201,19 @@ export const EVALUATIONS: readonly CasEvaluation[] = [
   {
     id: "ou-travaille",
     question: { fr: "Où travaille-t-il en ce moment ?", en: "Where is he working right now?" },
-    attendus: ["parcours-Data & AI engineering, e"],
+    /*
+     * Deux attendus depuis l'ajout de la page CV, et l'ordre des opérations
+     * mérite d'être dit : le paragraphe de profil a été écrit parce qu'un CV
+     * doit dire ce qu'on fait, pas pour faire monter ce cas. Il a ensuite
+     * fallu constater qu'il répondait à la question, en le lisant, pour
+     * l'étiqueter. Étiqueter dans l'autre sens — voir ce que le moteur rend
+     * puis décider que c'est juste — est exactement le biais que ce jeu
+     * existe pour éviter.
+     */
+    attendus: ["parcours-Data & AI engineering, e", "cv-profil-2"],
     intention: {
-      fr: "Un seul passage répond. C'est le cas le plus dur pour un rappel à quatre.",
-      en: "Only one passage answers. That is the hardest case for recall at four.",
+      fr: "Deux passages répondent, et aucun ne peut nommer l'employeur : l'anonymat du site rend cette question structurellement difficile.",
+      en: "Two passages answer, and neither can name the employer: the site's anonymity makes this question structurally hard.",
     },
   },
   {

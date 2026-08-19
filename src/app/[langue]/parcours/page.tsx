@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { FondAnime } from "@/components/fond/fond-anime";
 import { UI } from "@/content/interface";
 import { PAGE_PARCOURS } from "@/content/pages";
 import { COMPETENCES, EXPERIENCES, FORMATION, type Etape } from "@/content/parcours";
-import { estLangue, t, type Langue } from "@/lib/langue";
+import { estLangue, lien, t, type Langue } from "@/lib/langue";
 import { metadonnees } from "@/lib/metadonnees";
 
 export async function generateMetadata({
@@ -35,6 +36,20 @@ export default async function Parcours({ params }: PageProps<"/[langue]/parcours
         <p className="text-texte-attenue mt-4 max-w-2xl text-lg leading-relaxed">
           {t(PAGE_PARCOURS.chapeau, langue)}
         </p>
+
+        {/*
+          Le CV est une vue de cette page, pas un document séparé : il lit les
+          mêmes fichiers. Le lien est ici parce que c'est là qu'on le cherche,
+          et non dans la navigation principale, qui déborde à neuf entrées.
+        */}
+        <div className="mt-8">
+          <Link
+            href={lien("/cv", langue)}
+            className="border-trait-fort text-texte hover:bloc-citron border-2 px-5 py-2.5 text-sm font-bold uppercase transition-colors"
+          >
+            {t({ fr: "Le CV, imprimable", en: "The résumé, printable" }, langue)}
+          </Link>
+        </div>
       </header>
 
       <div className="grid gap-16 pb-20 lg:grid-cols-[1fr_2fr] lg:gap-20">

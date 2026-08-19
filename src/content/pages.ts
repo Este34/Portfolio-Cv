@@ -228,9 +228,9 @@ export const PAGE_MAKING_OF = {
    */
   mesures: [
     {
-      valeur: "34",
+      valeur: "36",
       libelle: { fr: "pages statiques", en: "static pages" },
-      note: { fr: "dix-sept, dans deux langues", en: "seventeen, in two languages" },
+      note: { fr: "dix-huit, dans deux langues", en: "eighteen, in two languages" },
     },
     {
       valeur: "1",
@@ -243,7 +243,7 @@ export const PAGE_MAKING_OF = {
       note: { fr: "sur les vrais vecteurs du build", en: "against the build's real vectors" },
     },
     {
-      valeur: "37",
+      valeur: "38",
       libelle: { fr: "vérifications visuelles", en: "visual checks" },
       note: { fr: "captures, géométrie et densité", en: "screenshots, geometry and density" },
     },
@@ -790,5 +790,65 @@ export const PAGE_EVALUATIONS = {
       fr: "Les chiffres ci-dessus sont produits au build et versionnés avec le site : la page s'affiche sans une ligne de JavaScript. Le bouton rejoue l'évaluation entière dans votre navigateur, avec le même modèle et les mêmes vecteurs, et affiche ce qu'il trouve. C'est la seule forme de publication de résultats qui vaille quelque chose : un chiffre qu'on peut refaire tomber soi-même.",
       en: "The figures above are produced at build time and versioned with the site: the page renders without a line of JavaScript. The button replays the whole evaluation inside your browser, with the same model and the same vectors, and shows what it finds. It is the only form of published result worth anything: a number you can make fall out again yourself.",
     },
+  },
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* CV                                                                          */
+/* -------------------------------------------------------------------------- */
+
+export const PAGE_CV = {
+  meta: {
+    titre: { fr: "CV", en: "Résumé" },
+    description: {
+      fr: "Le CV d'Esteban Beretti-Prenant, généré depuis le contenu de ce site : parcours, compétences et réalisations, imprimable en une page.",
+      en: "Esteban Beretti-Prenant's résumé, generated from this site's own content: background, skills and work, printable on one page.",
+    },
+  } satisfies Meta,
+  titre: { fr: "CV", en: "Résumé" },
+  chapeau: {
+    fr: "Cette page est écrite par le site, pas à côté de lui. Le parcours, les compétences et les chiffres viennent des mêmes fichiers que les études de cas : le CV ne peut donc pas dater pendant que le portfolio avance. Utilisez l'impression de votre navigateur pour en faire un PDF.",
+    en: "This page is written by the site, not alongside it. The background, the skills and the figures come from the same files as the case studies, so the résumé cannot go stale while the portfolio moves on. Use your browser's print command to turn it into a PDF.",
+  },
+  profil: {
+    titre: { fr: "En deux phrases", en: "In two sentences" },
+    paragraphes: [
+      {
+        fr: "Je rends manipulable ce qui sert à décider. Concrètement : je prends un modèle de prospective qui vit dans un classeur, je le porte dans le navigateur pour qu'on puisse en bouger les paramètres, et je vérifie que le portage dit exactement la même chose que l'original.",
+        en: "I put decision models in people's hands. Concretely: I take a foresight model that lives in a spreadsheet, port it into the browser so its parameters can be moved, and check that the port says exactly what the original says.",
+      },
+      {
+        fr: "Ce qui m'intéresse n'est pas le modèle, c'est l'écart entre ce qu'un outil affiche et ce qu'il devrait afficher. C'est pour ça que chaque projet porte sa vérification : un générateur qui refuse de produire les données au-delà de 0,1 % d'écart, un banc qui note un moteur de recherche sur des questions figées, une intégration continue qui bloque une mise en ligne dont les artefacts ont dérivé.",
+        en: "What interests me is not the model, it is the gap between what a tool shows and what it should show. That is why every project carries its own verification: a generator that refuses to emit data beyond 0.1% drift, a bench that grades a search engine on a fixed question set, a continuous integration that blocks a release whose artefacts have drifted.",
+      },
+      {
+        fr: "Je travaille en alternance dans un institut de recherche public depuis juin 2026, où je porte des modèles de prospective vers le web, et je suis en Master 1 d'ingénierie de l'intelligence artificielle à l'Université Paris 8. Je ne cherche pas de poste : l'alternance est signée et j'y reste.",
+        en: "I work as an apprentice at a public research institute since June 2026, porting foresight models to the web, and I am in the first year of an AI engineering master's at Université Paris 8. I am not looking for a job: the apprenticeship is signed and I am staying in it.",
+      },
+    ],
+  },
+  sections: {
+    experience: { fr: "Expérience", en: "Experience" },
+    formation: { fr: "Formation", en: "Education" },
+    competences: { fr: "Compétences", en: "Skills" },
+    realisations: { fr: "Réalisations", en: "Selected work" },
+    contact: { fr: "Contact", en: "Contact" },
+  },
+  outils: { fr: "Outils", en: "Tools" },
+  detail: {
+    fr: "Chaque réalisation a son étude de cas détaillée sur ce site.",
+    en: "Each item has its own detailed case study on this site.",
+  },
+  /*
+   * Ce que cette page ne porte pas, et pourquoi c'est écrit dessus.
+   */
+  absences: {
+    fr: "Ni adresse postale ni numéro de téléphone : une page est indexée, aspirée et archivée, et une coordonnée personnelle y devient permanente. Le courriel suffit à me joindre et se change en cas d'abus. L'employeur est désigné par sa nature plutôt que par son nom, pour la même raison qui vaut sur tout le site.",
+    en: "No postal address and no phone number: a page gets indexed, scraped and archived, and a personal detail becomes permanent there. Email is enough to reach me and can be changed if abused. The employer is named by its nature rather than by its name, for the same reason that holds across the whole site.",
+  },
+  imprimer: { fr: "Imprimer ou enregistrer en PDF", en: "Print or save as PDF" },
+  version: {
+    fr: "Version imprimée du CV d'Esteban Beretti-Prenant",
+    en: "Printed version of Esteban Beretti-Prenant's résumé",
   },
 } as const;

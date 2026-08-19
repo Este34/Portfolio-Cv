@@ -202,6 +202,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 export const NAV_DISCRETE = [
   { href: "/making-of", label: { fr: "Making-of", en: "Making-of" } },
   { href: "/evaluations", label: { fr: "Évaluations", en: "Evaluations" } },
+  { href: "/cv", label: { fr: "CV", en: "Résumé" } },
 ] as const;
 
 /**

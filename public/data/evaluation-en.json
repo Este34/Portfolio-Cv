@@ -1,33 +1,33 @@
 {
   "langue": "en",
   "modele": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
-  "passages": 56,
+  "passages": 59,
   "seuil": 0.22,
   "bilan": {
     "k": 4,
     "avecReponse": 14,
     "sansReponse": 4,
-    "rappel": 0.7857142857142857,
-    "mrr": 0.5773809523809524,
+    "rappel": 0.8571428571428571,
+    "mrr": 0.6369047619047619,
     "precision": 0.3090909090909091,
     "silence": 0.75
   },
   "courbe": [
     {
       "seuil": 0.14,
-      "rappel": 0.7857,
+      "rappel": 0.8571,
       "silence": 0.5,
       "precision": 0.3036
     },
     {
       "seuil": 0.18,
-      "rappel": 0.7857,
+      "rappel": 0.8571,
       "silence": 0.5,
       "precision": 0.3036
     },
     {
       "seuil": 0.22,
-      "rappel": 0.7857,
+      "rappel": 0.8571,
       "silence": 0.75,
       "precision": 0.3091
     },
@@ -35,29 +35,29 @@
       "seuil": 0.26,
       "rappel": 0.7857,
       "silence": 0.75,
-      "precision": 0.3333
+      "precision": 0.3125
     },
     {
       "seuil": 0.3,
       "rappel": 0.7857,
       "silence": 0.75,
-      "precision": 0.3182
+      "precision": 0.2955
     },
     {
       "seuil": 0.34,
       "rappel": 0.5714,
       "silence": 0.75,
-      "precision": 0.2895
+      "precision": 0.2564
     },
     {
       "seuil": 0.38,
-      "rappel": 0.5,
+      "rappel": 0.5714,
       "silence": 0.75,
-      "precision": 0.25
+      "precision": 0.2667
     },
     {
       "seuil": 0.42,
-      "rappel": 0.2857,
+      "rappel": 0.3571,
       "silence": 0.75,
       "precision": 0.2632
     }
@@ -73,21 +73,21 @@
           "attendu": true
         },
         {
-          "id": "competences-Données",
-          "source": "Background",
-          "score": 0.4202,
-          "attendu": true
-        },
-        {
           "id": "methode-Ce que je délègue",
           "source": "Method",
           "score": 0.3807,
           "attendu": false
         },
         {
-          "id": "parcours-Data & AI engineering, e",
+          "id": "competences-Simulation & visualisation",
           "source": "Background",
-          "score": 0.3461,
+          "score": 0.3645,
+          "attendu": false
+        },
+        {
+          "id": "cv-profil-0",
+          "source": "Background",
+          "score": 0.3612,
           "attendu": false
         }
       ],
@@ -95,7 +95,9 @@
         "competences-Données",
         "identite"
       ],
-      "manques": [],
+      "manques": [
+        "competences-Données"
+      ],
       "rang": 1
     },
     {
@@ -114,10 +116,10 @@
           "attendu": false
         },
         {
-          "id": "parcours-Data & AI engineering, e",
+          "id": "competences-Intelligence artificielle",
           "source": "Background",
-          "score": 0.4404,
-          "attendu": false
+          "score": 0.4406,
+          "attendu": true
         },
         {
           "id": "mon-rag-domaines",
@@ -132,10 +134,9 @@
         "mon-rag-domaines"
       ],
       "manques": [
-        "mon-rag-resume",
-        "competences-Intelligence artificielle"
+        "mon-rag-resume"
       ],
-      "rang": 4
+      "rang": 3
     },
     {
       "id": "verification",
@@ -157,12 +158,6 @@
           "source": "Method",
           "score": 0.2531,
           "attendu": true
-        },
-        {
-          "id": "competences-Pratiques",
-          "source": "Background",
-          "score": 0.2515,
-          "attendu": false
         }
       ],
       "attendus": [
@@ -189,9 +184,9 @@
           "attendu": true
         },
         {
-          "id": "parcours-Data & AI engineering, e",
+          "id": "competences-Pratiques",
           "source": "Background",
-          "score": 0.2758,
+          "score": 0.2765,
           "attendu": false
         },
         {
@@ -228,7 +223,7 @@
         {
           "id": "competences-Intelligence artificielle",
           "source": "Background",
-          "score": 0.3002,
+          "score": 0.3062,
           "attendu": true
         },
         {
@@ -369,21 +364,21 @@
           "attendu": false
         },
         {
-          "id": "suite-simulateurs-prospective-decision-0",
-          "source": "A suite of foresight simulators",
-          "score": 0.4119,
-          "attendu": true
-        },
-        {
-          "id": "methode-Ce que je délègue",
-          "source": "Method",
-          "score": 0.3835,
+          "id": "cv-profil-0",
+          "source": "Background",
+          "score": 0.4602,
           "attendu": false
         },
         {
-          "id": "suite-simulateurs-prospective-contexte",
+          "id": "competences-Simulation & visualisation",
+          "source": "Background",
+          "score": 0.4226,
+          "attendu": false
+        },
+        {
+          "id": "suite-simulateurs-prospective-decision-0",
           "source": "A suite of foresight simulators",
-          "score": 0.3515,
+          "score": 0.4119,
           "attendu": true
         }
       ],
@@ -395,9 +390,10 @@
       ],
       "manques": [
         "suite-simulateurs-prospective-resume",
+        "suite-simulateurs-prospective-contexte",
         "note-un-champ-vide-ne-vaut-pas-zero"
       ],
-      "rang": 2
+      "rang": 4
     },
     {
       "id": "front-end",
@@ -447,21 +443,21 @@
           "attendu": true
         },
         {
-          "id": "competences-Web",
-          "source": "Background",
-          "score": 0.3824,
-          "attendu": false
-        },
-        {
           "id": "suite-simulateurs-prospective-role",
           "source": "A suite of foresight simulators",
           "score": 0.3786,
           "attendu": false
         },
         {
-          "id": "plateforme-simulateurs-contexte",
-          "source": "The platform that hosts them",
-          "score": 0.3345,
+          "id": "competences-Web",
+          "source": "Background",
+          "score": 0.3682,
+          "attendu": false
+        },
+        {
+          "id": "cv-profil-1",
+          "source": "Background",
+          "score": 0.3456,
           "attendu": false
         }
       ],
@@ -490,15 +486,15 @@
           "attendu": false
         },
         {
-          "id": "competences-Données",
-          "source": "Background",
-          "score": 0.4201,
-          "attendu": false
-        },
-        {
           "id": "pipeline-comtrade-decision-1",
           "source": "Global flows of critical minerals",
           "score": 0.3871,
+          "attendu": false
+        },
+        {
+          "id": "cv-profil-1",
+          "source": "Background",
+          "score": 0.3547,
           "attendu": false
         }
       ],
@@ -514,6 +510,12 @@
     {
       "id": "ou-travaille",
       "rendus": [
+        {
+          "id": "cv-profil-2",
+          "source": "Background",
+          "score": 0.2368,
+          "attendu": true
+        },
         {
           "id": "methode-verification",
           "source": "Method",
@@ -534,12 +536,13 @@
         }
       ],
       "attendus": [
-        "parcours-Data & AI engineering, e"
+        "parcours-Data & AI engineering, e",
+        "cv-profil-2"
       ],
       "manques": [
         "parcours-Data & AI engineering, e"
       ],
-      "rang": 0
+      "rang": 1
     },
     {
       "id": "tests-outils",
@@ -547,7 +550,7 @@
         {
           "id": "competences-Pratiques",
           "source": "Background",
-          "score": 0.4972,
+          "score": 0.5478,
           "attendu": true
         },
         {

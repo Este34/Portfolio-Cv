@@ -314,3 +314,74 @@
 @utility filet-fort {
   border-top: 2px solid var(--trait-fort);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Impression du CV                                                            */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Le PDF du CV se fabrique par l'impression du navigateur.
+ *
+ * Déposer un PDF dans `public/` aurait été plus simple et faux : ce serait une
+ * copie, qui date le jour où le portfolio avance, et qui date en silence. Ici
+ * le document imprimé est la page elle-même, donc il ne peut pas diverger de
+ * son contenu.
+ *
+ * Ces règles ne s'appliquent qu'à la page `/cv`, reconnaissable à sa classe
+ * `.cv`. Le reste du site s'imprime comme il veut.
+ */
+@media print {
+  @page {
+    size: A4;
+    /* Marges du papier : le navigateur ajoute déjà en-têtes et pieds si on les
+       lui demande, et les nôtres viendraient s'y superposer. */
+    margin: 14mm 15mm;
+  }
+
+  /* Le fond en shader, la navigation et le pied de page ne s'impriment pas.
+     Ils ne portent aucune information et coûteraient une cartouche. */
+  body:has(.cv) > *:not(main),
+  body:has(.cv) canvas,
+  body:has(.cv) header nav,
+  body:has(.cv) footer {
+    display: none !important;
+  }
+
+  .cv {
+    /* Encre noire sur papier blanc, quel que soit le thème à l'écran. Sans
+       cette remise à plat, un visiteur en thème sombre imprimerait une page
+       noire, ou plus probablement une page blanche au texte invisible. */
+    --texte: #000;
+    --texte-attenue: #1a1a1a;
+    --texte-faible: #444;
+    --trait: #bbb;
+    --trait-fort: #000;
+    --signal: #000;
+    color: #000;
+    background: #fff;
+    font-size: 10.5pt;
+    line-height: 1.4;
+  }
+
+  /* Une section ne se coupe pas entre son titre et sa première ligne. */
+  .cv-section {
+    break-inside: avoid;
+    margin-top: 5mm;
+  }
+  .cv-section h3 {
+    break-after: avoid;
+  }
+  .cv-tete {
+    break-after: avoid;
+  }
+  .cv li {
+    break-inside: avoid;
+  }
+
+  /* Les liens gardent leur texte, pas leur couleur : une URL soulignée en
+     corail sur du papier ne mène nulle part. */
+  .cv a {
+    color: #000;
+    text-decoration: none;
+  }
+}

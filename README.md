@@ -73,15 +73,18 @@ src/
     api/rediger/    rédaction d’une réponse, facultative
     api/agent/      décision d’un tour d’agent, facultative aussi
   components/
-    console/        palette Ctrl+K : navigation, SQL, questions, agent
+    console/        palette Ctrl+K : navigation, SQL, questions, agent, agent
     corpus/         projection du corpus vectorisé, en plan et en volume,
+                    et son partitionnement en direct,
                     et son partitionnement en direct
     fond/           champ de niveaux en GLSL, fond des bandeaux
     labo/           simulations canvas (réseau, nuée, k-moyennes, agar,
                     politique apprise par renforcement)
     evaluation/     rejoue le banc d’évaluation dans le navigateur
+    evaluation/     rejoue le banc d’évaluation dans le navigateur
     layout/         en-tête, pied de page
-  content/          SOURCE DE VÉRITÉ — travaux, parcours, pages, corpus
+  content/          SOURCE DE VÉRITÉ — travaux, parcours, pages, notes,
+                    corpus, jeu d’évaluation
   lib/
     langue.ts       types du bilinguisme, résolution des liens
     site.ts         identité du site, anonymisation
@@ -126,7 +129,7 @@ porte de préfixe.
 
 ## Régression visuelle
 
-`npm run test:visuel` construit le site, le sert, et compare vingt-trois
+`npm run test:visuel` construit le site, le sert, et compare vingt-six
 captures à des images de référence versionnées dans
 `tests-visuels/apparence.spec.ts-snapshots/`. C'est le seul filet qui attrape ce
 qu'aucun test unitaire ne voit : une couleur qui change, un titre qui déborde,

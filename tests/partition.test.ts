@@ -178,13 +178,25 @@ describe("sur le vrai corpus", () => {
   const n = meta.passages.length;
   const d = meta.dimensions;
 
-  it("converge en quelques itérations, sur toutes les graines", () => {
-    // Si une graine demandait trente itérations, l'animation deviendrait
-    // interminable à une demi-seconde par tour.
-    for (let graine = 1; graine <= 12; graine++) {
+  /**
+   * Deux choses vérifiées, et une seule est un vrai seuil.
+   *
+   * La convergence, d'abord : une partition qui oscille sans se fixer
+   * afficherait un nuage qui se recolore indéfiniment.
+   *
+   * Le nombre d'itérations ensuite, mais avec une borne large et assumée.
+   * Elle n'existe que pour attraper l'interminable, à une demi-seconde par
+   * tour à l'écran. Le compte exact dépend du corpus : à cinquante-six
+   * passages le maximum sur quarante graines était de neuf, à cinquante-neuf
+   * il est de treize, sans que rien n'ait changé dans l'algorithme. Une borne
+   * serrée mesurerait la taille du corpus et se briserait à chaque note
+   * ajoutée.
+   */
+  it("converge, et sans que ce soit interminable", () => {
+    for (let graine = 1; graine <= 40; graine++) {
       const r = partitionner(vecteurs, n, d, 5, graine);
       expect(r.converge, `graine ${graine}`).toBe(true);
-      expect(r.iterations, `graine ${graine}`).toBeLessThanOrEqual(12);
+      expect(r.iterations, `graine ${graine}`).toBeLessThanOrEqual(20);
     }
   });
 

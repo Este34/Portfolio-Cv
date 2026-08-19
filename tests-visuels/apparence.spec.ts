@@ -33,6 +33,7 @@ const PAGES = [
   { nom: "methode", chemin: "/methode", langues: ["fr"] },
   { nom: "making-of", chemin: "/making-of", langues: ["fr"] },
   { nom: "evaluations", chemin: "/evaluations", langues: ["fr"] },
+  { nom: "cv", chemin: "/cv", langues: ["fr"] },
   { nom: "contact", chemin: "/contact", langues: ["fr"] },
   { nom: "bac-a-sable", chemin: "/bac-a-sable", langues: ["fr"] },
   { nom: "labo", chemin: "/labo", langues: ["fr"] },

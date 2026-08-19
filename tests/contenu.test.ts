@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { construireCorpus } from "../src/content/corpus.ts";
+import { PAGE_CV } from "../src/content/pages.ts";
+import { COMPETENCES, EXPERIENCES, FORMATION } from "../src/content/parcours.ts";
 import { NOTES, texteDeNote } from "../src/content/notes.ts";
 import { TRAVAUX, stackAgregee, travailParSlug } from "../src/content/travaux.ts";
 import { LANGUES, lien, type Langue } from "../src/lib/langue.ts";
@@ -151,7 +153,13 @@ describe("identité du site", () => {
   it("n'expose ni adresse postale ni numéro de téléphone", () => {
     // Un portfolio est indexé et archivé ; une adresse personnelle y devient
     // permanente. Le courriel suffit et se change.
-    const serialise = JSON.stringify({ SITE, CONTACT });
+    /*
+     * Le CV est inclus, et c'est le point de ce test depuis qu'il existe :
+     * c'est la page où une adresse et un téléphone se glissent naturellement,
+     * parce que c'est là qu'un CV les porte d'habitude. Vérifier uniquement
+     * l'identite du site et les coordonnees laissait la porte grande ouverte.
+     */
+    const serialise = JSON.stringify({ SITE, CONTACT, PAGE_CV, EXPERIENCES, FORMATION, COMPETENCES });
     expect(serialise).not.toMatch(/\b0[1-9]([ .-]?\d{2}){4}\b/);
     /*
      * Le groupe de cinq chiffres ne doit pas être bordé d'un séparateur
