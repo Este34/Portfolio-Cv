@@ -1,7 +1,7 @@
 {
   "langue": "fr",
   "modele": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
-  "passages": 55,
+  "passages": 56,
   "seuil": 0.22,
   "bilan": {
     "k": 4,
@@ -16,7 +16,7 @@
     {
       "seuil": 0.14,
       "rappel": 0.7143,
-      "silence": 0.5,
+      "silence": 0.25,
       "precision": 0.2857
     },
     {
@@ -35,7 +35,7 @@
       "seuil": 0.26,
       "rappel": 0.7143,
       "silence": 0.75,
-      "precision": 0.3137
+      "precision": 0.3077
     },
     {
       "seuil": 0.3,
@@ -158,9 +158,9 @@
           "attendu": true
         },
         {
-          "id": "identite",
-          "source": "Présentation",
-          "score": 0.2499,
+          "id": "note-le-cosinus-n-est-pas-une-note",
+          "source": "Note technique",
+          "score": 0.2803,
           "attendu": false
         }
       ],

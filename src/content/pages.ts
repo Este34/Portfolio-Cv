@@ -228,9 +228,9 @@ export const PAGE_MAKING_OF = {
    */
   mesures: [
     {
-      valeur: "32",
+      valeur: "34",
       libelle: { fr: "pages statiques", en: "static pages" },
-      note: { fr: "seize, dans deux langues", en: "sixteen, in two languages" },
+      note: { fr: "dix-sept, dans deux langues", en: "seventeen, in two languages" },
     },
     {
       valeur: "1",

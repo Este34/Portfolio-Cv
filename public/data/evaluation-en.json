@@ -1,7 +1,7 @@
 {
   "langue": "en",
   "modele": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
-  "passages": 55,
+  "passages": 56,
   "seuil": 0.22,
   "bilan": {
     "k": 4,
